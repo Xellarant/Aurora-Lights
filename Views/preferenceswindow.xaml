@@ -1,0 +1,333 @@
+<controls:MetroWindow x:Class="Builder.Presentation.Views.PreferencesWindow"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:local="clr-namespace:Builder.Presentation.Views"
+                      xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      xmlns:system="clr-namespace:System;assembly=mscorlib"
+                      xmlns:wpf="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
+                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                      xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                      xmlns:converters="clr-namespace:Builder.Presentation.Converters"
+                      Title="AURORA BUILDER" ResizeMode="NoResize" Style="{StaticResource CharacterBuilderWindowStyle}"
+                      TitleTemplate="{StaticResource CharacterBuilderWindowTitleDataTemplate}"
+                      WindowStartupLocation="CenterScreen" Height="600" Width="450" MinHeight="450" MinWidth="450">
+  <FrameworkElement.DataContext>
+    <viewModels:SettingsWindowViewModel/>
+  </FrameworkElement.DataContext>
+  <FrameworkElement.Resources>
+    <converters:AccentColorConverter x:Key="AccentColorConverter"/>
+    <converters:AccentNameConverter x:Key="AccentNameConverter"/>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="24"/>
+      <RowDefinition Height="36"/>
+      <RowDefinition Height="30"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Border Style="{StaticResource OverlayBorderStyle}" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3"/>
+    <Border Grid.Row="2" Style="{StaticResource UnderlayBorderStyle}" Grid.Column="0" Background="White"/>
+    <Border Grid.Row="2" Style="{StaticResource UnderlayBorderStyle}" Grid.Column="0"/>
+    <Border Grid.Row="3" Background="White"/>
+    <Grid Row="1" RowSpan="3">
+      <FrameworkElement.Resources>
+        <Style TargetType="{x:Type controls:MetroTabControl}"
+               BasedOn="{StaticResource MainNavigationTabControlStyle}"/>
+        <Style TargetType="{x:Type controls:MetroTabItem}" BasedOn="{StaticResource MainNavigationTabItemStyle}"/>
+        <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
+          <Setter Property="FrameworkElement.Margin" Value="0,5,0,0"/>
+          <Setter Property="Control.FontSize" Value="11"/>
+          <Setter Property="Control.Foreground" Value="{DynamicResource GrayBrush1}"/>
+        </Style>
+      </FrameworkElement.Resources>
+      <controls:MetroTabControl Margin="0,0,0,0" controls:TabControlHelper.IsUnderlined="true" Background="{x:Null}">
+        <controls:MetroTabItem Header="PREFERENCES">
+          <Grid>
+            <FrameworkElement.Resources>
+              <Style TargetType="{x:Type controls:MetroTabItem}"
+                     BasedOn="{StaticResource MainNavigationChildTabItemStyle}"/>
+            </FrameworkElement.Resources>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="30"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <controls:MetroTabControl Grid.Column="0" Margin="10,0,0,0" Grid.RowSpan="2">
+              <controls:MetroTabItem Header="GENERAL">
+                <ScrollViewer Style="{StaticResource DescriptionScrollviewerStyle}">
+                  <Grid Margin="10,1,10,0">
+                    <StackPanel Margin="0,5,0,20">
+                      <TextBlock Text="Note: some of the settings that are not implemented fully are disabled in this version"
+                                 Margin="0,5,0,0" Visibility="Collapsed" Style="{StaticResource PreviewNoteTextBlockStyle}"/>
+                      <TextBlock Text="STARTUP" Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0,5,0,0"/>
+                      <TextBlock Text="These operations will run during the splash screen or when the application is loaded."
+                                 Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+                      <CheckBox Content="CHECK FOR APPLICATION UPDATES"
+                                IsChecked="{Binding StartupCheckForUpdates, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      <CheckBox Content="INCLUDE FILES IN CUSTOM FOLDER"
+                                IsChecked="{Binding StartupLoadCustomFiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      <CheckBox Content="VALIDATE CUSTOM FILES" IsChecked="False" Margin="20,5,0,0" IsEnabled="false"
+                                Visibility="Collapsed"/>
+                      <CheckBox Content="CHECK FOR UPDATES FOR CUSTOM FILES" IsEnabled="false" Margin="20,5,0,0"/>
+                      <CheckBox Content="AUTOMATICALLY START WHEN ELEMENTS ARE LOADED" IsChecked="True" IsEnabled="false"
+                                Visibility="Collapsed"/>
+                      <CheckBox Content="STOP LOADING ON DUPLICATED ELEMENTS FOUND" IsChecked="False" IsEnabled="false"
+                                Visibility="Collapsed"/>
+                      <TextBlock Text="APPLICATION FILES" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                      <TextBlock Text="The place where files used by the application are stored on your local machine."
+                                 Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+                      <TextBlock Text="CUSTOM ELEMENTS FOLDER" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <Grid IsEnabled="false">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*"/>
+                          <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="\Documents\5e Character Builder\custom"/>
+                        <Button Content="" FontFamily="Segoe UI Symbol" Style="{StaticResource MetroFlatButton}" Height="26"
+                                Grid.Column="1" Margin="10,0,0,0"/>
+                      </Grid>
+                      <TextBlock Text="PORTRAITS FOLDER" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <Grid IsEnabled="false">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*"/>
+                          <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="\Documents\5e Character Builder\portraits"/>
+                        <Button Content="" FontFamily="Segoe UI Symbol" Style="{StaticResource MetroFlatButton}" Height="26"
+                                Grid.Column="1" Margin="10,0,0,0"/>
+                      </Grid>
+                      <TextBlock Text="APPLICATION" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                      <TextBlock Text="SELECTION OPTION CONTENT SIZE" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <ComboBox ItemsSource="{Binding SelectionExpanderItemsSize}"
+                                SelectedItem="{Binding SelectedSelectionExpanderItemsSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                  </Grid>
+                </ScrollViewer>
+              </controls:MetroTabItem>
+              <controls:MetroTabItem Header="APPEARANCE">
+                <ScrollViewer Style="{StaticResource DescriptionScrollviewerStyle}">
+                  <Grid Margin="10,1,10,0">
+                    <StackPanel Margin="0,0,0,20">
+                      <TextBlock Text="THEME" Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0,10,0,0"/>
+                      <TextBlock Text="Alter the appearance of the application."
+                                 Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+                      <TextBlock Text="ACCENT COLOR" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <ListView BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="-3,0,0,15" ItemsSource="{Binding Accents}"
+                                SelectedItem="{Binding SelectedAccent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                        <ItemsControl.ItemContainerStyle>
+                          <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource {x:Type ListViewItem}}">
+                            <Setter Property="FrameworkElement.Margin" Value="0"/>
+                            <Setter Property="Control.Padding" Value="0"/>
+                          </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <WrapPanel/>
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Grid Width="50" Height="50" Margin="3"
+                                  Background="{Binding Converter={StaticResource AccentColorConverter}}"/>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ListView>
+                      <TextBlock Style="{StaticResource FieldHeaderTextBlockStyle}"
+                                 Text="{Binding CharactersCollectionSize, StringFormat='CHARACTER COLLECTION POTRAIT SIZE ({0}px)'}"/>
+                      <Slider Minimum="125" Maximum="175" SmallChange="5" LargeChange="25" TickFrequency="5"
+                              TickPlacement="TopLeft" IsSnapToTickEnabled="true" Margin="0,5,0,10"
+                              Value="{Binding CharactersCollectionSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      <TextBlock Text="CHARACTER PANEL" Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0,10,0,0"/>
+                      <TextBlock Text="Set the default behaviour of the character panel sections."
+                                 Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+                      <TextBlock Text="CHARACTER PANEL DEFAULT STATE" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <CheckBox Content="SAVING THROWS EXPANDED"
+                                IsChecked="{Binding CharacterPanelSavingThrowsIsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      <CheckBox Content="SKILLS EXPANDED"
+                                IsChecked="{Binding CharacterPanelSkillsIsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                  </Grid>
+                </ScrollViewer>
+              </controls:MetroTabItem>
+              <controls:MetroTabItem Header="CHARACTER">
+                <ScrollViewer Style="{StaticResource DescriptionScrollviewerStyle}">
+                  <Grid Margin="10,1,10,0">
+                    <StackPanel Margin="0,5,0,20">
+                      <TextBlock Text="CHARACTER GENERATION OPTIONS" Style="{StaticResource SectionHeaderTextBlockStyle}"
+                                 Margin="0,5,0,0"/>
+                      <TextBlock Text="All preferences below will be used as the default when creating new characters. These can be customized individually for each character."
+                                 Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+                      <CheckBox Content="PROMT OPTIONS WHEN CREATING NEW CHARACTER" IsChecked="False" Margin="0,5,0,10"
+                                IsEnabled="false"/>
+                      <CheckBox Content="USE AVERAGE HIT POINTS" IsChecked="True" Margin="0,5,0,0" IsEnabled="false"/>
+                      <CheckBox Content="ALLOW FEATS" IsChecked="True" Margin="0,5,0,10" IsEnabled="false"/>
+                      <TextBlock Text="ABILITY SCORE GENERATION OPTION" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <ComboBox ItemsSource="{Binding AbilitiesGenerationSelectionItems}"
+                                SelectedItem="{Binding SelectedAbilityGenerateOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      <TextBlock Text="CHARACTER SHEET" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                      <TextBlock Text="Define how your character sheets will look like by default."
+                                 Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+                      <TextBlock Text="SHEET VERSION" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <ComboBox SelectedIndex="0" IsEnabled="false">
+                        <ComboBoxItem>
+                          Wizards of the Coast
+                        </ComboBoxItem>
+                        <ComboBoxItem>
+                          Alternative Sheet (PREVIEW)
+                        </ComboBoxItem>
+                      </ComboBox>
+                      <TextBlock Text="DEFAULT FONT SIZE" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <ComboBox SelectedItem="{Binding DefaultFontSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                ItemsSource="{Binding FontSizeCollection}"/>
+                      <TextBlock Text="DEFAULT PLAYER NAME" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <TextBox Text="{Binding DefaultPlayerName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      <CheckBox Content="INCLUDE SPELLCARDS"
+                                IsChecked="{Binding IncludeSpellcards, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                  </Grid>
+                </ScrollViewer>
+              </controls:MetroTabItem>
+              <controls:MetroTabItem Header="CHARACTER SHEET" Visibility="Collapsed">
+                <ScrollViewer>
+                  <Grid Margin="10,0,10,0">
+                    <StackPanel Margin="0,0,0,10">
+                      <TextBlock Text="CHARACTER SHEET" Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0,10,0,0"/>
+                      <TextBlock Text="SHEET VERESION" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <ComboBox SelectedIndex="0" IsEnabled="false">
+                        <ComboBoxItem>
+                          Wizards of the Coast
+                        </ComboBoxItem>
+                        <ComboBoxItem>
+                          Character Builder Sheet (NOT AVAILABLE)
+                        </ComboBoxItem>
+                      </ComboBox>
+                      <TextBlock Text="DEFAULT PLAYER NAME" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <TextBox Text="{Binding DefaultPlayerName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      <TextBlock Text="IN PREVIEW" Style="{StaticResource SectionHeaderTextBlockStyle}"
+                                 Foreground="{DynamicResource ContrastColorBrush}"/>
+                      <CheckBox Content="INCLUDE SPELLCARDS"
+                                IsChecked="{Binding IncludeSpellcards, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                  </Grid>
+                </ScrollViewer>
+              </controls:MetroTabItem>
+              <controls:MetroTabItem Header="CHARACTER SHEET" Visibility="Collapsed">
+                <ScrollViewer>
+                  <Grid Margin="10,0">
+                    <StackPanel>
+                      <TextBlock Text="CHARACTER SHEET OPTION" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <ComboBox SelectedIndex="0">
+                        <ComboBoxItem>
+                          Wizards of the Coast
+                        </ComboBoxItem>
+                        <ComboBoxItem>
+                          Character Builder Sheet (NOT AVAILABLE)
+                        </ComboBoxItem>
+                      </ComboBox>
+                      <TextBlock Text="CHARACTER DETAILS" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                      <TextBlock Text="DEFAULT PLAYER NAME" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+                      <TextBox Text="{Binding DefaultPlayerName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      <TextBlock Text="IN PREVIEW" Style="{StaticResource SectionHeaderTextBlockStyle}"
+                                 Foreground="{DynamicResource ContrastColorBrush}"/>
+                      <CheckBox Content="INCLUDE SPELLCARDS" FontSize="11" Margin="0,10,0,0"
+                                IsChecked="{Binding IncludeSpellcards, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                  </Grid>
+                </ScrollViewer>
+              </controls:MetroTabItem>
+              <controls:MetroTabItem Header="ACCENT SAMPLE" Visibility="Collapsed">
+                <ScrollViewer>
+                  <Grid Margin="10,0,10,0">
+                    <StackPanel Margin="0,10,0,10">
+                      <Border Background="{DynamicResource HighlightBrush}" Height="83">
+                        <TextBlock Text="A Message In Contrast" Foreground="{DynamicResource ContrastColorBrush}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="12"/>
+                      </Border>
+                      <Border Background="{DynamicResource AccentColorBrush}" Height="83">
+                        <TextBlock Text="A Message In Contrast" Foreground="{DynamicResource ContrastColorBrush}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="12"/>
+                      </Border>
+                      <Border Background="{DynamicResource AccentColorBrush2}" Height="83">
+                        <TextBlock Text="A Message In Contrast" Foreground="{DynamicResource ContrastColorBrush}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="12"/>
+                      </Border>
+                      <Border Background="{DynamicResource AccentColorBrush3}" Height="83">
+                        <TextBlock Text="A Message In Contrast" Foreground="{DynamicResource ContrastColorBrush}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="12"/>
+                      </Border>
+                      <Border Background="{DynamicResource AccentColorBrush4}" Height="83">
+                        <TextBlock Text="A Message In Contrast" Foreground="{DynamicResource ContrastColorBrush}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="12"/>
+                      </Border>
+                    </StackPanel>
+                  </Grid>
+                </ScrollViewer>
+              </controls:MetroTabItem>
+            </controls:MetroTabControl>
+          </Grid>
+        </controls:MetroTabItem>
+        <controls:MetroTabItem Header="ABOUT">
+          <Grid>
+            <FrameworkElement.Resources>
+              <Style TargetType="{x:Type controls:MetroTabItem}"
+                     BasedOn="{StaticResource MainNavigationChildTabItemStyle}"/>
+            </FrameworkElement.Resources>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="30"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <controls:MetroTabControl Grid.Column="0" Margin="11,0,0,0" Grid.RowSpan="2">
+              <controls:MetroTabItem Header="AURORA BUILDER">
+                <Grid>
+                  <StackPanel>
+                    <TextBlock Text="The Aurora Builder is a free tool that lets you create characters for your dungeons and dragons game using the bundled content, your own content, and content created by others."
+                               Style="{StaticResource FlavorDescriptionTextBlockStyle}" Margin="10,10,10,0"/>
+                  </StackPanel>
+                  <StackPanel VerticalAlignment="Bottom">
+                    <TextBlock Text="PREVIEW VERSION:" Style="{StaticResource FieldHeaderTextBlockStyle}" Margin="10,10,10,0"/>
+                    <TextBlock Style="{StaticResource FlavorDescriptionTextBlockStyle}" Margin="10,0,10,20" FontSize="12"
+                               Text="{Binding Version, StringFormat={0}}"/>
+                    <TextBlock Text="© 2017 Bas Driessen. All Rights Reserved."
+                               Style="{StaticResource FlavorDescriptionTextBlockStyle}" Margin="10,0,10,0" FontSize="12"/>
+                    <TextBlock Text="http://www.dndbuilder.net" Style="{StaticResource FlavorDescriptionTextBlockStyle}"
+                               Margin="10,5,10,20" FontSize="12"/>
+                  </StackPanel>
+                </Grid>
+              </controls:MetroTabItem>
+              <controls:MetroTabItem Header="LICENCE">
+                <Grid Margin="0,1,0,0">
+                  <ScrollViewer Style="{StaticResource DescriptionScrollviewerStyle}">
+                    <wpf:HtmlPanel Margin="0,0,0,0" IsSelectionEnabled="false" IsContextMenuEnabled="false"
+                                   BaseStylesheet="{Binding StyleSheet}" Text="{Binding OpenGamingLicence}"/>
+                  </ScrollViewer>
+                </Grid>
+              </controls:MetroTabItem>
+            </controls:MetroTabControl>
+          </Grid>
+        </controls:MetroTabItem>
+      </controls:MetroTabControl>
+    </Grid>
+    <Border Style="{StaticResource OverlayBorderStyle}" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="1"
+            BorderThickness="0,0,0,2"/>
+    <Border Grid.Row="4" BorderThickness="0,0,0,0" Background="White"
+            BorderBrush="{DynamicResource ContrastColorBrush}">
+      <Grid Background="{DynamicResource HighlightBrush}">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0">
+          <Button Content="DEFAULTS" Margin="10,10,10,10" Style="{StaticResource MetroFlatButton}" FontSize="11"
+                  MinWidth="60" Command="{Binding SetDefaultsSettingsCommand}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0">
+          <Button Content="APPLY" Margin="0,10,10,10" Style="{StaticResource MetroFlatButton}" FontSize="11"
+                  MinWidth="60" Command="{Binding ApplySettingsCommand}"/>
+          <Button Content="SAVE" Margin="0,10,10,10" Style="{StaticResource MetroFlatButton}" FontSize="11"
+                  MinWidth="60" Command="{Binding SaveSettingsCommand}"/>
+          <Button Content="CANCEL" IsCancel="true" Margin="0,10,10,10" Style="{StaticResource MetroFlatButton}"
+                  FontSize="11" MinWidth="60" Command="{Binding CancelSettingsCommand}"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</controls:MetroWindow>

@@ -1,0 +1,51 @@
+<UserControl x:Class="Builder.Presentation.UserControls.ExpanderContent"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel Margin="30" HorizontalAlignment="Center" VerticalAlignment="Center" Width="500">
+      <TextBlock Text="You character doesn't have any selections available here. This area will be populated as soon as your character build allows for a selection."
+                 TextAlignment="Center" FontFamily="Segoe UI SemiBold" LineHeight="20"
+                 Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}" FontSize="14" Opacity="1"
+                 Style="{StaticResource FlavorDescriptionTextBlockStyle}"
+                 Visibility="{Binding HasExpanders, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+    </StackPanel>
+    <ScrollViewer Style="{StaticResource DescriptionScrollviewerStyle}">
+      <ItemsControl Margin="10,20" ItemsSource="{Binding Expanders}"/>
+    </ScrollViewer>
+    <Expander Grid.Row="2" Header="EXPANDERS DEBUG INFO" Style="{StaticResource WhiteExpanderStyle}"
+              Margin="10,0" IsExpanded="false"
+              Visibility="{Binding IsInDebugMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+      <ListView BorderThickness="0" Margin="3,0,3,0" MaxHeight="250" ItemsSource="{Binding Expanders}"
+                SelectedItem="{Binding SelectedExpander, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+        <ItemsControl.ItemContainerStyle>
+          <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource {x:Type ListViewItem}}">
+            <Setter Property="FrameworkElement.Margin" Value="0"/>
+          </Style>
+        </ItemsControl.ItemContainerStyle>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <TextBlock FontSize="10" Text="{Binding SelectionRule}"/>
+              <TextBlock Grid.Column="1" FontSize="11" Margin="20,0,0,0"
+                         Text="{Binding SelectionRule.Attributes.RequiredLevel}"/>
+              <TextBlock Grid.Column="2" FontSize="11" Text="{Binding SelectionRule.Attributes.Supports}"/>
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ListView>
+    </Expander>
+  </Grid>
+</UserControl>

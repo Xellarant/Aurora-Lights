@@ -1,0 +1,92 @@
+<UserControl x:Class="Builder.Presentation.UserControls.SpellCompendiumContent"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Builder.Presentation.UserControls"
+             xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:content="clr-namespace:Builder.Presentation.ViewModels.Content"
+             Background="White">
+  <FrameworkElement.DataContext>
+    <content:SpellCompendiumContentViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <TextBlock Text="Search the compendium for any spell from any source including custom spells."
+               Style="{StaticResource FlavorDescriptionTextBlockStyle}"/>
+    <Grid Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="10"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="10"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="10"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <StackPanel Grid.Column="0">
+        <TextBlock Text="SPELL LEVEL" FontSize="10" Foreground="{DynamicResource GrayBrush2}" Margin="0,10,0,5"/>
+        <ComboBox ItemsSource="{Binding Levels}"
+                  SelectedItem="{Binding SelectedLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      </StackPanel>
+      <StackPanel Grid.Column="2">
+        <TextBlock Text="SPELL SCHOOL" FontSize="10" Foreground="{DynamicResource GrayBrush2}" Margin="0,10,0,5"/>
+        <ComboBox ItemsSource="{Binding Schools}"
+                  SelectedItem="{Binding SelectedSchool, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      </StackPanel>
+      <StackPanel Grid.Column="4">
+        <TextBlock Text="CLASS" FontSize="10" Foreground="{DynamicResource GrayBrush2}" Margin="0,10,0,5"/>
+        <ComboBox ItemsSource="{Binding Classes}"
+                  SelectedItem="{Binding SelectedClass, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      </StackPanel>
+      <StackPanel Grid.Column="6">
+        <TextBlock Text="SOURCE" FontSize="10" Foreground="{DynamicResource GrayBrush2}" Margin="0,10,0,5"/>
+        <ComboBox ItemsSource="{Binding Sources}"
+                  SelectedItem="{Binding SelectedSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      </StackPanel>
+    </Grid>
+    <StackPanel Grid.Row="2" Margin="0,0,0,0">
+      <TextBlock Text="NAME FILTER" FontSize="10" Foreground="{DynamicResource GrayBrush2}" Margin="0,10,0,5"/>
+      <TextBox Margin="0,0,0,5" controls:TextBoxHelper.Watermark="Search"
+               controls:TextBoxHelper.UseFloatingWatermark="true"
+               Text="{Binding FilterName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Content="RESET" Margin="0,0,10,0" Style="{StaticResource ChromelessButtonStyle}" FontSize="11"
+                Command="{Binding ResetCommand}"/>
+        <Button Content="FILTER" Margin="0,0,0,0" Style="{StaticResource ChromelessButtonStyle}" FontSize="11"
+                Command="{Binding FilterCommand}"/>
+      </StackPanel>
+    </StackPanel>
+    <ListView Grid.Row="3" BorderThickness="0" Margin="0,10,0,0" ItemsSource="{Binding FilteredSpellElements}"
+              SelectedItem="{Binding SelectedSpell}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <FrameworkElement.Resources>
+              <Style TargetType="{x:Type TextBlock}">
+                <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+                <Setter Property="FrameworkElement.Margin" Value="10,0,10,0"/>
+              </Style>
+            </FrameworkElement.Resources>
+            <TextBlock Text="{Binding Name}"/>
+            <TextBlock Grid.Column="1" Text="{Binding Underline}"/>
+            <TextBlock Grid.Column="2" HorizontalAlignment="Right" Text="{Binding Source}"/>
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ListView>
+  </Grid>
+</UserControl>

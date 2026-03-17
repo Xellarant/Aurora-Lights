@@ -1,0 +1,29 @@
+<UserControl x:Class="Builder.Presentation.UserControls.SpellsPanelContent"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:Builder.Presentation.Converters"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:mui="http://firstfloorsoftware.com/ModernUI"
+             xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+             xmlns:content="clr-namespace:Builder.Presentation.ViewModels.Content"
+             xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls">
+  <Grid Margin="0,0,0,0">
+    <FrameworkElement.DataContext>
+      <content:SpellsPanelContentViewModel/>
+    </FrameworkElement.DataContext>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel Margin="0,0,0,1">
+      <TextBlock TextWrapping="Wrap" FontSize="11" FontWeight="Normal" FontStyle="Italic" Margin="5,3"
+                 Text="{Binding DisplayCantrips}"/>
+    </StackPanel>
+    <StackPanel Grid.Row="1">
+      <TextBlock TextWrapping="Wrap" FontSize="11" FontWeight="Normal" FontStyle="Italic" Margin="5,3"
+                 Text="{Binding DisplaySpells}"/>
+    </StackPanel>
+  </Grid>
+</UserControl>

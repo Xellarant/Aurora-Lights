@@ -1,0 +1,68 @@
+<mah:MetroWindow x:Class="Builder.Presentation.Views.Content.Manage.CreateAttackWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:local="clr-namespace:Builder.Presentation.Views.Content.Manage"
+                 xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+                 xmlns:controls="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+                 ResizeMode="NoResize" Style="{StaticResource IconlessCharacterBuilderWindowStyle}"
+                 TitleTemplate="{StaticResource IconlessCharacterBuilderWindowTitleDataTemplate}"
+                 WindowStartupLocation="CenterScreen" Title="Attack" MinHeight="200" Height="559" Width="400"
+                 MinWidth="400">
+  <Grid Background="{DynamicResource WhiteBrush}" Margin="0,2,0,0">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="2*"/>
+      <ColumnDefinition Width="1*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="12,12,12,0">
+        <TextBlock Text="ATTACK DETAILS" Style="{StaticResource SectionPrimaryTextBlockStyle}"/>
+        <TextBlock Text="Details for the attack entry on the character sheet."
+                   Style="{StaticResource SectionSecondaryTextBlockStyle}"/>
+        <userControls:FillableFieldTextBox Header="Name" DataContext="{Binding Name}" DisplayValidation="{Binding IsAutomaticAddition}"/>
+        <userControls:FillableFieldTextBox Header="Range" DataContext="{Binding Range}" DisplayValidation="{Binding IsAutomaticAddition}"/>
+        <userControls:FillableFieldTextBox Header="Attack Bonus" DataContext="{Binding Attack}"
+                                           DisplayValidation="{Binding IsAutomaticAddition}"/>
+        <TextBlock Foreground="{DynamicResource SuccessColorBrush}" Style="{StaticResource FieldHeaderTextBlockStyle}"
+                   Margin="0,0,0,0"
+                   Text="{Binding DisplayCalculatedAttack, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <userControls:FillableFieldTextBox Header="Damage" DataContext="{Binding Damage}" DisplayValidation="{Binding IsAutomaticAddition}"/>
+        <TextBlock Foreground="{DynamicResource SuccessColorBrush}" Style="{StaticResource FieldHeaderTextBlockStyle}"
+                   Margin="0,0,0,0"
+                   Text="{Binding DisplayCalculatedDamage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <userControls:FillableFieldTextBox Header="Short Description" MinContentHeight="78" DataContext="{Binding Description}"
+                                           DisplayValidation="{Binding IsAutomaticAddition}"/>
+        <TextBlock Text="Limited to a single line under the attack details in the combat section" FontSize="10"
+                   Style="{StaticResource SectionSecondaryTextBlockStyle}" Margin="0,0,0,10"/>
+        <StackPanel Grid.Row="1" Grid.Column="2"
+                    Visibility="{Binding IsAutomaticAddition, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <TextBlock Text="ABILITY (AUTOMATIC CALCULATION)" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+          <ComboBox SelectedItem="{Binding LinkedAbility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    ItemsSource="{Binding Abilities}"/>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+    <Border Grid.Row="2" BorderBrush="{DynamicResource LightColor1Brush}" BorderThickness="0,1,0,0"
+            Grid.ColumnSpan="2" Grid.Column="0">
+      <Grid>
+        <StackPanel Orientation="Horizontal" Margin="2,0,0,0">
+          <CheckBox Margin="10" Content="DISPLAY IN COMBAT SECTION" FontWeight="SemiBold"
+                    Foreground="{StaticResource DarkColor4Brush}"
+                    IsChecked="{Binding IsDisplayed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+          <CheckBox Margin="10" Content="CARD" FontWeight="SemiBold" Foreground="{StaticResource DarkColor4Brush}"
+                    IsChecked="{Binding IsDisplayedAsCard, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Right" Margin="12">
+          <controls:CommandButton Content="OK" MinWidth="80" IsDefault="true"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</mah:MetroWindow>

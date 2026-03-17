@@ -1,0 +1,29 @@
+<UserControl x:Class="Builder.Presentation.UserControls.FillableFieldTextBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Builder.Presentation.UserControls"
+             xmlns:newFolder1="clr-namespace:Builder.Presentation.Models.NewFolder1"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             x:Name="Main">
+  <StackPanel>
+    <Grid>
+      <StackPanel Orientation="Horizontal">
+        <TextBlock Style="{StaticResource FieldHeaderTextBlockStyle}"
+                   Text="{Binding ElementName=Main, Path=Header, Converter={StaticResource UpperCaseConverter}, FallbackValue=HEADER}"/>
+        <Grid Visibility="{Binding ElementName=Main, Path=DisplayValidation, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <iconPacks:PackIconFontAwesome Kind="CheckSolid" Margin="5,9,5,3" Padding="0,0" VerticalAlignment="Bottom"
+                                         Background="{DynamicResource TransparentWhiteBrush}"
+                                         ToolTip="The change you made here overrides the value set automatically. You can clear (double click me) the field to restore the original value."
+                                         Foreground="{DynamicResource SuccessColorBrush}"
+                                         Visibility="{Binding IsUserInput, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        </Grid>
+      </StackPanel>
+    </Grid>
+    <TextBox TextWrapping="Wrap" AcceptsReturn="true" TextBlock.LineHeight="17"
+             TextBlock.LineStackingStrategy="BlockLineHeight"
+             Text="{Binding Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+             MinHeight="{Binding ElementName=Main, Path=MinContentHeight, FallbackValue=28}"/>
+  </StackPanel>
+</UserControl>

@@ -1,0 +1,147 @@
+<controls:MetroWindow x:Class="Builder.Presentation.Views.Splash"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+                      xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                      xmlns:controls1="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+                      Closing="MetroWindow_Closing" Loaded="MetroWindow_Loaded" ResizeMode="NoResize" Width="650"
+                      Height="350" MinWidth="650" MinHeight="300" Title="" Background="#151515"
+                      Style="{StaticResource CharacterBuilderWindowStyle}"
+                      TitleTemplate="{StaticResource WindowTitleTemplate}" ShowIconOnTitleBar="false"
+                      UseLayoutRounding="true" WindowStartupLocation="CenterScreen">
+  <FrameworkElement.DataContext>
+    <viewModels:LauncherWindowViewModel/>
+  </FrameworkElement.DataContext>
+  <controls:MetroWindow.RightWindowCommands>
+    <controls:WindowCommands ShowSeparators="false" Foreground="{StaticResource WhiteBrush}">
+      <Button Click="ShowDiagnosticsWindow" x:Name="BtnDiagnosticsWindow" ToolTip="Diagnostics" Margin="0,0,20,0"
+              Visibility="Collapsed">
+        <iconPacks:PackIconFontAwesome Kind="HeartbeatSolid" Width="14" Height="14" Foreground="Crimson"/>
+      </Button>
+    </controls:WindowCommands>
+  </controls:MetroWindow.RightWindowCommands>
+  <Grid Margin="0">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="6"/>
+    </Grid.RowDefinitions>
+    <FrameworkElement.Resources>
+      <Style x:Key="HeaderStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="TextBlock.FontSize" Value="36"/>
+        <Setter Property="TextBlock.FontFamily" Value="Segoe UI SemiBold"/>
+        <Setter Property="TextBlock.TextWrapping" Value="Wrap"/>
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush6}"/>
+      </Style>
+      <Style x:Key="DefaultInformationStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="TextBlock.FontSize" Value="14"/>
+        <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
+        <Setter Property="TextBlock.TextWrapping" Value="Wrap"/>
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource IdealForegroundDisabledBrush}"/>
+      </Style>
+      <Style x:Key="VersionTextBlockStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="TextBlock.FontSize" Value="12"/>
+        <Setter Property="TextBlock.FontFamily" Value="Segoe UI"/>
+        <Setter Property="TextBlock.TextWrapping" Value="Wrap"/>
+        <Setter Property="FrameworkElement.HorizontalAlignment" Value="Center"/>
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource DangerColorBrush}"/>
+      </Style>
+    </FrameworkElement.Resources>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Image x:Name="BackgroundThemeImage" Source="../Resources/assets/xmas.jpg" Visibility="Collapsed"
+           Stretch="UniformToFill" Grid.ColumnSpan="2" IsHitTestVisible="false" Focusable="false"
+           Grid.RowSpan="6" Margin="0,-30,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+           Opacity="1"/>
+    <Image x:Name="SplashImage" Source="../Resources/assets/splash/eberron-underground.jpg"
+           Stretch="UniformToFill" Margin="-255,-60,-5,-5" HorizontalAlignment="Center"
+           VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" IsHitTestVisible="false"
+           RenderOptions.BitmapScalingMode="HighQuality" RenderOptions.EdgeMode="Unspecified" Grid.Column="0"
+           Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="6" Opacity="1">
+      <UIElement.RenderTransform>
+        <TransformGroup>
+          <TranslateTransform X="0" Y="0"/>
+        </TransformGroup>
+      </UIElement.RenderTransform>
+    </Image>
+    <Image x:Name="SplashImageUpperRight" Source="../Resources/assets/start/ur.png" Stretch="Uniform"
+           Margin="-5,-30,-5,30" HorizontalAlignment="Right" VerticalAlignment="Top"
+           RenderTransformOrigin="0.5,0.5" Visibility="Collapsed" IsHitTestVisible="false"
+           RenderOptions.BitmapScalingMode="HighQuality" RenderOptions.EdgeMode="Unspecified" Grid.Column="0"
+           Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="6" Opacity=".75"/>
+    <StackPanel Orientation="Vertical" Margin="50,25,0,0" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0"
+                HorizontalAlignment="Left" VerticalAlignment="Top">
+      <Image x:Name="SplashLogo" Source="../Resources/assets/logo.png" Stretch="None" Margin="0,0,0,0"
+             Opacity="1" RenderOptions.BitmapScalingMode="HighQuality" Visibility="Collapsed"
+             RenderOptions.EdgeMode="Unspecified" RenderTransformOrigin="0.5,0.5">
+        <UIElement.Effect>
+          <DropShadowEffect BlurRadius="15" Color="#151516" Opacity="1" RenderingBias="Quality" ShadowDepth="0" Direction="90"/>
+        </UIElement.Effect>
+      </Image>
+      <TextBlock Text="A U R O R A" Foreground="#fff" Margin="0,0,0,00" Visibility="Collapsed" Opacity="1"
+                 FontSize="48"
+                 FontFamily="pack://application:,,,/resources/fonts/nodesto.otf#Nodesto Caps Condensed"
+                 HorizontalAlignment="Center"/>
+      <TextBlock Opacity=".8" Visibility="Collapsed"
+                 Text="A CHARACTER BUILDER FOR DUNGEONS &amp; DRAGONS 5TH EDITION" Foreground="#fff" FontSize="14"
+                 FontFamily="pack://application:,,,/resources/fonts/nodesto.otf#Nodesto Caps Condensed"
+                 HorizontalAlignment="Center"/>
+    </StackPanel>
+    <Image x:Name="ThemeLogo" Source="../Resources/assets/splash/logo/logo-norse.png" Stretch="None"
+           Margin="30,0,30,20" Opacity="1" UseLayoutRounding="true" SnapsToDevicePixels="false"
+           Visibility="Collapsed" RenderOptions.BitmapScalingMode="HighQuality"
+           RenderOptions.EdgeMode="Unspecified" VerticalAlignment="Center" HorizontalAlignment="Center"
+           RenderTransformOrigin="0.5,0.5" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2"/>
+    <StackPanel Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" VerticalAlignment="Center"
+                HorizontalAlignment="Center" Opacity="1" Margin="30,-0,30,24">
+      <TextBlock Text="A  U  R  O  R  A" Foreground="#fff" Margin="0,0,0,00" Opacity="1" FontSize="56"
+                 FontFamily="pack://application:,,,/resources/fonts/nodesto.otf#Nodesto Caps Condensed"
+                 HorizontalAlignment="Center">
+        <UIElement.Effect>
+          <DropShadowEffect BlurRadius="15" Color="#000" Opacity=".75" RenderingBias="Quality" ShadowDepth="0" Direction="90"/>
+        </UIElement.Effect>
+      </TextBlock>
+      <TextBlock Opacity=".8" Text="a CHARACTER BUILDER for DUNGEONS and DRAGONS 5e" Foreground="#fff" FontSize="16"
+                 FontFamily="pack://application:,,,/resources/fonts/nodesto.otf#Nodesto Caps Condensed"
+                 HorizontalAlignment="Center">
+        <UIElement.Effect>
+          <DropShadowEffect BlurRadius="15" Color="#000" Opacity=".75" RenderingBias="Quality" ShadowDepth="0" Direction="90"/>
+        </UIElement.Effect>
+      </TextBlock>
+    </StackPanel>
+    <controls1:CommandButton Click="LaunchClick" x:Name="LaunchButton" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2"
+                             Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,40"
+                             CommandText="CONTINUE TO AURORA" Style="{StaticResource ClearCommandButtonStyle}" Padding="8,1"
+                             Visibility="Collapsed"/>
+    <StackPanel Grid.Row="4" Margin="5,0,5,5" Grid.ColumnSpan="2" Grid.Column="0" HorizontalAlignment="Left">
+      <TextBlock Style="{StaticResource DefaultInformationStyle}" FontSize="10" TextWrapping="Wrap"
+                 Foreground="#bbb" Margin="0,0"
+                 Text="{Binding ProgressMessage, Converter={StaticResource UpperCaseConverter}, StringFormat={0}}">
+        <UIElement.Effect>
+          <DropShadowEffect BlurRadius="15" Color="#000" Opacity=".5" RenderingBias="Quality" ShadowDepth="0" Direction="90"/>
+        </UIElement.Effect>
+      </TextBlock>
+    </StackPanel>
+    <StackPanel Grid.Row="4" Margin="5,0,5,5" Grid.ColumnSpan="2" Grid.Column="0" Orientation="Horizontal"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom">
+      <TextBlock Opacity="1" Text="© 2020 BAS DRIESSEN. ALL RIGHTS RESERVED"
+                 Style="{StaticResource DefaultInformationStyle}" Foreground="#bbb" FontSize="10"
+                 TextWrapping="NoWrap" Margin="0,0,0,0">
+        <UIElement.Effect>
+          <DropShadowEffect BlurRadius="15" Color="#000" Opacity=".5" RenderingBias="Quality" ShadowDepth="0" Direction="90"/>
+        </UIElement.Effect>
+      </TextBlock>
+    </StackPanel>
+    <controls:MetroProgressBar Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,1,0,0"
+                               Foreground="{DynamicResource GrayBrush9}" SnapsToDevicePixels="true"
+                               Value="{Binding ProgressPercentage}"/>
+  </Grid>
+</controls:MetroWindow>

@@ -1,0 +1,318 @@
+<controls:Flyout x:Class="Builder.Presentation.Views.Sliders.CharacterInformationSlider"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:shell="clr-namespace:Builder.Presentation.ViewModels.Shell"
+                 xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+                 xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                 xmlns:sliders="clr-namespace:Builder.Presentation.Views.Sliders"
+                 xmlns:controls1="clr-namespace:Builder.Presentation.Controls"
+                 xmlns:aurora="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+                 xmlns:converters="clr-namespace:Builder.Presentation.Converters"
+                 xmlns:content="clr-namespace:Builder.Presentation.ViewModels.Content"
+                 MinWidth="400" Width="400" MaxWidth="450" CloseButtonVisibility="Collapsed"
+                 TitleVisibility="Collapsed" Position="Right" Margin="0,0,0,0" IsPinned="false"
+                 IsAutoCloseEnabled="false" Theme="Light" IsModal="true" Background="#151516">
+  <FrameworkElement.Resources>
+    <Style x:Key="DefaultTextBlockStyle" TargetType="{x:Type TextBlock}">
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush6}"/>
+      <Setter Property="TextBlock.FontWeight" Value="Normal"/>
+      <Setter Property="TextBlock.FontSize" Value="12"/>
+      <Setter Property="TextBlock.TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style x:Key="CharacterDetailsSlider.BuildTextBlockStyle" TargetType="{x:Type TextBlock}"
+           BasedOn="{StaticResource DefaultTextBlockStyle}">
+      <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+      <Setter Property="TextBlock.FontSize" Value="14"/>
+      <Setter Property="FrameworkElement.HorizontalAlignment" Value="Center"/>
+    </Style>
+    <converters:CompanionGalleryImageSourceConverter x:Key="CompanionGalleryImageSourceConverter"/>
+    <converters:SymbolGalleryImageSourceConverter x:Key="SymbolGalleryImageSourceConverter"/>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel Margin="20,20,20,0">
+      <controls1:SliderTitleBlock Foreground="{DynamicResource AuroraGoldColorBrush}"
+                                  Content="{Binding Character.Name, Converter={StaticResource UpperCaseConverter}}"
+                                  Visibility="{Binding CharacterInformationSliderViewModel.IsCharacterContext, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+      <controls1:SliderTitleBlock Foreground="{DynamicResource AuroraGoldColorBrush}"
+                                  Content="{Binding Character.Companion.CompanionName.Content, Converter={StaticResource UpperCaseConverter}}"
+                                  Visibility="{Binding CharacterInformationSliderViewModel.IsCompanionContext, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+      <userControls:ExperienceProgressBar FontSize="10" Foreground="{DynamicResource SuccessColorBrush}" Width="Auto" Margin="-5,5,-5,0"/>
+    </StackPanel>
+    <StackPanel Margin="20,0" Grid.Row="1">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <FrameworkElement.Resources>
+          <Style TargetType="{x:Type controls1:AuroraExpander}"
+                 BasedOn="{StaticResource {x:Type controls1:AuroraExpander}}">
+            <Setter Property="controls:ControlsHelper.HeaderFontSize" Value="10"/>
+            <Setter Property="Control.Background" Value="{DynamicResource GrayBrush9}"/>
+            <Setter Property="controls:GroupBoxHelper.HeaderForeground" Value="{DynamicResource HighlightBrush}"/>
+            <Setter Property="Control.BorderBrush" Value="{DynamicResource AccentColorBrush4}"/>
+            <Setter Property="Control.BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="controls:ControlsHelper.HeaderMargin" Value="0,1"/>
+          </Style>
+        </FrameworkElement.Resources>
+        <StackPanel>
+          <Grid HorizontalAlignment="Center" Margin="0,20,0,10">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <controls1:PortraitButton Click="CharacterPortraitButtonClick" PortaitSize="175" FontSize="26"
+                                      ImageSource="{Binding Character.PortraitFilename, Converter={StaticResource ImageSourceConverter}}"
+                                      Visibility="{Binding CharacterInformationSliderViewModel.IsCharacterContext, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            <controls1:PortraitButton Click="CompanionClicked" PortaitSize="175" FontSize="26"
+                                      ImageSource="{Binding Character.Companion.Portrait.Content, Converter={StaticResource CompanionGalleryImageSourceConverter}}"
+                                      Visibility="{Binding CharacterInformationSliderViewModel.IsCompanionContext, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            <StackPanel Margin="0,-15,-15,-15" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+              <controls1:PortraitButton Symbol="" PortraitScale="0.25" PortraitStretch="UniformToFill" HorizontalAlignment="Right"
+                                        PortaitSize="65" Margin="0,0,0,0" Grid.Column="1"
+                                        ImageSource="{Binding Character.Companion.Portrait.Content, Converter={StaticResource CompanionGalleryImageSourceConverter}}"
+                                        Visibility="{Binding CharacterManager.Status.HasCompanion, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        Command="{Binding CharacterInformationSliderViewModel.SwitchContextCommand}"/>
+            </StackPanel>
+            <StackPanel Margin="0,-15,-15,-15" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+              <controls1:PortraitButton Symbol="" PortraitScale="0.25" PortraitStretch="UniformToFill" HorizontalAlignment="Right"
+                                        PortaitSize="65" Margin="0,0,0,0" Grid.Column="1"
+                                        ImageSource="{Binding Character.PortraitFilename, Converter={StaticResource ImageSourceConverter}}"
+                                        Visibility="{Binding CharacterInformationSliderViewModel.IsCompanionContext, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        Command="{Binding CharacterInformationSliderViewModel.SwitchContextCommand}"/>
+            </StackPanel>
+          </Grid>
+          <controls1:AuroraPanel Margin="0,10,0,10" BorderThickness="0" Background="Transparent">
+            <StackPanel>
+              <StackPanel HorizontalAlignment="Center"
+                          Visibility="{Binding CharacterInformationSliderViewModel.IsCharacterContext, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Style="{StaticResource CharacterDetailsSlider.BuildTextBlockStyle}"
+                           Text="{Binding CharacterBuild, Converter={StaticResource UpperCaseConverter}}"
+                           Visibility="{Binding CharacterManager.Status.HasMulticlass, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+                <TextBlock Style="{StaticResource CharacterDetailsSlider.BuildTextBlockStyle}"
+                           Text="{Binding CharacterClassBuild, Converter={StaticResource UpperCaseConverter}}"
+                           Visibility="{Binding CharacterManager.Status.HasMulticlass, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
+                  <FrameworkElement.Resources>
+                    <Style TargetType="{x:Type TextBlock}"
+                           BasedOn="{StaticResource CharacterDetailsSlider.BuildTextBlockStyle}">
+                      <Setter Property="TextBlock.FontSize" Value="10"/>
+                      <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush2}"/>
+                    </Style>
+                  </FrameworkElement.Resources>
+                  <TextBlock Text="{Binding Character.Background, Converter={StaticResource UpperCaseConverter}}"/>
+                  <TextBlock Text="•" Margin="5,0,5,0" FontWeight="Normal"/>
+                  <TextBlock Text="{Binding Character.Gender, Converter={StaticResource UpperCaseConverter}}"/>
+                  <TextBlock Text="•" Margin="5,0,5,0" FontWeight="Normal"/>
+                  <TextBlock Text="{Binding Character.Alignment, Converter={StaticResource UpperCaseConverter}}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0"
+                            Visibility="{Binding CharacterManager.Status.HasDragonmark, Converter={StaticResource BooleanToVisibilityConverter}}">
+                  <FrameworkElement.Resources>
+                    <Style TargetType="{x:Type TextBlock}"
+                           BasedOn="{StaticResource CharacterDetailsSlider.BuildTextBlockStyle}">
+                      <Setter Property="TextBlock.FontSize" Value="10"/>
+                      <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush2}"/>
+                    </Style>
+                  </FrameworkElement.Resources>
+                  <TextBlock Text="{Binding Character.Dragonmark, Converter={StaticResource UpperCaseConverter}}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                  <FrameworkElement.Resources>
+                    <Style TargetType="{x:Type TextBlock}"
+                           BasedOn="{StaticResource CharacterDetailsSlider.BuildTextBlockStyle}">
+                      <Setter Property="TextBlock.FontSize" Value="10"/>
+                      <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush3}"/>
+                      <Setter Property="FrameworkElement.Margin" Value="0,0,3,0"/>
+                    </Style>
+                  </FrameworkElement.Resources>
+                  <TextBlock Text="PROFICIENCY:"/>
+                  <TextBlock Margin="0,0,10,0" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                             Text="{Binding Character.Proficiency, Converter={StaticResource UpperCaseConverter}, StringFormat=+0}"/>
+                  <TextBlock Text="INITIATIVE:"/>
+                  <TextBlock Margin="0,0,10,0" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                             Text="{Binding Character.Initiative, Converter={StaticResource UpperCaseConverter}, StringFormat=+0}"/>
+                  <TextBlock Text="AC:"/>
+                  <TextBlock Margin="0,0,10,0" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                             Text="{Binding Character.ArmorClass, Converter={StaticResource UpperCaseConverter}}"/>
+                  <TextBlock Text="SPEED:"/>
+                  <TextBlock Margin="0,0,10,0" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                             Text="{Binding Character.Speed, Converter={StaticResource UpperCaseConverter}, StringFormat=0ft}"/>
+                  <TextBlock Text="HP:"/>
+                  <TextBlock Margin="0" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                             Text="{Binding Character.MaxHp, Converter={StaticResource UpperCaseConverter}}"/>
+                </StackPanel>
+              </StackPanel>
+              <StackPanel HorizontalAlignment="Center"
+                          Visibility="{Binding CharacterInformationSliderViewModel.IsCompanionContext, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Style="{StaticResource CharacterDetailsSlider.BuildTextBlockStyle}"
+                           Text="{Binding Character.Companion.DisplayName, Converter={StaticResource UpperCaseConverter}}"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
+                  <FrameworkElement.Resources>
+                    <Style TargetType="{x:Type TextBlock}"
+                           BasedOn="{StaticResource CharacterDetailsSlider.BuildTextBlockStyle}">
+                      <Setter Property="TextBlock.FontSize" Value="10"/>
+                      <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush2}"/>
+                    </Style>
+                  </FrameworkElement.Resources>
+                  <TextBlock Text="{Binding Character.Companion.DisplayBuild, Converter={StaticResource UpperCaseConverter}}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                  <FrameworkElement.Resources>
+                    <Style TargetType="{x:Type TextBlock}"
+                           BasedOn="{StaticResource CharacterDetailsSlider.BuildTextBlockStyle}">
+                      <Setter Property="TextBlock.FontSize" Value="10"/>
+                      <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush3}"/>
+                      <Setter Property="FrameworkElement.Margin" Value="0,0,3,0"/>
+                    </Style>
+                  </FrameworkElement.Resources>
+                  <TextBlock Text="PROFICIENCY:"/>
+                  <TextBlock Margin="0,0,10,0" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                             Text="{Binding Character.Companion.Statistics.Proficiency, Converter={StaticResource UpperCaseConverter}, StringFormat=+0}"/>
+                  <TextBlock Text="INITIATIVE:"/>
+                  <TextBlock Margin="0,0,10,0" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                             Text="{Binding Character.Companion.Statistics.Initiative, Converter={StaticResource UpperCaseConverter}, StringFormat=+0}"/>
+                  <TextBlock Text="AC:"/>
+                  <TextBlock Margin="0,0,10,0" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                             Text="{Binding Character.Companion.Statistics.ArmorClass, Converter={StaticResource UpperCaseConverter}}"/>
+                  <TextBlock Text="SPEED:"/>
+                  <TextBlock Margin="0,0,10,0" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                             Text="{Binding Character.Companion.Statistics.Speed, Converter={StaticResource UpperCaseConverter}, StringFormat=0ft}"/>
+                  <TextBlock Text="HP:"/>
+                  <TextBlock Margin="0" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                             Text="{Binding Character.Companion.Statistics.MaxHp, Converter={StaticResource UpperCaseConverter}}"/>
+                </StackPanel>
+              </StackPanel>
+            </StackPanel>
+          </controls1:AuroraPanel>
+        </StackPanel>
+      </Grid>
+    </StackPanel>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" Margin="20,10,20,20"
+                  Grid.Row="3">
+      <StackPanel>
+        <FrameworkElement.Resources>
+          <Style TargetType="{x:Type controls1:AuroraExpander}" BasedOn="{StaticResource AuroraExpanderStyle}">
+            <Setter Property="controls:ControlsHelper.HeaderFontSize" Value="10"/>
+            <Setter Property="controls:GroupBoxHelper.HeaderForeground" Value="{DynamicResource GrayBrush5}"/>
+            <Setter Property="FrameworkElement.Margin" Value="0,0,0,4"/>
+            <Setter Property="Control.Padding" Value="4,4"/>
+            <Setter Property="Control.BorderThickness" Value="0,0,0,0"/>
+            <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush3}"/>
+            <Setter Property="Control.BorderBrush" Value="{DynamicResource AccentColorBrush}"/>
+            <Setter Property="Control.Foreground" Value="{DynamicResource GrayBrush5}"/>
+          </Style>
+        </FrameworkElement.Resources>
+        <controls1:AuroraPanel Margin="0,0,0,4" Background="Transparent" BorderThickness="0">
+          <FrameworkElement.Resources>
+            <Style TargetType="{x:Type TextBlock}">
+              <Setter Property="FrameworkElement.HorizontalAlignment" Value="Center"/>
+              <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+              <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush5}"/>
+              <Setter Property="TextBlock.FontSize" Value="12"/>
+              <Setter Property="FrameworkElement.Margin" Value="0,2"/>
+            </Style>
+          </FrameworkElement.Resources>
+          <StackPanel>
+            <UniformGrid Columns="6" Margin="10,0"
+                         Visibility="{Binding CharacterInformationSliderViewModel.IsCharacterContext, Converter={StaticResource BooleanToVisibilityConverter}}">
+              <TextBlock Text="STR"/>
+              <TextBlock Text="DEX"/>
+              <TextBlock Text="CON"/>
+              <TextBlock Text="INT"/>
+              <TextBlock Text="WIS"/>
+              <TextBlock Text="CHA"/>
+              <TextBlock Text="{Binding Character.Abilities.Strength.AbilityAndModifierString}"/>
+              <TextBlock Text="{Binding Character.Abilities.Dexterity.AbilityAndModifierString}"/>
+              <TextBlock Text="{Binding Character.Abilities.Constitution.AbilityAndModifierString}"/>
+              <TextBlock Text="{Binding Character.Abilities.Intelligence.AbilityAndModifierString}"/>
+              <TextBlock Text="{Binding Character.Abilities.Wisdom.AbilityAndModifierString}"/>
+              <TextBlock Text="{Binding Character.Abilities.Charisma.AbilityAndModifierString}"/>
+            </UniformGrid>
+            <UniformGrid Columns="6" Margin="10,0"
+                         Visibility="{Binding CharacterInformationSliderViewModel.IsCharacterContext, Converter={StaticResource InvertedBooleanToVisibilityConverter}}">
+              <TextBlock Text="STR"/>
+              <TextBlock Text="DEX"/>
+              <TextBlock Text="CON"/>
+              <TextBlock Text="INT"/>
+              <TextBlock Text="WIS"/>
+              <TextBlock Text="CHA"/>
+              <TextBlock Text="{Binding Character.Companion.Abilities.Strength.AbilityAndModifierString}"/>
+              <TextBlock Text="{Binding Character.Companion.Abilities.Dexterity.AbilityAndModifierString}"/>
+              <TextBlock Text="{Binding Character.Companion.Abilities.Constitution.AbilityAndModifierString}"/>
+              <TextBlock Text="{Binding Character.Companion.Abilities.Intelligence.AbilityAndModifierString}"/>
+              <TextBlock Text="{Binding Character.Companion.Abilities.Wisdom.AbilityAndModifierString}"/>
+              <TextBlock Text="{Binding Character.Companion.Abilities.Charisma.AbilityAndModifierString}"/>
+            </UniformGrid>
+          </StackPanel>
+        </controls1:AuroraPanel>
+        <StackPanel Visibility="{Binding CharacterInformationSliderViewModel.IsCharacterContext, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <controls1:AuroraExpander x:Name="ExpanderSkills" Header="Skills" Padding="0,4">
+            <userControls:SkillsPanelContent Margin="0"/>
+          </controls1:AuroraExpander>
+          <controls1:AuroraExpander x:Name="ExpanderSavingThrows" Header="Saving Throws" Padding="0,4">
+            <userControls:SavingThrowsPanelContent Margin="0"/>
+          </controls1:AuroraExpander>
+          <controls1:AuroraExpander Header="Conditions" Padding="0,1,0,0">
+            <StackPanel>
+              <userControls:ConditionsPanelContent/>
+            </StackPanel>
+          </controls1:AuroraExpander>
+          <controls1:AuroraExpander Header="Additional Statistics" Padding="0">
+            <StackPanel>
+              <userControls:AdditionalStatisticsPanelContent/>
+            </StackPanel>
+          </controls1:AuroraExpander>
+        </StackPanel>
+        <StackPanel Visibility="{Binding CharacterInformationSliderViewModel.IsCompanionContext, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <controls1:AuroraExpander x:Name="CompanionExpanderSkills" Header="Skills" Padding="0,4">
+            <userControls:CompanionSkillsPanelContent/>
+          </controls1:AuroraExpander>
+          <controls1:AuroraExpander Header="Traits" Padding="0,2,0,0">
+            <StackPanel>
+              <userControls:CompanionTraitsPanelContent Margin="0,0,0,0"/>
+            </StackPanel>
+          </controls1:AuroraExpander>
+          <controls1:AuroraExpander Header="Actions" Padding="0,2,0,0">
+            <userControls:CompanionActionsPanelContent Margin="0,0,0,0"/>
+          </controls1:AuroraExpander>
+          <controls1:AuroraExpander Header="Reactions" Padding="0,2,0,0">
+            <userControls:CompanionReactionsPanelContent Margin="0,0,0,0"/>
+          </controls1:AuroraExpander>
+          <controls1:AuroraExpander Header="Additional Statistics &amp; Breakdown" Padding="0">
+            <StackPanel>
+              <userControls:CompanionAdditionalStatisticsPanelContent/>
+            </StackPanel>
+          </controls1:AuroraExpander>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+    <UniformGrid FirstColumn="0" Columns="2" Grid.Row="4" Margin="15,0,15,20"
+                 Visibility="{Binding CharacterManager.Status.HasCompanion, Converter={StaticResource BooleanToVisibilityConverter}}">
+      <aurora:CommandButton Content="SWITCH TO CHARACTER" Style="{StaticResource SuccessCommandButtonStyle}" Margin="5,0"
+                            IsEnabled="{Binding CharacterInformationSliderViewModel.IsCompanionContext}"
+                            Command="{Binding CharacterInformationSliderViewModel.SwitchContextCommand}"/>
+      <aurora:CommandButton Content="SWITCH TO COMPANION" Style="{StaticResource SuccessCommandButtonStyle}" Margin="5,0"
+                            IsEnabled="{Binding CharacterInformationSliderViewModel.IsCharacterContext}"
+                            Command="{Binding CharacterInformationSliderViewModel.SwitchContextCommand}"/>
+    </UniformGrid>
+  </Grid>
+</controls:Flyout>

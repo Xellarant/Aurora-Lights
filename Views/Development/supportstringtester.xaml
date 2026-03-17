@@ -1,0 +1,39 @@
+<Window x:Class="Builder.Presentation.Views.Development.SupportStringTester"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Builder.Presentation.Views.Development"
+        Title="Support String Tester" Height="377" Width="599">
+  <FrameworkElement.DataContext>
+    <local:SupportStringViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="2*"/>
+      <ColumnDefinition Width="3*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="2*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <ListView Grid.RowSpan="2" BorderThickness="0" Margin="10" ItemsSource="{Binding SupportedElements}"
+              SelectedItem="{Binding SelectedSupportedElement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+    <StackPanel Grid.Row="0" Margin="10,0" Grid.Column="1">
+      <TextBlock Text="SELECT TYPE" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+      <ComboBox Margin="0,0,0,0" ItemsSource="{Binding Types}"
+                Text="{Binding SelectedType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <TextBlock Text="SUPPORTS STRING" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+      <TextBox Grid.Row="0" Grid.Column="1" Margin="0,0,0,0"
+               Text="{Binding SupportString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <TextBlock Text="ID" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+      <TextBox Grid.Row="0" Grid.Column="1" Margin="0,0,0,0"
+               Text="{Binding SelectedSupportedElement.Id, Mode=OneWay}"/>
+      <TextBlock Text="GEN" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+      <TextBox Grid.Row="0" Grid.Column="1" Margin="0,0,0,0" Text="{Binding GeneratedSupport, Mode=OneWay}"/>
+    </StackPanel>
+    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" TextWrapping="NoWrap" Margin="5"
+               Text="{Binding Message}"/>
+  </Grid>
+</Window>

@@ -1,0 +1,172 @@
+<Window x:Class="Builder.Presentation.Views.Development.ControlsDemoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Builder.Presentation.Views.Development"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:controls="clr-namespace:Builder.Presentation.Controls"
+        xmlns:converters="http://metro.mahapps.com/winfx/xaml/shared"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+        Title="ControlsDemoWindow" Height="502" Width="1200">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="2*" MinWidth="300"/>
+      <ColumnDefinition Width="2*" MinWidth="300"/>
+    </Grid.ColumnDefinitions>
+    <Border Grid.Column="0" Background="{DynamicResource WhiteBrush}" BorderThickness="0,0,1,0"
+            BorderBrush="{DynamicResource HighlightBrush}">
+      <StackPanel>
+        <FrameworkElement.Resources>
+          <Style TargetType="{x:Type controls:AuroraExpander}"
+                 BasedOn="{StaticResource {x:Type controls:AuroraExpander}}">
+            <Setter Property="FrameworkElement.Margin" Value="5,5,5,15"/>
+          </Style>
+        </FrameworkElement.Resources>
+        <controls:AuroraExpander Header="Lazy Spell Description">
+          <StackPanel>
+            <TextBox x:Name="InputBox" Text="Hello World!" AcceptsReturn="true" Margin="0,0,0,0" MinHeight="90"
+                     TextWrapping="Wrap"/>
+            <Button Click="ButtonBase_OnClick" Content="Read Spell Description" Margin="0,4,0,0"
+                    Style="{StaticResource AuroraFlatButton}"/>
+          </StackPanel>
+        </controls:AuroraExpander>
+        <controls:AuroraExpander Header="Dashed Selection Block" Background="{DynamicResource AccentColorBrush}"
+                                 mah:GroupBoxHelper.HeaderForeground="{DynamicResource DarkerBackgroundColor}"
+                                 Foreground="{DynamicResource DarkerBackgroundColor}">
+          <Grid>
+            <TextBlock Text="Multiclassing allows you to gain levels in multiple classes. In order to qualify for a new class, you must meet the ability score prerequisites for both your current class and your new one."
+                       TextWrapping="Wrap"/>
+          </Grid>
+        </controls:AuroraExpander>
+        <controls:AuroraPanel Background="{DynamicResource AccentColorBrush}" Foreground="{DynamicResource BlackBrush}"
+                              Margin="5" Padding="10">
+          <StackPanel>
+            <TextBlock Text="MULTICLASSING" FontWeight="SemiBold"/>
+            <TextBlock Text="Multiclassing allows you to gain levels in multiple classes. In order to qualify for a new class, you must meet the ability score prerequisites for both your current class and your new one."
+                       TextWrapping="Wrap"/>
+            <Button Content="AURORA BUTTON" BorderThickness="1" Margin="0,10,0,0" HorizontalAlignment="Right"/>
+          </StackPanel>
+        </controls:AuroraPanel>
+        <Button Content="AURORA BUTTON" Margin="10" BorderThickness="1"/>
+      </StackPanel>
+    </Border>
+    <Border Grid.Column="1" Background="{DynamicResource AuroraDarkColorBrush}" BorderThickness="0,0,1,0"
+            BorderBrush="{DynamicResource HighlightBrush}">
+      <StackPanel>
+        <FrameworkElement.Resources>
+          <Style TargetType="{x:Type controls:AuroraExpander}"
+                 BasedOn="{StaticResource {x:Type controls:AuroraExpander}}">
+            <Setter Property="FrameworkElement.Margin" Value="5,5,5,15"/>
+          </Style>
+        </FrameworkElement.Resources>
+        <controls:AuroraExpander Header="Expanders">
+          <ContentControl.Content>
+            <Grid>
+              <StackPanel>
+                <TextBlock Text="Cool!"/>
+                <TextBlock Text="Another Cool!"/>
+                <TextBlock Text="Can't Get Any Cooler!"/>
+                <controls:AuroraExpander Header="Wizard Cantrip (High Elf)">
+                  <ContentControl.Content>
+                    <Grid>
+                      <StackPanel>
+                        <TextBlock Text="Mage Hand"/>
+                      </StackPanel>
+                    </Grid>
+                  </ContentControl.Content>
+                  <controls:AuroraExpander.AdditionalHeaderContent>
+                    <StackPanel Orientation="Horizontal" IsHitTestVisible="false">
+                      <TextBlock Text="ABILITY:"/>
+                      <TextBlock Text="Binding Source={StaticResource txtInt}, Converter={StaticResource UpperCaseConverter}}"
+                                 Foreground="{DynamicResource AuroraGoldColorBrush}"/>
+                    </StackPanel>
+                  </controls:AuroraExpander.AdditionalHeaderContent>
+                </controls:AuroraExpander>
+                <controls:AuroraExpander Header="Spell (Arcane Trickster)" FooterVisibility="Visible">
+                  <ContentControl.Content>
+                    <Grid>
+                      <TextBlock Text="Pretty Cool Too!"/>
+                    </Grid>
+                  </ContentControl.Content>
+                  <controls:AuroraExpander.FooterContent>
+                    <Grid>
+                      <TextBlock Text="Footer"/>
+                    </Grid>
+                  </controls:AuroraExpander.FooterContent>
+                </controls:AuroraExpander>
+                <controls:AuroraExpander Header="Magic Initiate" FooterVisibility="Collapsed" Style="{StaticResource AuroraExpanderStyle}"
+                                         Margin="5">
+                  <controls:AuroraExpander.AdditionalHeaderContent>
+                    <StackPanel Orientation="Horizontal">
+                      <TextBlock Text="OPTIONAL" Foreground="{DynamicResource AuroraGoldColorBrush}"/>
+                    </StackPanel>
+                  </controls:AuroraExpander.AdditionalHeaderContent>
+                  <ContentControl.Content>
+                    <Grid>
+                      <StackPanel>
+                        <TextBlock Text="Fireball"/>
+                        <TextBlock Text="Fireball"/>
+                        <TextBlock Text="Fireball"/>
+                        <TextBlock Text="Fireball"/>
+                        <TextBlock Text="Fireball"/>
+                        <TextBlock Text="Fireball"/>
+                        <TextBlock Text="Fireball"/>
+                        <TextBlock Text="Fireball"/>
+                        <TextBlock Text="Fireball"/>
+                        <TextBlock Text="Fireball"/>
+                      </StackPanel>
+                    </Grid>
+                  </ContentControl.Content>
+                </controls:AuroraExpander>
+              </StackPanel>
+            </Grid>
+          </ContentControl.Content>
+          <controls:AuroraExpander.AdditionalHeaderContent>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="ABILITY:"/>
+              <TextBlock Text="INTELLIGENCE" Foreground="{DynamicResource AuroraGoldColorBrush}"/>
+            </StackPanel>
+          </controls:AuroraExpander.AdditionalHeaderContent>
+        </controls:AuroraExpander>
+        <controls:AuroraExpander Header="Dashed Selection Block" IsExpanded="true" Padding="0">
+          <Grid>
+            <controls:AuroraPanel Margin="10" Background="{DynamicResource AccentColorBrush2}"
+                                  Foreground="{DynamicResource GrayBrush10}">
+              <StackPanel>
+                <TextBlock Text="MULTICLASSING" FontWeight="SemiBold"/>
+                <TextBlock Text="Multiclassing allows you to gain levels in multiple classes. In order to qualify for a new class, you must meet the ability score prerequisites for both your current class and your new one."
+                           TextWrapping="Wrap"/>
+              </StackPanel>
+            </controls:AuroraPanel>
+          </Grid>
+        </controls:AuroraExpander>
+        <controls:AuroraExpander Header="STYLESHEET">
+          <StackPanel>
+            <TextBox Text="Binding }" AcceptsReturn="true" Margin="0,0,0,0" MinHeight="90" TextWrapping="Wrap"/>
+            <Button Click="ButtonBase_OnClick" Content="Read Spell Description" Margin="0,4,0,0"
+                    Style="{StaticResource AuroraFlatButton}"/>
+          </StackPanel>
+        </controls:AuroraExpander>
+        <Button Click="Button_Click" Content="GENERATE IMAGE" Style="{StaticResource AuroraFlatButton}"
+                BorderThickness="1" Margin="5,10,5,0"/>
+      </StackPanel>
+    </Border>
+    <controls:ElementDescriptionPanel x:Name="DescriptionPanel" Grid.Column="2" Margin="0" Padding="0,0,0,0"
+                                      Description="{Binding Description}" StyleSheet="{Binding StyleSheet}">
+      <FrameworkElement.DataContext>
+        <viewModels:DescriptionPanelViewModelBase/>
+      </FrameworkElement.DataContext>
+    </controls:ElementDescriptionPanel>
+    <controls:ElementDescriptionPanel x:Name="DescriptionPanel2" Grid.Column="3" Margin="0" Padding="0,0,0,0"
+                                      Style="{StaticResource DarkElementDescriptionPanelStyle}" Description="{Binding Description}"
+                                      StyleSheet="{Binding StyleSheet}">
+      <FrameworkElement.DataContext>
+        <viewModels:DescriptionPanelViewModelBase IsDarkStyle="true" IsSpeechEnabled="true"/>
+      </FrameworkElement.DataContext>
+    </controls:ElementDescriptionPanel>
+  </Grid>
+</Window>

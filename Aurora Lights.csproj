@@ -1,0 +1,1921 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--Project was exported from assembly: C:\Program Files (x86)\Aurora\Aurora Character Builder\Aurora Builder.exe-->
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1452F300-6B85-46E2-9262-AC19BA5BBF9F}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>Aurora Builder</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <ApplicationVersion>1.0.166.7407</ApplicationVersion>
+    <FileAlignment>512</FileAlignment>
+    <RootNamespace>Builder.Presentation</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Aurora.Documents">
+      <HintPath>lib\Aurora.Documents.dll</HintPath>
+    </Reference>
+    <Reference Include="Aurora.Presentation">
+      <HintPath>lib\Aurora.Presentation.dll</HintPath>
+    </Reference>
+    <Reference Include="Builder.Core">
+      <HintPath>lib\Builder.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Builder.Data">
+      <HintPath>lib\Builder.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="DynamicExpresso.Core">
+      <HintPath>lib\DynamicExpresso.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="FirstFloor.ModernUI">
+      <HintPath>lib\FirstFloor.ModernUI.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlRenderer">
+      <HintPath>lib\HtmlRenderer.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlRenderer.WPF">
+      <HintPath>lib\HtmlRenderer.WPF.dll</HintPath>
+    </Reference>
+    <Reference Include="MahApps.Metro">
+      <HintPath>lib\MahApps.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="MahApps.Metro.IconPacks">
+      <HintPath>lib\MahApps.Metro.IconPacks.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter">
+      <HintPath>lib\Microsoft.AppCenter.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter.Analytics">
+      <HintPath>lib\Microsoft.AppCenter.Analytics.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter.Crashes">
+      <HintPath>lib\Microsoft.AppCenter.Crashes.dll</HintPath>
+    </Reference>
+    <Reference Include="MoonPdfLib">
+      <HintPath>lib\MoonPdfLib.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Speech" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="itextsharp">
+      <HintPath>lib\itextsharp.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApplicationManager.cs" />
+    <Compile Include="ApplicationSettings.cs" />
+    <Compile Include="CharacterContentOrganizer.cs" />
+    <Compile Include="CharacterManager.cs" />
+    <Compile Include="CharacterOptionsManager.cs" />
+    <Compile Include="CharacterStatusChangedEventArgs.cs" />
+    <Compile Include="CharacterStatus.cs" />
+    <Compile Include="ElementsOrganizerRefactored.cs" />
+    <Compile Include="ElementsOrganizer.cs" />
+    <Compile Include="ContentBuilder.cs" />
+    <Compile Include="ContentGenerator.cs" />
+    <Compile Include="ElementContainer.cs" />
+    <Compile Include="ReprocessCharacterEvent.cs" />
+    <Compile Include="strings.cs" />
+    <Compile Include="Properties\Resources.cs" />
+    <Compile Include="Properties\Settings.cs" />
+    <Compile Include="Interfaces\ISelectionRuleExpander.cs" />
+    <Compile Include="Interfaces\ISupportExpanders.cs" />
+    <Compile Include="ViewModels\CampaignManagerViewModel.cs" />
+    <Compile Include="ViewModels\ContentManagerViewModel.cs" />
+    <Compile Include="ViewModels\ContentItem.cs" />
+    <Compile Include="ViewModels\ContentSize.cs" />
+    <Compile Include="ViewModels\ElementDescriptionDisplayRequestEvent.cs" />
+    <Compile Include="ViewModels\HtmlDisplayRequestEvent.cs" />
+    <Compile Include="ViewModels\BuildElementDescriptionPanelViewModel.cs" />
+    <Compile Include="ViewModels\CompendiumElementDescriptionDisplayRequestEvent.cs" />
+    <Compile Include="ViewModels\CompendiumElementDescriptionPanelViewModel.cs" />
+    <Compile Include="ViewModels\DescriptionPanelViewModelBase.cs" />
+    <Compile Include="ViewModels\EquipmentElementDescriptionDisplayRequestEvent.cs" />
+    <Compile Include="ViewModels\EquipmentElementDescriptionPanelViewModel.cs" />
+    <Compile Include="ViewModels\NotificationElementDescriptionDisplayRequestEvent.cs" />
+    <Compile Include="ViewModels\NotificationElementDescriptionPanelViewModel.cs" />
+    <Compile Include="ViewModels\SourceElementDescriptionDisplayRequestEvent.cs" />
+    <Compile Include="ViewModels\SourceElementDescriptionPanelViewModel.cs" />
+    <Compile Include="ViewModels\SpellcastingElementDescriptionDisplayRequestEvent.cs" />
+    <Compile Include="ViewModels\SpellcastingElementDescriptionPanelViewModel.cs" />
+    <Compile Include="ViewModels\DynamicSupportExpressions.cs" />
+    <Compile Include="ViewModels\SelectionRuleComboBoxViewModel.cs" />
+    <Compile Include="ViewModels\SaveCharacterWindowViewModel.cs" />
+    <Compile Include="ViewModels\DescriptionPanelViewModel.cs" />
+    <Compile Include="ViewModels\ListItemSelectionRuleExpanderViewModel.cs" />
+    <Compile Include="ViewModels\SelectionRuleExpanderViewModel.cs" />
+    <Compile Include="ViewModels\SelectionElementCollection.cs" />
+    <Compile Include="ViewModels\SelectionElement.cs" />
+    <Compile Include="ViewModels\SupportExpanderViewModel.cs" />
+    <Compile Include="ViewModels\LauncherWindowViewModel.cs" />
+    <Compile Include="ViewModels\SettingsWindowViewModel.cs" />
+    <Compile Include="ViewModels\SelectionItem.cs" />
+    <Compile Include="ViewModels\Development\DeveloperWindowCharacterDataViewModel.cs" />
+    <Compile Include="ViewModels\Development\DeveloperWindowDataViewModel.cs" />
+    <Compile Include="ViewModels\Development\DeveloperToolsCreateViewModel.cs" />
+    <Compile Include="ViewModels\Development\DeveloperToolsWindowViewModel.cs" />
+    <Compile Include="ViewModels\Development\DeveloperWindowGenerateViewModel.cs" />
+    <Compile Include="ViewModels\Development\GenerationElement.cs" />
+    <Compile Include="ViewModels\Development\DeveloperWindowViewModel.cs" />
+    <Compile Include="ViewModels\Shell\ShellWindowViewModel.cs" />
+    <Compile Include="ViewModels\Shell\StartSectionViewModel.cs" />
+    <Compile Include="ViewModels\Shell\CharacterCollectionSectionViewModel.cs" />
+    <Compile Include="ViewModels\Shell\Start\IndexDownloadRequestEvent.cs" />
+    <Compile Include="ViewModels\Shell\Start\SourcesSectionViewModel.cs" />
+    <Compile Include="ViewModels\Shell\Manage\ManageAttacksViewModel.cs" />
+    <Compile Include="ViewModels\Shell\Manage\ManageContentViewModel.cs" />
+    <Compile Include="ViewModels\Shell\Manage\SpellContentViewModel.cs" />
+    <Compile Include="ViewModels\Shell\Manage\SpellcastingCollection.cs" />
+    <Compile Include="ViewModels\Shell\Manage\ObservableSpell.cs" />
+    <Compile Include="ViewModels\Shell\Items\EquipmentCategory.cs" />
+    <Compile Include="ViewModels\Shell\Items\EquipmentItemSlots.cs" />
+    <Compile Include="ViewModels\Shell\Items\RefactoredEquipmentItem.cs" />
+    <Compile Include="ViewModels\Shell\Items\RefactoredEquipmentSectionViewModel.cs" />
+    <Compile Include="ViewModels\Shell\Items\ItemsSectionViewModel.cs" />
+    <Compile Include="ViewModels\Shell\Items\EquipmentContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\AbilitiesGenerationOption.cs" />
+    <Compile Include="ViewModels\Content\AdditionalStatisticsPanelContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\StatisticsPanelItem.cs" />
+    <Compile Include="ViewModels\Content\CompanionAdditionalStatisticsPanelContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\AbilityScoreImprovementContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\CompanionAbilitiesContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\CompanionContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\DeityContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\SpellCompendiumContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\SpellsContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\AlignmentContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\SkillsContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\SavingThrowsContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\SpellsPanelContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\ConditionsPanelContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\CompanionSkillsContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\CompanionTraitsPanelContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\AbilitiesContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\BackgroundContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\ClassContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\FeatContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\LanguageContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\ProficiencyContentViewModel.cs" />
+    <Compile Include="ViewModels\Content\RaceContentViewModel.cs" />
+    <Compile Include="ViewModels\Base\ElementsViewModelBase.cs" />
+    <Compile Include="ViewModels\Base\InitializationArguments.cs" />
+    <Compile Include="ViewModels\Base\ViewModelBase.cs" />
+    <Compile Include="Utilities\ElementDescriptionGenerator.cs" />
+    <Compile Include="Utilities\GalleryUtilities.cs" />
+    <Compile Include="Utilities\CharacterFileVerification.cs" />
+    <Compile Include="Utilities\Crc32.cs" />
+    <Compile Include="UserControls\DescriptionCheckBox.cs" />
+    <Compile Include="UserControls\CompendiumControlViewModel.cs" />
+    <Compile Include="UserControls\AdditionalStatisticsPanelContent.cs" />
+    <Compile Include="UserControls\CompanionReactionsPanelContent.cs" />
+    <Compile Include="UserControls\CompanionAdditionalStatisticsPanelContent.cs" />
+    <Compile Include="UserControls\CompanionActionsPanelContent.cs" />
+    <Compile Include="UserControls\CompanionTraitsPanelContent.cs" />
+    <Compile Include="UserControls\CompanionSkillsPanelContent.cs" />
+    <Compile Include="UserControls\SpellcastingExpanderContent.cs" />
+    <Compile Include="UserControls\SpellcastingContentViewModel.cs" />
+    <Compile Include="UserControls\ElementFilter.cs" />
+    <Compile Include="UserControls\SpellcastingFilter.cs" />
+    <Compile Include="UserControls\SpellcastingInformationHeader.cs" />
+    <Compile Include="UserControls\SelectionNotification.cs" />
+    <Compile Include="UserControls\InlineExpanderContent.cs" />
+    <Compile Include="UserControls\ConditionsPanelContent.cs" />
+    <Compile Include="UserControls\ExperienceProgressBarViewModel.cs" />
+    <Compile Include="UserControls\RefactoredAbilitiesContent.cs" />
+    <Compile Include="UserControls\CharacterOverviewViewModel.cs" />
+    <Compile Include="UserControls\SavingThrowsPanelContent.cs" />
+    <Compile Include="UserControls\SpellsPanelContent.cs" />
+    <Compile Include="UserControls\SkillsPanelContent.cs" />
+    <Compile Include="UserControls\SpellCompendiumContent.cs" />
+    <Compile Include="UserControls\SpellExpanderViewModel.cs" />
+    <Compile Include="UserControls\SelectionRuleComboBox.cs" />
+    <Compile Include="UserControls\ExpanderFocusedEvent.cs" />
+    <Compile Include="UserControls\SkillsContent.cs" />
+    <Compile Include="UserControls\ExpanderContent.cs" />
+    <Compile Include="UserControls\Syndication\SyndicationViewModel.cs" />
+    <Compile Include="UserControls\Spellcasting\SpellcasterSelectionControlViewModel.cs" />
+    <Compile Include="UserControls\Spellcasting\SpellcastingSectionSlots.cs" />
+    <Compile Include="UserControls\Spellcasting\SpellcastingSelectedSpellEvent.cs" />
+    <Compile Include="UserControls\Spellcasting\SpellElementContainer.cs" />
+    <Compile Include="UserControls\Spellcasting\SpellcastingCollectionViewViewModel.cs" />
+    <Compile Include="UserControls\Filters\InlineSpellFilterViewModel.cs" />
+    <Compile Include="UserControls\FillableControls\FeatureContainersViewModel.cs" />
+    <Compile Include="Syndication\SyndicationService.cs" />
+    <Compile Include="Syndication\SyndicationUpdateProgressEventArgs.cs" />
+    <Compile Include="Syndication\SyndicationUpdateResultEventArgs.cs" />
+    <Compile Include="Syndication\Posts\Feed.cs" />
+    <Compile Include="Syndication\Posts\Post.cs" />
+    <Compile Include="Syndication\Posts\PostMeta.cs" />
+    <Compile Include="Views\BundleCommandExecutionEvent.cs" />
+    <Compile Include="Views\QuickBarCommandExecutionEventArgs.cs" />
+    <Compile Include="Views\QuickSearchService.cs" />
+    <Compile Include="Views\InventoryStorageWindow.cs" />
+    <Compile Include="Views\DeveloperWindow.cs" />
+    <Compile Include="Views\ElementInformationWindow.cs" />
+    <Compile Include="Views\FileUpdaterWindow.cs" />
+    <Compile Include="Views\UpdaterWindowViewModel.cs" />
+    <Compile Include="Views\ResourceDocumentDisplayService.cs" />
+    <Compile Include="Views\QuickSearchBarEventArgs.cs" />
+    <Compile Include="Views\CompendiumShowSourceEventArgs.cs" />
+    <Compile Include="Views\Launcher.cs" />
+    <Compile Include="Views\SplashWindow.cs" />
+    <Compile Include="Views\ViewerViewModel.cs" />
+    <Compile Include="Views\CharacterSheetPreviewEvent.cs" />
+    <Compile Include="Views\Tools\CreateSpellcastingViewModel.cs" />
+    <Compile Include="Views\_obsolete\GenViewModel.cs" />
+    <Compile Include="Views\_obsolete\GenElement.cs" />
+    <Compile Include="Views\Dialogs\ExceptionWindowViewModel.cs" />
+    <Compile Include="Views\Dialogs\ExtractableItemDialogViewModel.cs" />
+    <Compile Include="Views\Dialogs\EntryInitializationArguments.cs" />
+    <Compile Include="Views\Dialogs\SingleEntryWindowViewModel.cs" />
+    <Compile Include="Views\Development\DiagnosticsWindowViewModel.cs" />
+    <Compile Include="Views\Development\DiagnosticsLogItem.cs" />
+    <Compile Include="Views\Development\LogColorConverter.cs" />
+    <Compile Include="Views\Development\DeveloperToolsViewModel.cs" />
+    <Compile Include="Views\Development\ElementsViewerViewModel.cs" />
+    <Compile Include="Views\Development\CustomFilesViewerViewModel.cs" />
+    <Compile Include="Views\Development\ElementCloneViewModel.cs" />
+    <Compile Include="Views\Development\Xtensions.cs" />
+    <Compile Include="Views\Development\GenerateElementWindowViewModel.cs" />
+    <Compile Include="Views\Development\EditableElement.cs" />
+    <Compile Include="Views\Development\SupportStringViewModel.cs" />
+    <Compile Include="Views\Sliders\CompanionsGalleryViewModel.cs" />
+    <Compile Include="Views\Sliders\SymbolsGalleryViewModel.cs" />
+    <Compile Include="Views\Sliders\BundleManagerSliderViewModel.cs" />
+    <Compile Include="Views\Sliders\ContentFileContainer.cs" />
+    <Compile Include="Views\Sliders\AdvancementSliderViewModel.cs" />
+    <Compile Include="Views\Sliders\CompendiumSliderViewModel.cs" />
+    <Compile Include="Views\Sliders\ManageCharacterOptionsSliderViewModel.cs" />
+    <Compile Include="Views\Sliders\CharacterOptionsChangedEvent.cs" />
+    <Compile Include="Views\Sliders\PortraitsGalleryViewModel.cs" />
+    <Compile Include="Views\Sliders\CharacterLoadingSliderProgressEvent.cs" />
+    <Compile Include="Views\Sliders\NewCharacterSliderViewModel.cs" />
+    <Compile Include="Views\Sliders\CharacterOption.cs" />
+    <Compile Include="Views\Sliders\SliderEventArgs.cs" />
+    <Compile Include="Views\Sliders\CharacterLoadingSliderEventArgs.cs" />
+    <Compile Include="Views\Sliders\CharacterInformationSliderViewModel.cs" />
+    <Compile Include="Views\Sliders\NotificationSliderTopMarginConverter.cs" />
+    <Compile Include="Views\Sliders\ShowSliderEvent.cs" />
+    <Compile Include="Views\Sliders\Slider.cs" />
+    <Compile Include="Views\Sliders\ManageCoinageSliderViewModel.cs" />
+    <Compile Include="Views\Sliders\SaveSliderViewModel.cs" />
+    <Compile Include="Views\Sliders\ThemeManagerFlyout.cs" />
+    <Compile Include="Logging\FileLogger.cs" />
+    <Compile Include="Logging\EventLog.cs" />
+    <Compile Include="Logging\EventLogger.cs" />
+    <Compile Include="Events\ElementEventBase.cs" />
+    <Compile Include="Events\ExpanderSelectionChanged.cs" />
+    <Compile Include="Events\ExpanderSelectionChanged`1.cs" />
+    <Compile Include="Events\ExpanderSelectionChangedEventArgs.cs" />
+    <Compile Include="Events\Base\StatusUpdateEvent.cs" />
+    <Compile Include="Events\Data\DataManagerProgressChanged.cs" />
+    <Compile Include="Events\Global\ElementSelectionChanged.cs" />
+    <Compile Include="Events\Global\CharacterManagerSelectionRuleCreated.cs" />
+    <Compile Include="Events\Global\SpellcastingInformationCreatedEvent.cs" />
+    <Compile Include="Events\Global\SpellcastingInformationRemovedEvent.cs" />
+    <Compile Include="Events\Global\CharacterManagerSelectionRuleDeleted.cs" />
+    <Compile Include="Events\Global\ExpanderHandlerSelectionChanged.cs" />
+    <Compile Include="Events\Shell\CharacterLoadingSliderStatusUpdateEvent.cs" />
+    <Compile Include="Events\Shell\HideMainWindowStatusUpdateEvent.cs" />
+    <Compile Include="Events\Shell\MainWindowStatusUpdateEvent.cs" />
+    <Compile Include="Events\Developer\DeveloperWindowStatusUpdateEvent.cs" />
+    <Compile Include="Events\Application\SettingsChangedEvent.cs" />
+    <Compile Include="Events\Application\AdditionalContentUpdatedEvent.cs" />
+    <Compile Include="Events\Application\DescriptionPanelContentsChanged.cs" />
+    <Compile Include="Events\Application\ResourceDocumentDisplayRequestEvent.cs" />
+    <Compile Include="Events\Character\CharacterLoadedEvent.cs" />
+    <Compile Include="Events\Character\CharacterLoadingCompletedEvent.cs" />
+    <Compile Include="Events\Character\CharacterLoadingEvent.cs" />
+    <Compile Include="Events\Character\CharacterSavedEvent.cs" />
+    <Compile Include="Events\Character\CharacterSavingEvent.cs" />
+    <Compile Include="Events\Character\CharacterSheetNextPageEvent.cs" />
+    <Compile Include="Events\Character\CharacterSheetPreviousPageEvent.cs" />
+    <Compile Include="Events\Character\CharacterSheetSavedEvent.cs" />
+    <Compile Include="Events\Character\CharacterSheetToggleViewEvent.cs" />
+    <Compile Include="Events\Character\CharacterManagerElementRegistered.cs" />
+    <Compile Include="Events\Character\CharacterManagerElementsUpdated.cs" />
+    <Compile Include="Events\Character\CharacterManagerUpdateReason.cs" />
+    <Compile Include="Events\Character\CharacterManagerElementUnregistered.cs" />
+    <Compile Include="Events\Character\CharacterBuildChangedEvent.cs" />
+    <Compile Include="Events\Character\CharacterPortraitChangedEvent.cs" />
+    <Compile Include="Events\Character\CharacterNameChangedEvent.cs" />
+    <Compile Include="Data\DesignData.cs" />
+    <Compile Include="Documents\ExportContentGenerator.cs" />
+    <Compile Include="Models\Companion.cs" />
+    <Compile Include="Models\CompanionStatistics.cs" />
+    <Compile Include="Models\StatisticsBase.cs" />
+    <Compile Include="Models\SavingThrowItem.cs" />
+    <Compile Include="Models\CharacterFile.cs" />
+    <Compile Include="Models\AbilityItem.cs" />
+    <Compile Include="Models\Character.cs" />
+    <Compile Include="Models\SkillItem.cs" />
+    <Compile Include="Models\Sources\SourceItem.cs" />
+    <Compile Include="Models\Sources\SourcesRootFolder.cs" />
+    <Compile Include="Models\Sources\SourcesGroup.cs" />
+    <Compile Include="Models\Collections\SavingThrowCollection.cs" />
+    <Compile Include="Models\Collections\AbilitiesCollection.cs" />
+    <Compile Include="Models\Collections\SkillsCollection.cs" />
+    <Compile Include="Models\Helpers\AttacksSection.cs" />
+    <Compile Include="Models\Helpers\AttackSectionItem.cs" />
+    <Compile Include="Models\Helpers\Progress.cs" />
+    <Compile Include="Models\NewFolder1\FillableBackgroundCharacteristics.cs" />
+    <Compile Include="Models\NewFolder1\FillableField.cs" />
+    <Compile Include="Models\Sheet\Itemcard.cs" />
+    <Compile Include="Models\Sheet\CardPosition.cs" />
+    <Compile Include="Models\Sheet\CharacterSheetInfo.cs" />
+    <Compile Include="Models\Sheet\ContentField.cs" />
+    <Compile Include="Models\Sheet\ContentLine.cs" />
+    <Compile Include="Models\Sheet\ContentArea.cs" />
+    <Compile Include="Models\Sheet\DetailsSheetInfo.cs" />
+    <Compile Include="Models\Sheet\Field.cs" />
+    <Compile Include="Models\Sheet\SkillField.cs" />
+    <Compile Include="Models\Sheet\Spellcard.cs" />
+    <Compile Include="Models\Sheet\SpellcastingSheetInfo.cs" />
+    <Compile Include="Models\Sheet\SpellField.cs" />
+    <Compile Include="Models\Equipment\Coinage.cs" />
+    <Compile Include="Models\Equipment\EquipmentItem.cs" />
+    <Compile Include="Models\Equipment\EquipmentItemCollection.cs" />
+    <Compile Include="Models\Equipment\InventoryStorage.cs" />
+    <Compile Include="Models\Equipment\InventoryWeight.cs" />
+    <Compile Include="Models\Equipment\CharacterInventory.cs" />
+    <Compile Include="Models\CharacterSheet\CharacterSheetResources.cs" />
+    <Compile Include="Models\CharacterSheet\FillableContentGenerator.cs" />
+    <Compile Include="Models\CharacterSheet\CharacterSheetResourcePage.cs" />
+    <Compile Include="Models\CharacterSheet\CharacterSheetEx.cs" />
+    <Compile Include="Models\CharacterSheet\PDF\FontsHelper.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\SpellcastingPageGenerator.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\CardPageGenerator.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\GenericCardsPage.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\PageGenerator.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\DetailsPageGenerator.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\Content\AreaContent.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\Content\AttackCardContent.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\Content\ContentBuilder.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\Content\GenericCardContent.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\Content\IPageContentItem.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\Content\IPageContentWriter.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\Content\LineContent.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\Content\PageContentItem`1.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\Content\PageContentWriter.cs" />
+    <Compile Include="Models\CharacterSheet\Pages\Content\SpellCardContent.cs" />
+    <Compile Include="Models\CharacterSheet\Content\CharacterSheetSpellcastingPageExportContent.cs" />
+    <Compile Include="Models\CharacterSheet\Content\CharacterSheetExportContent.cs" />
+    <Compile Include="Models\CharacterSheet\Content\CompanionSheetExportContent.cs" />
+    <Compile Include="Models\CharacterSheet\Content\DetailsSheetContent.cs" />
+    <Compile Include="Models\CharacterSheet\Content\MainSheetContent.cs" />
+    <Compile Include="Models\CharacterSheet\Content\SpellcastingSheetContent.cs" />
+    <Compile Include="Models\CharacterSheet\Content\SpellcastingSpellContent.cs" />
+    <Compile Include="Models\CharacterSheet\Content\SpellcastingSpellsContent.cs" />
+    <Compile Include="Models\CharacterSheet\ExportContent\EquipmentSheetWriter.cs" />
+    <Compile Include="Models\CharacterSheet\ExportContent\CharacterSheetWriterBase.cs" />
+    <Compile Include="Models\Campaign\Campaign.cs" />
+    <Compile Include="Models\Campaign\RestrictedSourcesLoadRequest.cs" />
+    <Compile Include="Factories\ResourceFactory.cs" />
+    <Compile Include="Extensions\IntegerExtensions.cs" />
+    <Compile Include="Extensions\FlyoutExtensions.cs" />
+    <Compile Include="Extensions\ComboBoxItemTemplateSelector.cs" />
+    <Compile Include="Extensions\ComboBoxItemTemplateSelector2.cs" />
+    <Compile Include="Extensions\DependencyObjectExtensions.cs" />
+    <Compile Include="Extensions\PdfExtensions.cs" />
+    <Compile Include="Extensions\StringExtentions.cs" />
+    <Compile Include="Extensions\UserControlExtensions.cs" />
+    <Compile Include="Extensions\WindowExtensions.cs" />
+    <Compile Include="Services\ListSelectionRuleRegisteredEvent.cs" />
+    <Compile Include="Services\ListSelectionRuleUnregisteredEvent.cs" />
+    <Compile Include="Services\IExpressionConverter.cs" />
+    <Compile Include="Services\IExpressionInterpreter.cs" />
+    <Compile Include="Services\ClassProgressionManager.cs" />
+    <Compile Include="Services\HitDiceHelper.cs" />
+    <Compile Include="Services\DynamicExpressionConverter.cs" />
+    <Compile Include="Services\ProgressionManager.cs" />
+    <Compile Include="Services\IExpressionDataProvider.cs" />
+    <Compile Include="Services\ExpressionInterpreter.cs" />
+    <Compile Include="Services\SelectionRuleCollectionService.cs" />
+    <Compile Include="Services\SelectionRuleNavigationService.cs" />
+    <Compile Include="Services\NavigationServiceEvaluationEvent.cs" />
+    <Compile Include="Services\SelectionRuleNavigationArgs.cs" />
+    <Compile Include="Services\NavigationLocation.cs" />
+    <Compile Include="Services\SpellcastingSectionHandler.cs" />
+    <Compile Include="Services\SpeechService.cs" />
+    <Compile Include="Services\DiceService.cs" />
+    <Compile Include="Services\CharacterSheetGenerator.cs" />
+    <Compile Include="Services\MessageDialogService.cs" />
+    <Compile Include="Services\SelectionRuleEventArgs.cs" />
+    <Compile Include="Services\SelectionRuleExpanderHandler.cs" />
+    <Compile Include="Services\QuickBar\Commands\QuickBarCustomCommand.cs" />
+    <Compile Include="Services\QuickBar\Commands\QuickSearchLogsCommand.cs" />
+    <Compile Include="Services\QuickBar\Commands\QuickSearchDataCommand.cs" />
+    <Compile Include="Services\QuickBar\Commands\QuickBarDiagnosticsCommand.cs" />
+    <Compile Include="Services\QuickBar\Commands\QuickBarPortraitsCommand.cs" />
+    <Compile Include="Services\QuickBar\Commands\QuickBarBundleCommand.cs" />
+    <Compile Include="Services\QuickBar\Commands\QuickBarFetchCommand.cs" />
+    <Compile Include="Services\QuickBar\Commands\BundleCommandEvent.cs" />
+    <Compile Include="Services\QuickBar\Commands\Base\QuickBarCommand.cs" />
+    <Compile Include="Services\QuickBar\Commands\Base\QuickBarDiceCommand.cs" />
+    <Compile Include="Services\Calculator\StatisticsCalculatedResult.cs" />
+    <Compile Include="Services\Calculator\StatisticValuesGroup.cs" />
+    <Compile Include="Services\Calculator\StatisticValuesGroupCollection.cs" />
+    <Compile Include="Services\Calculator\StatisticsHandler2.cs" />
+    <Compile Include="Services\Sources\SourcesManager.cs" />
+    <Compile Include="Services\Data\InternalElementsGenerator.cs" />
+    <Compile Include="Services\Data\SpellScrollContentGenerator.cs" />
+    <Compile Include="Services\Data\ElementsCollectionPopulatedEvent.cs" />
+    <Compile Include="Services\Data\DataManager.cs" />
+    <Compile Include="Elements\ISourceRestrictionsProvider.cs" />
+    <Compile Include="Elements\SelectionCollectionService.cs" />
+    <Compile Include="Elements\ElementCollectionEventArgs.cs" />
+    <Compile Include="Controls\AuroraPanel.cs" />
+    <Compile Include="Controls\CircularProgressBar.cs" />
+    <Compile Include="Controls\AngleToPointConverter.cs" />
+    <Compile Include="Controls\AngleToIsLargeConverter.cs" />
+    <Compile Include="Controls\AuroraExpander.cs" />
+    <Compile Include="Controls\ElementDescriptionPanel.cs" />
+    <Compile Include="Controls\PortraitButton.cs" />
+    <Compile Include="Controls\PortraitButtonInnerCircleValueConverter.cs" />
+    <Compile Include="Controls\PortraitSizeToStrokeValueConverter.cs" />
+    <Compile Include="Controls\PortraitSizeToScaleValueConverter.cs" />
+    <Compile Include="Controls\SliderTitleBlock.cs" />
+    <Compile Include="Controls\CharacterProfileButton.cs" />
+    <Compile Include="Commands\GenerateCharacterSheetPreviewCommand.cs" />
+    <Compile Include="Commands\SaveDefaultRestrictionsCommand.cs" />
+    <Compile Include="Commands\LoadDefaultRestrictionsCommand.cs" />
+    <Compile Include="Commands\ApplyRestrictionsCommand.cs" />
+    <Compile Include="Commands\ManageRestrictionsCommand.cs" />
+    <Compile Include="Commands\ApplicationCommandManager.cs" />
+    <Compile Include="Commands\ApplicationCommands.cs" />
+    <Compile Include="Commands\SourceApplicationCommands.cs" />
+    <Compile Include="Commands\Settings\ActivateDarkThemeCommand.cs" />
+    <Compile Include="Commands\Settings\ActivateDefaultAccentCommand.cs" />
+    <Compile Include="Commands\Settings\ActivateLightThemeCommand.cs" />
+    <Compile Include="Commands\Settings\SettingsCommand.cs" />
+    <Compile Include="Converters\InventoryEquipmentItemUnderlineVisibilityConverter.cs" />
+    <Compile Include="Converters\CampaignSourceConverter.cs" />
+    <Compile Include="Converters\ElementProficiencyValueConvereter.cs" />
+    <Compile Include="Converters\ElementProficiencyBrushValueConvereter.cs" />
+    <Compile Include="Converters\SourceListingNameReplaceConverter.cs" />
+    <Compile Include="Converters\IsExpertiseAbilityConverter.cs" />
+    <Compile Include="Converters\IsExpertiseVisibilityConverter.cs" />
+    <Compile Include="Converters\IsProficientAbilityConverter.cs" />
+    <Compile Include="Converters\BooleanToSolidColorBrushConverter.cs" />
+    <Compile Include="Converters\PortraitImageSourceConverter.cs" />
+    <Compile Include="Converters\LocalImageSourceConverter.cs" />
+    <Compile Include="Converters\CompanionGalleryImageSourceConverter.cs" />
+    <Compile Include="Converters\SymbolGalleryImageSourceConverter.cs" />
+    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\InverterBooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\NullableInvertedBooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\ItemCostValueConverter.cs" />
+    <Compile Include="Converters\IsSpellReplacedValueConverter.cs" />
+    <Compile Include="Converters\RevisedDateValueConverter.cs" />
+    <Compile Include="Converters\AvailablePointsValueConverter.cs" />
+    <Compile Include="Converters\BonusStringValueConverter.cs" />
+    <Compile Include="Converters\AccentColorConverter.cs" />
+    <Compile Include="Converters\ThemeColorConverter.cs" />
+    <Compile Include="Converters\InvertedThemeColorConverter.cs" />
+    <Compile Include="Converters\SuccessColorBrushConverter.cs" />
+    <Compile Include="Converters\AccentNameConverter.cs" />
+    <Compile Include="Telemetry\AnalyticsErrorHelper.cs" />
+    <Compile Include="Telemetry\AnalyticsEventHelper.cs" />
+    <Compile Include="XamlGeneratedNamespace\GeneratedInternalTypeHelper.cs" />
+    <Compile Include="UserControlsFeaturesTreeCollection.xaml.cs">
+      <DependentUpon>usercontrolsfeaturestreecollection.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewsSaveCharacterWindow.xaml.cs">
+      <DependentUpon>viewssavecharacterwindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsSelectionRuleExpander.xaml.cs">
+      <DependentUpon>usercontrolsselectionruleexpander.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControls\InventoryInventorySection.xaml.cs">
+      <DependentUpon>inventoryinventorysection.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewsCharacterViewer.xaml.cs">
+      <DependentUpon>viewscharacterviewer.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsCharacterProfile.xaml.cs">
+      <DependentUpon>usercontrolscharacterprofile.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\FlyoutsEditEquipmentItemFlyout.xaml.cs">
+      <DependentUpon>flyoutseditequipmentitemflyout.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DevelopmentControlsDemoWindow.xaml.cs">
+      <DependentUpon>developmentcontrolsdemowindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewsShellWindow.xaml.cs">
+      <DependentUpon>viewsshellwindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DevelopmentDiagnosticsWindow.xaml.cs">
+      <DependentUpon>developmentdiagnosticswindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersCharacterInformationSlider.xaml.cs">
+      <DependentUpon>sliderscharacterinformationslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControls\InventoryInventoryStorageSection.xaml.cs">
+      <DependentUpon>inventoryinventorystoragesection.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersSymbolsGallerySlider.xaml.cs">
+      <DependentUpon>sliderssymbolsgalleryslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControls\FiltersInlineSpellFilter.xaml.cs">
+      <DependentUpon>filtersinlinespellfilter.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersManageCharacterOptionsSlider.xaml.cs">
+      <DependentUpon>slidersmanagecharacteroptionsslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControls\SpellcastingSpellcastingCollectionView.xaml.cs">
+      <DependentUpon>spellcastingspellcastingcollectionview.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DevelopmentElementCloneWindow.xaml.cs">
+      <DependentUpon>developmentelementclonewindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewsApplicationSettingsWindow.xaml.cs">
+      <DependentUpon>viewsapplicationsettingswindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsSkillsExpander.xaml.cs">
+      <DependentUpon>usercontrolsskillsexpander.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewsPreferencesWindow.xaml.cs">
+      <DependentUpon>viewspreferenceswindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersCompanionGallerySlider.xaml.cs">
+      <DependentUpon>sliderscompaniongalleryslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewsSettingsWindow.xaml.cs">
+      <DependentUpon>viewssettingswindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersManageCoinageSlider.xaml.cs">
+      <DependentUpon>slidersmanagecoinageslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersCompendiumSlider.xaml.cs">
+      <DependentUpon>sliderscompendiumslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersAdvancementSlider.xaml.cs">
+      <DependentUpon>slidersadvancementslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DialogsExtractItemWindow.xaml.cs">
+      <DependentUpon>dialogsextractitemwindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersSaveCharacterSlider.xaml.cs">
+      <DependentUpon>sliderssavecharacterslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsDescriptionPanel.xaml.cs">
+      <DependentUpon>usercontrolsdescriptionpanel.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewsContentManager.xaml.cs">
+      <DependentUpon>viewscontentmanager.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewsSplash.xaml.cs">
+      <DependentUpon>viewssplash.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DialogsSaveCharacterDialog.xaml.cs">
+      <DependentUpon>dialogssavecharacterdialog.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\Sliders\ContentBundleContentFlyout.xaml.cs">
+      <DependentUpon>contentbundlecontentflyout.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsAbilitiesSpinner.xaml.cs">
+      <DependentUpon>usercontrolsabilitiesspinner.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsCharacterSheetPreviewPanel.xaml.cs">
+      <DependentUpon>usercontrolscharactersheetpreviewpanel.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControls\ManageManageSourcesSection.xaml.cs">
+      <DependentUpon>managemanagesourcessection.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersReleaseSlider.xaml.cs">
+      <DependentUpon>slidersreleaseslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DevelopmentGenerateElementWindow.xaml.cs">
+      <DependentUpon>developmentgenerateelementwindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewsManageEquipmentItemWindow.xaml.cs">
+      <DependentUpon>viewsmanageequipmentitemwindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersUpdateNotificationSlider.xaml.cs">
+      <DependentUpon>slidersupdatenotificationslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DevelopmentSupportStringTester.xaml.cs">
+      <DependentUpon>developmentsupportstringtester.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DevelopmentDeveloperTools.xaml.cs">
+      <DependentUpon>developmentdevelopertools.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DialogsExceptionWindow.xaml.cs">
+      <DependentUpon>dialogsexceptionwindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersSelectionFlowNotificationSlider.xaml.cs">
+      <DependentUpon>slidersselectionflownotificationslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsRoundButton.xaml.cs">
+      <DependentUpon>usercontrolsroundbutton.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsCompanionProfile.xaml.cs">
+      <DependentUpon>usercontrolscompanionprofile.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsExperienceProgressBar.xaml.cs">
+      <DependentUpon>usercontrolsexperienceprogressbar.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsFillableFieldTextBox.xaml.cs">
+      <DependentUpon>usercontrolsfillablefieldtextbox.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\Content\ManageCreateAttackWindow.xaml.cs">
+      <DependentUpon>managecreateattackwindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControls\SpellcastingSpellcasterSelectionControl.xaml.cs">
+      <DependentUpon>spellcastingspellcasterselectioncontrol.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControls\EquipmentEquipmentSlotControl.xaml.cs">
+      <DependentUpon>equipmentequipmentslotcontrol.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsCompendiumControl.xaml.cs">
+      <DependentUpon>usercontrolscompendiumcontrol.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersApplicationSettingsSlider.xaml.cs">
+      <DependentUpon>slidersapplicationsettingsslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControls\SyndicationSyndicationControl.xaml.cs">
+      <DependentUpon>syndicationsyndicationcontrol.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewsCharacterSourceManagerWindow.xaml.cs">
+      <DependentUpon>viewscharactersourcemanagerwindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersPortraitsGallerySlider.xaml.cs">
+      <DependentUpon>slidersportraitsgalleryslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersNewCharacterSlider.xaml.cs">
+      <DependentUpon>slidersnewcharacterslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsSpellExpander.xaml.cs">
+      <DependentUpon>usercontrolsspellexpander.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsListItemsSelectionRuleExpander.xaml.cs">
+      <DependentUpon>usercontrolslistitemsselectionruleexpander.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\_obsoleteGen.xaml.cs">
+      <DependentUpon>_obsoletegen.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsCharacterPanel.xaml.cs">
+      <DependentUpon>usercontrolscharacterpanel.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DialogsEditCharacterGroupWindow.xaml.cs">
+      <DependentUpon>dialogseditcharactergroupwindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsAbilitiesContent.xaml.cs">
+      <DependentUpon>usercontrolsabilitiescontent.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControls\ManageManageAttacksSection.xaml.cs">
+      <DependentUpon>managemanageattackssection.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>app.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\SlidersBundleManagerSlider.xaml.cs">
+      <DependentUpon>slidersbundlemanagerslider.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DialogsExceptionMessageWindow.xaml.cs">
+      <DependentUpon>dialogsexceptionmessagewindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsPlaceholderControl.xaml.cs">
+      <DependentUpon>usercontrolsplaceholdercontrol.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControls\FillableControlsFeatureListContainers.xaml.cs">
+      <DependentUpon>fillablecontrolsfeaturelistcontainers.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\DialogsSingleEntryWindow.xaml.cs">
+      <DependentUpon>dialogssingleentrywindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsEquipmentSection.xaml.cs">
+      <DependentUpon>usercontrolsequipmentsection.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ViewsViewer.xaml.cs">
+      <DependentUpon>viewsviewer.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControlsCharacterOverview.xaml.cs">
+      <DependentUpon>usercontrolscharacteroverview.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\ToolsCreateSpellcastingWindow.xaml.cs">
+      <DependentUpon>toolscreatespellcastingwindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="postbuild.txt" />
+    <Resource Include="resources\abilities-backdrop.png" />
+    <Resource Include="resources\assets\aurora-illithid.png" />
+    <Resource Include="resources\assets\c3wizard3.png" />
+    <Resource Include="resources\assets\contract.png" />
+    <Resource Include="resources\assets\deck.png" />
+    <Resource Include="resources\assets\elf.png" />
+    <Resource Include="resources\assets\exploration.png" />
+    <Resource Include="resources\assets\ggr\streets.png" />
+    <Resource Include="resources\assets\guilds\1.png" />
+    <Resource Include="resources\assets\guilds\10.png" />
+    <Resource Include="resources\assets\guilds\2.png" />
+    <Resource Include="resources\assets\guilds\3.png" />
+    <Resource Include="resources\assets\guilds\4.png" />
+    <Resource Include="resources\assets\guilds\5.png" />
+    <Resource Include="resources\assets\guilds\6.png" />
+    <Resource Include="resources\assets\guilds\7.png" />
+    <Resource Include="resources\assets\guilds\8.png" />
+    <Resource Include="resources\assets\guilds\9.png" />
+    <Resource Include="resources\assets\half-elf1.png" />
+    <Resource Include="resources\assets\halfling.png" />
+    <Resource Include="resources\assets\ice_caverns.jpg" />
+    <Resource Include="resources\assets\knight.jpg" />
+    <Resource Include="resources\assets\logo.png" />
+    <Resource Include="resources\assets\logo_shadow.png" />
+    <Resource Include="resources\assets\logo-navbar.png" />
+    <Resource Include="resources\assets\magic_scrolls.jpg" />
+    <Resource Include="resources\assets\mining.png" />
+    <Resource Include="resources\assets\raven.png" />
+    <Resource Include="resources\assets\splash\eberron-underground.jpg" />
+    <Resource Include="resources\assets\splash\fire.png" />
+    <Resource Include="resources\assets\splash\hydia.jpg" />
+    <Resource Include="resources\assets\splash\sahuagin.jpg" />
+    <Resource Include="resources\assets\splash\splashoption.jpg" />
+    <Resource Include="resources\assets\splash\tavern.png" />
+    <Resource Include="resources\assets\splash\ur.png" />
+    <Resource Include="resources\assets\splash\warrior-cosmos.jpg" />
+    <Resource Include="resources\assets\start\bl.png" />
+    <Resource Include="resources\assets\start\lighthouse.png" />
+    <Resource Include="resources\assets\start\shrooms.png" />
+    <Resource Include="resources\assets\start\tl.png" />
+    <Resource Include="resources\assets\start\ur.png" />
+    <Resource Include="resources\assets\support-sm.jpg" />
+    <Resource Include="resources\assets\ua-banner-sm.jpg" />
+    <Resource Include="resources\assets\ui\abilities-backdrop.png" />
+    <Resource Include="resources\assets\ui\books.jpg" />
+    <Resource Include="resources\assets\ui\c3wizard1.png" />
+    <Resource Include="resources\assets\ui\compendium.jpg" />
+    <Resource Include="resources\assets\ui\dark.jpg" />
+    <Resource Include="resources\assets\ui\new_header_top.jpg" />
+    <Resource Include="resources\assets\ui\separator.png" />
+    <Resource Include="resources\assets\ui\splash.png" />
+    <Resource Include="resources\assets\ui\tome.jpg" />
+    <Resource Include="resources\assets\ui\wood_002520elf_002520female_002520rogue.jpg" />
+    <Resource Include="resources\assets\xmas.jpg" />
+    <Resource Include="resources\assets\xmas.png" />
+    <Resource Include="resources\books.jpg" />
+    <Resource Include="resources\default-companion.jpg" />
+    <Resource Include="resources\default-companion2.jpg" />
+    <Resource Include="resources\default-portrait.png" />
+    <Resource Include="resources\default-portrait-female.jpg" />
+    <Resource Include="resources\fonts\nodesto.otf" />
+    <Resource Include="resources\fonts\zelda.otf" />
+    <Resource Include="resources\hero-rest4.jpg" />
+    <Resource Include="resources\icon_bars.ico" />
+    <Resource Include="resources\icon_bars_wide.ico" />
+    <Resource Include="resources\icons\account_16x.png" />
+    <Resource Include="resources\icons\nextbookmark_16x.png" />
+    <Resource Include="resources\icons\webtestplugin_16x.png" />
+    <Resource Include="resources\portraits\dragonborn_002520male.jpg" />
+    <Resource Include="resources\portraits\orc_002520male.jpg" />
+    <Resource Include="resources\portraits\orc_002520male_0025202.jpg" />
+    <Resource Include="resources\portraits\orc_002520male-1.jpg" />
+    <Resource Include="resources\portraits\triton_002520female.png" />
+    <Resource Include="resources\portraits\warforged_002520male.png" />
+    <Resource Include="resources\portraits\wood_002520elf_002520female.jpg" />
+    <Resource Include="resources\viking_hill.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx" />
+    <EmbeddedResource Include="Resources\card-bg.jpg" />
+    <EmbeddedResource Include="Resources\Data\core\conditions.xml" />
+    <EmbeddedResource Include="Resources\Data\core\core-ability-score-increase.xml" />
+    <EmbeddedResource Include="Resources\Data\core\core-alignments.xml" />
+    <EmbeddedResource Include="Resources\Data\core\core-languages.xml" />
+    <EmbeddedResource Include="Resources\Data\core\core-levels.xml" />
+    <EmbeddedResource Include="Resources\Data\core\core-size.xml" />
+    <EmbeddedResource Include="Resources\Data\core\core-vision.xml" />
+    <EmbeddedResource Include="Resources\Data\core\damage-type.xml" />
+    <EmbeddedResource Include="Resources\Data\core\internal\core-internal-grants.xml" />
+    <EmbeddedResource Include="Resources\Data\core\internal\internal-multiclassing.xml" />
+    <EmbeddedResource Include="Resources\Data\core\internal\internal-options.xml" />
+    <EmbeddedResource Include="Resources\Data\core\internal\internal-sources.xml" />
+    <EmbeddedResource Include="Resources\Data\core\internal\internal-supports.xml" />
+    <EmbeddedResource Include="Resources\Data\core\internal\internal-templates.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiencies\proficiency-armor.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiencies\proficiency-weapons.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiency\expertise-skills.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiency\internal-skill-workarounds.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiency\items-spellcasting-focus.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiency\proficiency-saving-throws.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiency\proficiency-skills.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiency\proficiency-tools-artisans.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiency\proficiency-tools-gamingsets.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiency\proficiency-tools-kits.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiency\proficiency-tools-misc.xml" />
+    <EmbeddedResource Include="Resources\Data\core\proficiency\proficiency-tools-musical-instruments.xml" />
+    <EmbeddedResource Include="Resources\Data\core\properties\properties-armor.xml" />
+    <EmbeddedResource Include="Resources\Data\core\properties\properties-firearms.xml" />
+    <EmbeddedResource Include="Resources\Data\core\properties\properties-weapons.xml" />
+    <EmbeddedResource Include="Resources\Data\core\support\proficiency-type.xml" />
+    <EmbeddedResource Include="Resources\Data\core\support\properties-tools.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\backgrounds\background-acolyte.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-barbarian.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-bard.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-cleric.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-druid.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-fighter.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-monk.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-paladin.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-ranger.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-rogue.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-sorcerer.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-warlock.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\classes\class-wizard.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\deities.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\feats\grapler.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\items-armor.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\items-gear.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\items-instrument.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\items-packs.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\items-tools.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\items-weapons.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\magic\items-armor.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\magic\items-poison.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\magic\items-potions.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\magic\items-rings.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\magic\items-rods.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\magic\items-staffs.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\magic\items-wands.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\magic\items-weapons.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\items\magic\items-wondrous.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\races\race-dragonborn.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\races\race-dwarf.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\races\race-elf.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\races\race-gnome.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\races\race-halfelf.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\races\race-halfling.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\races\race-halforc.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\races\race-human.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\races\race-tiefling.xml" />
+    <EmbeddedResource Include="Resources\Data\elements\system_reference_document\spells\spells.xml" />
+    <EmbeddedResource Include="Resources\Data\experimental\experimental.xml" />
+    <EmbeddedResource Include="Resources\Documents\description-abilities.html" />
+    <EmbeddedResource Include="Resources\Documents\description-background.html" />
+    <EmbeddedResource Include="Resources\Documents\description-changelog.html" />
+    <EmbeddedResource Include="Resources\Documents\description-class.html" />
+    <EmbeddedResource Include="Resources\Documents\description-equipment.html" />
+    <EmbeddedResource Include="Resources\Documents\description-feats.html" />
+    <EmbeddedResource Include="Resources\Documents\description-languages.html" />
+    <EmbeddedResource Include="Resources\Documents\description-notification.html" />
+    <EmbeddedResource Include="Resources\Documents\description-ogl.html" />
+    <EmbeddedResource Include="Resources\Documents\description-panel-design-data.html" />
+    <EmbeddedResource Include="Resources\Documents\description-proficiencies.html" />
+    <EmbeddedResource Include="Resources\Documents\description-race.html" />
+    <EmbeddedResource Include="Resources\Documents\description-skills.html" />
+    <EmbeddedResource Include="Resources\Documents\stylesheet.css" />
+    <EmbeddedResource Include="Resources\Documents\stylesheet-dark.css" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\abyssal chicken.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\almiraj.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\bat.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\bear.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\beast.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\beetle.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\boar.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\cat.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\cat2.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\cat3.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\deer.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\deer2.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\default-portrait.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\dog.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\frog.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\goat.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\hawk.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\hawk2.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\hawk3.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\hyena.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\imp.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\imp2.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\lizard.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\mastiff.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\octopus.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\octopus2.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\owl.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\owl2.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\panther.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\pseudodragon.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\pseudodragon2.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\pteranodon.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\quasit2.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\raven.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\shark.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\snake.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\snake2.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\spider.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\sprite female.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\sprite male.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\steel defender.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\steel defender2.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\steel defender3.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\stirge.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\wolf.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\wolf2.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\CompanionPortraits\wolf3.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-detection.png" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-finding.png" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-handling.png" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-healing.png" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-hospitality.png" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-making.png" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-passage.png" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-scribing.png" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-sentinel.png" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-shadow.png" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-storm.png" />
+    <EmbeddedResource Include="Resources\Gallery\Dragonmarks\mark-of-warding.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Faction Emerald Enclave.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Faction Harper.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Faction LordsAlliance.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Faction OrderGauntlet.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Faction Zhentarim.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Guild Azorius Senate.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Guild Boros Legion.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Guild Cult of Rakdos.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Guild Golgari Swarm.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Guild Gruul Clans.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Guild House Dimir.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Guild Izzet League.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Guild Orzhov Syndicate.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Guild Selesnya Conclave.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Guild Simic Combine.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Amaunator.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Asmodeus.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Auril.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Azuth.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Bane.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Beshaba.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Bhaal.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Chauntea.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Cyric.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Deneir.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Eldath.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Gond.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Helm.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Hoar.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Ilmater.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Jergal.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Kelemvor.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Lathander.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Leira.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Lliira.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Loviatar.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Malar.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Mask.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Mielikki.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Myrkul.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Mystra.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Oghma.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Savras.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Selune.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Silvanus.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Sune.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Talona.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Talos.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Tempus.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of The Red Knight.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Torm.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Tyr.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Umberlee.png" />
+    <EmbeddedResource Include="Resources\Gallery\OrganizationSymbols\Symbol of Waukeen.png" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\arcane brotherhood.png" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\bane.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\beshaba.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\cormyr.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\cult of the dragon.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\cyric.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\eilistraee.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\fire knives.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\harpers.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\helm.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\ilmater.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\iron throne.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\kossuth.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\lords alliance.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\mask.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\mystra.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\pelor.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\red wizards.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\shar.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\shaundakul.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\sune.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\tempus.jpg" />
+    <EmbeddedResource Include="Resources\OrganizationSymbols\waterdeep.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\aarakocra female.png" />
+    <EmbeddedResource Include="Resources\Portraits\aasimar female 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\aasimar female.png" />
+    <EmbeddedResource Include="Resources\Portraits\aasimar male 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\aasimar male.png" />
+    <EmbeddedResource Include="Resources\Portraits\bugbear 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\bugbear.png" />
+    <EmbeddedResource Include="Resources\Portraits\centaur female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\centaur male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\changeling-female.png" />
+    <EmbeddedResource Include="Resources\Portraits\changeling-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\dark elf female ranger.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dark elf female rogue.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dark elf female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dark elf male avenger.png" />
+    <EmbeddedResource Include="Resources\Portraits\dark elf male fighter 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dark elf male fighter.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dark elf male rogue 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dark elf male sorcerer.png" />
+    <EmbeddedResource Include="Resources\Portraits\default.png" />
+    <EmbeddedResource Include="Resources\Portraits\deva female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\deva male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\deva-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\dragonborn female sorcerer.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dragonborn female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dragonborn male fighter.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dragonborn male rogue.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dragonborn male sorcerer 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dragonborn male sorcerer.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dragonborn male wizard 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dragonborn male wizard.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dragonborn-female-1.png" />
+    <EmbeddedResource Include="Resources\Portraits\dragonborn-male-1.png" />
+    <EmbeddedResource Include="Resources\Portraits\duergar-female.png" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf male cleric.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf male monk.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf-female.png" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf-female-2.png" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf-male-1.png" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf-male-2.png" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf-male-3.png" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf-male-4.png" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf-male-5.png" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf-male-6.png" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf-male-7.png" />
+    <EmbeddedResource Include="Resources\Portraits\dwarf-male-8.png" />
+    <EmbeddedResource Include="Resources\Portraits\eladrin-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\elf female druid.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\elf female ranger 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\elf female ranger.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\elf female warlock.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\elf male ranger.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\elf-drow-female.png" />
+    <EmbeddedResource Include="Resources\Portraits\elf-female-druid.png" />
+    <EmbeddedResource Include="Resources\Portraits\elf-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\elf-male-1.png" />
+    <EmbeddedResource Include="Resources\Portraits\elf-male-3.png" />
+    <EmbeddedResource Include="Resources\Portraits\elf-male-4.png" />
+    <EmbeddedResource Include="Resources\Portraits\elf-male-5.png" />
+    <EmbeddedResource Include="Resources\Portraits\elf-male-wizard.png" />
+    <EmbeddedResource Include="Resources\Portraits\elf-ranger-female.png" />
+    <EmbeddedResource Include="Resources\Portraits\firbolg female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\firbolg male 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\firbolg male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\genasi female.png" />
+    <EmbeddedResource Include="Resources\Portraits\genasi male earth 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\genasi male earth.png" />
+    <EmbeddedResource Include="Resources\Portraits\genasi-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\gith female 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\gith female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\gith male 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\gith male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\gith male.png" />
+    <EmbeddedResource Include="Resources\Portraits\gnome male bard.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\gnome male sorcerer.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\gnome male wizard.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\gnome male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\gnome-caster-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\gnome-female.png" />
+    <EmbeddedResource Include="Resources\Portraits\gnome-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\goliath male druid.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\goliath-female.png" />
+    <EmbeddedResource Include="Resources\Portraits\goliath-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\half elf female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\half elf-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\half elf-male-2.png" />
+    <EmbeddedResource Include="Resources\Portraits\half orc female fighter.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\half orc female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\half orc male barbarian.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\half orc male bard.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\half orc male monk.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\half orc male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\half orc-female.png" />
+    <EmbeddedResource Include="Resources\Portraits\half orc-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\halfling female 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\halfling female 3.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\halfling female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\halfling male bard.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\halfling male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\hobgoblin.png" />
+    <EmbeddedResource Include="Resources\Portraits\human female barbarian 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human female barbarian.png" />
+    <EmbeddedResource Include="Resources\Portraits\human female fighter.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human female sorcerer.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human female wizard.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human male artificer.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human male fighter.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human male monk.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human male ranger 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human male rogue.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human male sorcerer.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human male wizard 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human male wizard 3.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human male wizard 4.png" />
+    <EmbeddedResource Include="Resources\Portraits\human male wizard.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\human-barbarian-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\human-female-1.png" />
+    <EmbeddedResource Include="Resources\Portraits\human-female-2.png" />
+    <EmbeddedResource Include="Resources\Portraits\human-female-3.png" />
+    <EmbeddedResource Include="Resources\Portraits\human-female-monk.png" />
+    <EmbeddedResource Include="Resources\Portraits\human-female-paladin.png" />
+    <EmbeddedResource Include="Resources\Portraits\human-male-1.png" />
+    <EmbeddedResource Include="Resources\Portraits\human-male-2.png" />
+    <EmbeddedResource Include="Resources\Portraits\human-male-cleric.png" />
+    <EmbeddedResource Include="Resources\Portraits\human-male-paladin.png" />
+    <EmbeddedResource Include="Resources\Portraits\human-male-sorcerer.png" />
+    <EmbeddedResource Include="Resources\Portraits\illithid.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\kalashtar-female.png" />
+    <EmbeddedResource Include="Resources\Portraits\kalashtar-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\kenku 3.png" />
+    <EmbeddedResource Include="Resources\Portraits\kenku-1.png" />
+    <EmbeddedResource Include="Resources\Portraits\kenku-2.png" />
+    <EmbeddedResource Include="Resources\Portraits\kobold male 3.png" />
+    <EmbeddedResource Include="Resources\Portraits\kobold male druid.png" />
+    <EmbeddedResource Include="Resources\Portraits\kobold male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\kobold male.png" />
+    <EmbeddedResource Include="Resources\Portraits\kobold sorcerer.png" />
+    <EmbeddedResource Include="Resources\Portraits\kobold.png" />
+    <EmbeddedResource Include="Resources\Portraits\lizardfolk 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\lizardfolk 3.png" />
+    <EmbeddedResource Include="Resources\Portraits\lizardfolk 4.png" />
+    <EmbeddedResource Include="Resources\Portraits\lizardfolk male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\lizardfolk.png" />
+    <EmbeddedResource Include="Resources\Portraits\loxodon druid.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\loxodon1.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\loxodon2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\loxodon3.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\loxodon4.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\minotaur female.png" />
+    <EmbeddedResource Include="Resources\Portraits\minotaur male 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\minotaur male 3.png" />
+    <EmbeddedResource Include="Resources\Portraits\minotaur male.png" />
+    <EmbeddedResource Include="Resources\Portraits\orc female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\orc male barbarian 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\orc male barbarian.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\orc male fighter.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\orc male warlock.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\revenant-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\shadar kai female.png" />
+    <EmbeddedResource Include="Resources\Portraits\shardmind male 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\shardmind male.png" />
+    <EmbeddedResource Include="Resources\Portraits\shifter female.png" />
+    <EmbeddedResource Include="Resources\Portraits\shifter male 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\shifter male.png" />
+    <EmbeddedResource Include="Resources\Portraits\shifter-female.png" />
+    <EmbeddedResource Include="Resources\Portraits\shifter-male.png" />
+    <EmbeddedResource Include="Resources\Portraits\simic hybrid female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\simic hybrid male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\svirfneblin female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\svirfneblin male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\tabaxi 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\tabaxi 3.png" />
+    <EmbeddedResource Include="Resources\Portraits\tabaxi female 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\tabaxi female.png" />
+    <EmbeddedResource Include="Resources\Portraits\tabaxi male 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\tabaxi male.png" />
+    <EmbeddedResource Include="Resources\Portraits\tabaxi.png" />
+    <EmbeddedResource Include="Resources\Portraits\tiefling female 1.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\tiefling female 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\tiefling female sorcerer.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\tiefling male sorcerer.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\tiefling male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\tiefling-female.png" />
+    <EmbeddedResource Include="Resources\Portraits\tiefling-female-1.png" />
+    <EmbeddedResource Include="Resources\Portraits\tiefling-male-1.png" />
+    <EmbeddedResource Include="Resources\Portraits\tiefling-male-2.png" />
+    <EmbeddedResource Include="Resources\Portraits\tiefling-male-3.png" />
+    <EmbeddedResource Include="Resources\Portraits\triton female 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\triton male 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\triton male 3.png" />
+    <EmbeddedResource Include="Resources\Portraits\triton male.png" />
+    <EmbeddedResource Include="Resources\Portraits\vedalken female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\vedalken male.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\viashino.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\warforged 2.png" />
+    <EmbeddedResource Include="Resources\Portraits\warforged 3.png" />
+    <EmbeddedResource Include="Resources\Portraits\warforged 4.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\warforged.png" />
+    <EmbeddedResource Include="Resources\Portraits\wood elf female ranger 2.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\wood elf female rogue.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\yuan ti pureblood female 1.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\yuan ti pureblood female.jpg" />
+    <EmbeddedResource Include="Resources\Portraits\yuan ti pureblood male.jpg" />
+    <EmbeddedResource Include="Resources\Sheets\aurora_background_flat.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\aurora_cards_generic_flat.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\aurora_cards_spells_flat.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\aurora_companion.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\aurora_details_flat.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\aurora_spellcasting_flat.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\aurora_spelldemo_flat.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\aurorapagecompanion.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\charactersheet.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\detailspage.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\flat_details.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\layout_page_1.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Page\background.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Page\companion.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Page\details.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Page\details_2.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Page\equipmentpage.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\attackcard.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\aurora_partial_spellcollection_bottom.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\card.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\partial_100h.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\partial_spellcasting_header.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\partial_spellcasting_section_bottom.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\partial_spellcasting_section_center.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\partial_spellcasting_section_top.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\spellcard.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\column_entry.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\column_header.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\header.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_bottom.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_header.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_middle.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_top.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_top0.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_top1.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_top2.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_top3.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_top4.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_top5.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_top6.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_top7.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_top8.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\Partial\Spellcasting\red_spells_top9.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\sheet_background.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\sheet_character.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\sheet_character_details.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\sheet_companion.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\sheet_details.pdf" />
+    <EmbeddedResource Include="Resources\Sheets\sheet_spellcasting.pdf" />
+    <EmbeddedResource Include="Resources\spellcard-background.jpg" />
+    <EmbeddedResource Include="strings.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="app.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\_preview\applicationblack.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\_preview\applicationdark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\_preview\blue.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\_preview\brown.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\_preview\builderbrown.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\_preview\builderpurple.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\_preview\default.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\_preview\green.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\accents\accentbase.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\accents\auroraaqua.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\accents\aurorablack.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\accents\aurorablue.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\accents\aurorabrown.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\accents\auroragreen.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\accents\auroragreencopy.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\accents\auroramauve.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\accents\aurorapink.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\accents\aurorapurple.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\accents\aurorared.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\aurora\aurora.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\aurora\controls\aurorapanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\aurora\controls\elementdescriptionpanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\aurora\controls\expander.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\aurora\controls\icons.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\aurora\controls\portraitbutton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\aurora\layout\characterinformationpanelstyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\aurora\layout\slidertitleblock.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\builder\expanderstyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\builder\menuicons.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\builder\menustyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\builder\shellwindowsstyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\builder\statusbar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\builderstyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\clean.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\collectiondatatemplates\characterfiledatatemplates.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\controls\alteredtabcontrol.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\controls\auroraexpanderstyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\controls\circularprogressbar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="styles\elementflowdocumentstyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="themes\generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\abilitiescontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\abilitiesspinner.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\characteroverview.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\characterpanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\characterprofile.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\charactersheetpreviewpanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\common\descriptioncheckbox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\companionprofile.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\compendiumcontrol.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\additionalstatisticspanelcontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\companion\companionactionspanelcontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\companion\companionadditionalstatisticspanelcontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\companion\companionreactionspanelcontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\companion\companionskillspanelcontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\companion\companiontraitspanelcontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\conditionspanelcontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\expandercontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\inlineexpandercontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\refactoredabilitiescontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\savingthrowspanelcontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\skillscontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\skillspanelcontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\spellcastingexpandercontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\spellcompendiumcontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\content\spellspanelcontent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\descriptionpanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\equipment\equipmentslotcontrol.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\equipmentsection.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\experienceprogressbar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\featurestreecollection.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\fillablecontrols\featurelistcontainers.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\fillablefieldtextbox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\filters\inlinespellfilter.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\inventory\inventorysection.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\inventory\inventorystoragesection.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\listitemsselectionruleexpander.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\manage\manageattackssection.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\manage\managesourcessection.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\placeholdercontrol.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\roundbutton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\selectionruleexpander.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\skillsexpander.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\spellcasting\spellcasterselectioncontrol.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\spellcasting\spellcastingcollectionview.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\spellexpander.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\syndication\syndicationcontrol.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="usercontrols\test\selectionrulecombobox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\_obsolete\developerwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\_obsolete\elementinformationwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\_obsolete\fileupdaterwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\_obsolete\gen.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\_obsolete\launcher.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\_obsolete\splashwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\applicationsettingswindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\charactersourcemanagerwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\characterviewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\content\manage\createattackwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\contentmanager.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\development\controlsdemowindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\development\developertools.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\development\diagnosticswindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\development\elementclonewindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\development\generateelementwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\development\supportstringtester.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\dialogs\editcharactergroupwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\dialogs\exceptionmessagewindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\dialogs\exceptionwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\dialogs\extractitemwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\dialogs\savecharacterdialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\dialogs\singleentrywindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\equipment\inventorystoragewindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\flyouts\editequipmentitemflyout.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\manageequipmentitemwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\preferenceswindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\savecharacterwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\settingswindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\shellwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\advancementslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\applicationsettingsslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\bundlemanagerslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\characterinformationslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\companiongalleryslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\compendiumslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\content\bundlecontentflyout.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\managecharacteroptionsslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\managecoinageslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\newcharacterslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\portraitsgalleryslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\releaseslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\savecharacterslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\selectionflownotificationslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\symbolsgalleryslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\updatenotificationslider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\sliders\v1\thememanagerflyout.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\splash.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\tools\createspellcastingwindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="views\viewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

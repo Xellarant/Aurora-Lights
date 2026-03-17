@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<elements>
+
+  <element name="Arcane Focus" type="Spellcasting Focus Group" source="Core" id="ID_INTERNAL_SPELLFOCUS_GROUP_ARCANE_FOCUS">
+    <description>
+      <p></p>
+    </description>
+  </element>
+  <element name="Druidic Focus" type="Spellcasting Focus Group" source="Core" id="ID_INTERNAL_SPELLFOCUS_GROUP_DRUIDIC_FOCUS">
+    <description>
+      <p></p>
+    </description>
+  </element>
+  <element name="Holy Symbol" type="Spellcasting Focus Group" source="Core" id="ID_INTERNAL_SPELLFOCUS_GROUP_HOLY_SYMBOL">
+    <description>
+      <p></p>
+    </description>
+  </element>
+  <element name="Musical Instrument" type="Spellcasting Focus Group" source="Core" id="ID_INTERNAL_SPELLFOCUS_GROUP_MUSICAL_INSTRUMENT">
+    <description>
+      <p></p>
+    </description>
+  </element>
+
+
+
+  <element name="Spellcasting Focus Group (Arcane Focus)" type="Proficiency" source="Core" id="ID_INTERNAL_PROFICIENCY_SPELLFOCUS_GROUP_ARCANE_FOCUS">
+    <rules>
+      <!--<grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_CRYSTAL" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_ORB" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_ROD" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_STAFF" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_WAND" />-->
+    </rules>
+  </element>
+  <element name="Spellcasting Focus Group (Druidic Focus)" type="Proficiency" source="Core" id="ID_INTERNAL_PROFICIENCY_SPELLFOCUS_GROUP_DRUIDIC_FOCUS">
+    <rules>
+      <!--<grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_SPRIG_OF_MISTLETOE" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_TOTEM" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_WOODEN_STAFF" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_YEW_WAND" />-->
+    </rules>
+  </element>
+  <element name="Spellcasting Focus Group (Holy Symbol)" type="Proficiency" source="Core" id="ID_INTERNAL_PROFICIENCY_SPELLFOCUS_GROUP_HOLY_SYMBOL">
+    <rules>
+      <!--<grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_AMULET" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_EMBLEM" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_SPELLCASTING_FOCUS_RELIQUARY" />-->
+    </rules>
+  </element>
+  
+  <element name="Spellcasting Focus Group (Musical Instrument)" type="Proficiency" source="Core" id="ID_INTERNAL_PROFICIENCY_SPELLFOCUS_GROUP_MUSICAL_INSTRUMENT">
+    <rules>
+      <!--<grant type="Proficiency" name="ID_PROFICIENCY_TOOL_PROFICIENCY_(BAGPIPES)" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_TOOL_PROFICIENCY_(DRUM)" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_TOOL_PROFICIENCY_(DULCIMER)" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_TOOL_PROFICIENCY_(FLUTE)" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_TOOL_PROFICIENCY_(LUTE)" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_TOOL_PROFICIENCY_(LYRE)" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_TOOL_PROFICIENCY_(HORN)" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_TOOL_PROFICIENCY_(PAN_FLUTE)" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_TOOL_PROFICIENCY_(SHAWM)" />
+      <grant type="Proficiency" name="ID_PROFICIENCY_TOOL_PROFICIENCY_(VIOL)" />-->
+    </rules>
+  </element>
+  
+
+</elements>

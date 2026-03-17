@@ -1,0 +1,32 @@
+<controls:Flyout x:Class="Builder.Presentation.Views.Sliders.SelectionFlowNotificationSlider"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:shell="clr-namespace:Builder.Presentation.ViewModels.Shell"
+                 xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+                 xmlns:controls1="clr-namespace:Builder.Presentation.Controls"
+                 xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                 xmlns:sliders="clr-namespace:Builder.Presentation.Views.Sliders"
+                 CloseButtonVisibility="Collapsed" TitleVisibility="Collapsed" Position="Right" IsPinned="false"
+                 VerticalContentAlignment="Bottom" VerticalAlignment="Bottom" MinWidth="200"
+                 IsAutoCloseEnabled="true" AutoCloseInterval="3000" Theme="Light" IsModal="false"
+                 BorderThickness="1" BorderBrush="{DynamicResource HighlightBrush}" Background="#151516"
+                 Margin="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=controls:MetroWindow}, Path=ActualHeight, Converter={StaticResource NotificationSliderTopMarginConverter}}">
+  <UIElement.Effect>
+    <DropShadowEffect BlurRadius="5" Opacity="1" ShadowDepth="0"/>
+  </UIElement.Effect>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Button Grid.Row="1" Content="NEXT" FontSize="14" Background="Transparent"
+            Foreground="{DynamicResource AuroraGoldColorBrush}" Style="{StaticResource AuroraFlatButton}"
+            Margin="20" IsDefault="true" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+  </Grid>
+</controls:Flyout>

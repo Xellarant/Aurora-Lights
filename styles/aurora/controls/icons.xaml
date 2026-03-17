@@ -1,0 +1,26 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                    xmlns:controlzEx="urn:controlzex">
+  <Style x:Key="DefaultIconStyle" TargetType="{x:Type PackIconBase}">
+    <Setter Property="FrameworkElement.Width" Value="12"/>
+    <Setter Property="FrameworkElement.Height" Value="12"/>
+    <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+  </Style>
+  <Style x:Key="DefaultIconFontAwesomeStyle" TargetType="{x:Type iconPacks:PackIconFontAwesome}"
+         BasedOn="{StaticResource DefaultIconStyle}"/>
+  <Style x:Key="FullSizeFontAwesomeStyle" TargetType="{x:Type iconPacks:PackIconFontAwesome}"
+         BasedOn="{StaticResource DefaultIconStyle}">
+    <Setter Property="FrameworkElement.Width" Value="16"/>
+    <Setter Property="FrameworkElement.Height" Value="16"/>
+  </Style>
+  <Style x:Key="DefaultMaterialIconStyle" TargetType="{x:Type iconPacks:PackIconMaterial}"
+         BasedOn="{StaticResource DefaultIconStyle}">
+    <Setter Property="FrameworkElement.Width" Value="15"/>
+    <Setter Property="FrameworkElement.Height" Value="16"/>
+  </Style>
+  <Style TargetType="{x:Type iconPacks:PackIconMaterial}"
+         BasedOn="{StaticResource DefaultMaterialIconStyle}"/>
+  <Style TargetType="{x:Type iconPacks:PackIconFontAwesome}"
+         BasedOn="{StaticResource DefaultIconFontAwesomeStyle}"/>
+</ResourceDictionary>

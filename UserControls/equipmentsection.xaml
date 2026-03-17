@@ -1,0 +1,1594 @@
+<UserControl x:Class="Builder.Presentation.UserControls.EquipmentSection"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Builder.Presentation.UserControls"
+             xmlns:items="clr-namespace:Builder.Presentation.ViewModels.Shell.Items"
+             xmlns:controls="clr-namespace:Builder.Presentation.Controls"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:equipment="clr-namespace:Builder.Presentation.UserControls.Equipment"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:converters="clr-namespace:Builder.Presentation.Converters"
+             xmlns:controls1="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+             x:Name="UserControl">
+  <FrameworkElement.Resources>
+    <system:Double x:Key="RowHeight">21</system:Double>
+    <converters:ElementProficiencyValueConvereter x:Key="ElementProficiencyValueConvereter"/>
+    <converters:ElementProficiencyValueConvereter x:Key="InvertedElementProficiencyValueConvereter" Invert="true"/>
+    <converters:ElementProficiencyBrushValueConvereter x:Key="ElementProficiencyBrushValueConvereter"/>
+    <Style x:Key="BaseDataGridColumnHeader" TargetType="{x:Type DataGridColumnHeader}"
+           BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+      <Setter Property="Control.FontSize" Value="11"/>
+      <Setter Property="Control.FontWeight" Value="SemiBold"/>
+      <Setter Property="Control.Padding" Value="5,5,5,5"/>
+      <Setter Property="Control.Foreground" Value="{DynamicResource GrayBrush1}"/>
+      <Setter Property="Control.Background" Value="{DynamicResource GrayBrush8}"/>
+      <Setter Property="Control.BorderThickness" Value="0,0,0,1"/>
+      <Setter Property="Control.BorderBrush" Value="{DynamicResource AccentColorBrush4}"/>
+    </Style>
+    <Style x:Key="ReItemsDataGridStyle" TargetType="{x:Type DataGrid}"
+           BasedOn="{StaticResource {x:Type DataGrid}}">
+      <Setter Property="DataGrid.IsReadOnly" Value="true"/>
+      <Setter Property="DataGrid.AutoGenerateColumns" Value="false"/>
+      <Setter Property="DataGrid.HeadersVisibility" Value="Column"/>
+      <Setter Property="DataGrid.CanUserReorderColumns" Value="false"/>
+      <Setter Property="DataGrid.CanUserResizeRows" Value="false"/>
+      <Setter Property="Control.BorderThickness" Value="1"/>
+      <Setter Property="Control.BorderBrush" Value="{DynamicResource AccentColorBrush4}"/>
+      <Setter Property="DataGrid.GridLinesVisibility" Value="None"/>
+      <Setter Property="DataGrid.MinRowHeight" Value="20"/>
+      <Setter Property="DataGrid.ColumnHeaderStyle" Value="{StaticResource BaseDataGridColumnHeader}"/>
+    </Style>
+    <Style x:Key="LeftAlignedDataGridColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}"
+           BasedOn="{StaticResource BaseDataGridColumnHeader}">
+      <Setter Property="Control.Foreground" Value="{DynamicResource HighlightBrush}"/>
+      <Setter Property="Control.Background" Value="{DynamicResource GrayBrush8}"/>
+      <Setter Property="Control.BorderThickness" Value="0,0,0,1"/>
+      <Setter Property="Control.BorderBrush" Value="{DynamicResource AccentColorBrush4}"/>
+    </Style>
+    <Style x:Key="RightAlignedDataGridColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}"
+           BasedOn="{StaticResource LeftAlignedDataGridColumnHeaderStyle}">
+      <Setter Property="Control.HorizontalContentAlignment" Value="Right"/>
+    </Style>
+    <Style x:Key="HeaderTextBlockStyle" TargetType="{x:Type TextBlock}">
+      <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+      <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+      <Setter Property="TextBlock.Text" Value="{Binding Converter={StaticResource ToUpperConverter}}"/>
+    </Style>
+    <Style x:Key="EquipmentDataGridColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}"
+           BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+      <Setter Property="Control.HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="Control.FontSize" Value="9"/>
+      <Setter Property="Control.FontWeight" Value="SemiBold"/>
+      <Setter Property="FrameworkElement.MinWidth" Value="50"/>
+      <Setter Property="FrameworkElement.Width" Value="Auto"/>
+      <Setter Property="Control.Padding" Value="2,2,2,2"/>
+      <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush}"/>
+      <Setter Property="Control.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+    </Style>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition/>
+      <ColumnDefinition Width="Auto" MinWidth="0"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="200" MinHeight="160"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid Column="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
+      <Grid Column="0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <DataGrid x:Name="CategoriesDataGrid" Grid.Row="1" BorderBrush="{DynamicResource AccentColorBrush}"
+                  BorderThickness="1,0,1,1" mah:DataGridRowHelper.SelectionUnit="FullRow" CanUserSortColumns="false"
+                  SelectionMode="Single" GridLinesVisibility="Horizontal" Margin="0"
+                  HorizontalGridLinesBrush="#09000000" Style="{StaticResource SelectionRuleExpanderGridStyle}"
+                  MinRowHeight="{StaticResource RowHeight}" HeadersVisibility="Column"
+                  ItemsSource="{Binding CategoriesCollectionView}"
+                  SelectedItem="{Binding SelectedEquipmentCategory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+          <DataGrid.ColumnHeaderStyle>
+            <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+              <Setter Property="Control.BorderBrush" Value="{DynamicResource HighlightBrush}"/>
+              <Setter Property="Control.BorderThickness" Value="0,0,0,1"/>
+              <Setter Property="UIElement.SnapsToDevicePixels" Value="true"/>
+              <Setter Property="Control.FontSize" Value="9"/>
+              <Setter Property="Control.FontWeight" Value="SemiBold"/>
+              <Setter Property="Control.Padding" Value="5,2,5,2"/>
+              <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush}"/>
+              <Setter Property="Control.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+            </Style>
+          </DataGrid.ColumnHeaderStyle>
+          <DataGrid.Columns>
+            <DataGridTextColumn x:Name="categoryColumn" Header="CATEGORY" Width="Auto" MinWidth="150" MaxWidth="150"
+                                Binding="{Binding DisplayName}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <StackPanel VerticalAlignment="Center">
+                          <TextBlock Margin="0,0" TextWrapping="NoWrap" Text="{Binding}"/>
+                        </StackPanel>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+          </DataGrid.Columns>
+        </DataGrid>
+        <Border Grid.Row="0" Background="{DynamicResource HighlightBrush}" BorderThickness="1"
+                BorderBrush="{DynamicResource AccentColorBrush}">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <FrameworkElement.Resources>
+              <Style x:Key="HeaderTextBlockStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+                <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+                <Setter Property="TextBlock.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+                <Setter Property="TextBlock.Text" Value="{Binding Converter={StaticResource ToUpperConverter}}"/>
+              </Style>
+            </FrameworkElement.Resources>
+            <TextBlock Text="CATEGORIES" Style="{StaticResource HeaderTextBlockStyle}" Margin="5,4,0,5"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,1" Visibility="Collapsed">
+              <FrameworkElement.Resources>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HeaderTextBlockStyle}">
+                  <Setter Property="TextBlock.FontWeight" Value="Normal"/>
+                  <Setter Property="TextBlock.FontSize" Value="10"/>
+                  <Setter Property="TextBlock.LineHeight" Value="12"/>
+                  <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush6}"/>
+                  <Setter Property="FrameworkElement.Margin" Value="0,0,8,0"/>
+                </Style>
+              </FrameworkElement.Resources>
+              <TextBlock FontWeight="SemiBold" Text="CATEGORIES:" Margin="0,0,5,0"/>
+              <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                         Text="{Binding EquipmentCategories.Count}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,0,1" Visibility="Collapsed">
+              <FrameworkElement.Resources>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HeaderTextBlockStyle}">
+                  <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+                  <Setter Property="TextBlock.FontSize" Value="10"/>
+                  <Setter Property="TextBlock.LineHeight" Value="12"/>
+                  <Setter Property="FrameworkElement.Margin" Value="0,0,4,0"/>
+                  <Setter Property="TextBlock.Foreground" Value="{DynamicResource AuroraGoldColorBrush}"/>
+                  <Style.Triggers>
+                    <Trigger Property="TextBlock.Text" Value="0">
+                      <Setter Property="UIElement.Opacity" Value="0.25"/>
+                      <Setter Property="TextBlock.FontWeight" Value="Normal"/>
+                      <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush6}"/>
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Resources>
+              <iconPacks:PackIconFontAwesome Kind="ExclamationTriangleSolid" Foreground="{DynamicResource DangerColorBrush}" Margin="0,0,8,0"
+                                             Width="16" Height="16" ToolTip="DANGER! DANGER!"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+      </Grid>
+      <Grid Column="1" Margin="10,0,0,0" IsEnabled="{Binding IsArmorSelection}"
+            Visibility="{Binding IsArmorSelection, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <DataGrid x:Name="ArmorCollectionDataGrid" Grid.Row="1" BorderBrush="{DynamicResource AccentColorBrush}"
+                  BorderThickness="1,0,1,1" SnapsToDevicePixels="true" mah:DataGridRowHelper.SelectionUnit="FullRow"
+                  SelectionMode="Single" GridLinesVisibility="Horizontal" Margin="0" CanUserReorderColumns="false"
+                  HorizontalGridLinesBrush="#07000000" Style="{StaticResource SelectionRuleExpanderGridStyle}"
+                  MinRowHeight="{StaticResource RowHeight}" HeadersVisibility="Column"
+                  ItemsSource="{Binding ArmorCollection}"
+                  SelectedItem="{Binding SelectedArmorElement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+          <DataGrid.ColumnHeaderStyle>
+            <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+              <Setter Property="Control.BorderBrush" Value="{DynamicResource HighlightBrush}"/>
+              <Setter Property="Control.BorderThickness" Value="0,0,0,1"/>
+              <Setter Property="UIElement.SnapsToDevicePixels" Value="true"/>
+              <Setter Property="Control.FontSize" Value="9"/>
+              <Setter Property="Control.FontWeight" Value="SemiBold"/>
+              <Setter Property="Control.Padding" Value="5,2,5,2"/>
+              <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush}"/>
+              <Setter Property="Control.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+            </Style>
+          </DataGrid.ColumnHeaderStyle>
+          <DataGrid.Columns>
+            <DataGridTextColumn x:Name="armorNameColumn" Header="ARMOR" Width="Auto" MinWidth="150" MaxWidth="150"
+                                Binding="{Binding Name}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <StackPanel IsHitTestVisible="false" Orientation="Horizontal">
+                          <TextBlock Margin="0,0" VerticalAlignment="Center" Text="{Binding Name}"
+                                     Visibility="{Binding Converter={StaticResource InvertedElementProficiencyValueConvereter}}"/>
+                          <TextBlock Margin="0,0" VerticalAlignment="Center" FontStyle="Italic" FontWeight="SemiBold"
+                                     Text="{Binding Name}"
+                                     Visibility="{Binding Converter={StaticResource ElementProficiencyValueConvereter}}"/>
+                        </StackPanel>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+          </DataGrid.Columns>
+        </DataGrid>
+        <Border Grid.Row="0" Background="{DynamicResource HighlightBrush}" BorderThickness="1"
+                BorderBrush="{DynamicResource AccentColorBrush}">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <FrameworkElement.Resources>
+              <Style x:Key="HeaderTextBlockStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+                <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+                <Setter Property="TextBlock.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+                <Setter Property="TextBlock.Text" Value="{Binding Converter={StaticResource ToUpperConverter}}"/>
+              </Style>
+            </FrameworkElement.Resources>
+            <TextBlock Text="ARMOR" Style="{StaticResource HeaderTextBlockStyle}" Margin="5,4,0,5"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,1" Visibility="Collapsed">
+              <FrameworkElement.Resources>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HeaderTextBlockStyle}">
+                  <Setter Property="TextBlock.FontWeight" Value="Normal"/>
+                  <Setter Property="TextBlock.FontSize" Value="10"/>
+                  <Setter Property="TextBlock.LineHeight" Value="12"/>
+                  <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush6}"/>
+                  <Setter Property="FrameworkElement.Margin" Value="0,0,8,0"/>
+                </Style>
+              </FrameworkElement.Resources>
+              <TextBlock FontWeight="SemiBold" Text="ARMOR:" Margin="0,0,5,0"/>
+              <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                         Text="{Binding ArmorCollection.Count}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,0,1" Visibility="Collapsed">
+              <FrameworkElement.Resources>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HeaderTextBlockStyle}">
+                  <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+                  <Setter Property="TextBlock.FontSize" Value="10"/>
+                  <Setter Property="TextBlock.LineHeight" Value="12"/>
+                  <Setter Property="FrameworkElement.Margin" Value="0,0,4,0"/>
+                  <Setter Property="TextBlock.Foreground" Value="{DynamicResource AuroraGoldColorBrush}"/>
+                  <Style.Triggers>
+                    <Trigger Property="TextBlock.Text" Value="0">
+                      <Setter Property="UIElement.Opacity" Value="0.25"/>
+                      <Setter Property="TextBlock.FontWeight" Value="Normal"/>
+                      <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush6}"/>
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Resources>
+              <iconPacks:PackIconFontAwesome Kind="ExclamationTriangleSolid" Foreground="{DynamicResource DangerColorBrush}" Margin="0,0,8,0"
+                                             Width="16" Height="16" ToolTip="DANGER! DANGER!"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+      </Grid>
+      <Grid Column="2" Margin="10,0,0,0" IsEnabled="{Binding IsWeaponSelection}"
+            Visibility="{Binding IsWeaponSelection, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <DataGrid x:Name="WeaponsCollectionDataGrid" Grid.Row="1" BorderBrush="{DynamicResource AccentColorBrush}"
+                  BorderThickness="1,0,1,1" SnapsToDevicePixels="true" mah:DataGridRowHelper.SelectionUnit="FullRow"
+                  SelectionMode="Single" GridLinesVisibility="Horizontal" Margin="0" CanUserReorderColumns="false"
+                  HorizontalGridLinesBrush="#07000000" Style="{StaticResource SelectionRuleExpanderGridStyle}"
+                  MinRowHeight="{StaticResource RowHeight}" HeadersVisibility="Column"
+                  ItemsSource="{Binding WeaponsCollection}"
+                  SelectedItem="{Binding SelectedWeaponElement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+          <DataGrid.ColumnHeaderStyle>
+            <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+              <Setter Property="Control.BorderBrush" Value="{DynamicResource HighlightBrush}"/>
+              <Setter Property="Control.BorderThickness" Value="0,0,0,1"/>
+              <Setter Property="UIElement.SnapsToDevicePixels" Value="true"/>
+              <Setter Property="Control.FontSize" Value="9"/>
+              <Setter Property="Control.FontWeight" Value="SemiBold"/>
+              <Setter Property="Control.Padding" Value="5,2,5,2"/>
+              <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush}"/>
+              <Setter Property="Control.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+            </Style>
+          </DataGrid.ColumnHeaderStyle>
+          <DataGrid.Columns>
+            <DataGridTextColumn x:Name="weaponsNameColumn" Header="WEAPON" Width="Auto" MinWidth="150" MaxWidth="150"
+                                Binding="{Binding Name}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <StackPanel IsHitTestVisible="false" Orientation="Horizontal">
+                          <TextBlock Margin="0,0" VerticalAlignment="Center" Text="{Binding Name}"
+                                     Visibility="{Binding Converter={StaticResource InvertedElementProficiencyValueConvereter}}"/>
+                          <TextBlock Margin="0,0" VerticalAlignment="Center" FontStyle="Italic" FontWeight="SemiBold"
+                                     Text="{Binding Name}"
+                                     Visibility="{Binding Converter={StaticResource ElementProficiencyValueConvereter}}"/>
+                        </StackPanel>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+          </DataGrid.Columns>
+        </DataGrid>
+        <Border Grid.Row="0" Background="{DynamicResource HighlightBrush}" BorderThickness="1"
+                BorderBrush="{DynamicResource AccentColorBrush}">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <FrameworkElement.Resources>
+              <Style x:Key="HeaderTextBlockStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+                <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+                <Setter Property="TextBlock.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+                <Setter Property="TextBlock.Text" Value="{Binding Converter={StaticResource ToUpperConverter}}"/>
+              </Style>
+            </FrameworkElement.Resources>
+            <TextBlock Text="WEAPONS" Style="{StaticResource HeaderTextBlockStyle}" Margin="5,4,0,5"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,1" Visibility="Collapsed">
+              <FrameworkElement.Resources>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HeaderTextBlockStyle}">
+                  <Setter Property="TextBlock.FontWeight" Value="Normal"/>
+                  <Setter Property="TextBlock.FontSize" Value="10"/>
+                  <Setter Property="TextBlock.LineHeight" Value="12"/>
+                  <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush6}"/>
+                  <Setter Property="FrameworkElement.Margin" Value="0,0,8,0"/>
+                </Style>
+              </FrameworkElement.Resources>
+              <TextBlock FontWeight="SemiBold" Text="WEAPONS:" Margin="0,0,5,0"/>
+              <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                         Text="{Binding WeaponsCollection.Count}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,0,1" Visibility="Collapsed">
+              <FrameworkElement.Resources>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HeaderTextBlockStyle}">
+                  <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+                  <Setter Property="TextBlock.FontSize" Value="10"/>
+                  <Setter Property="TextBlock.LineHeight" Value="12"/>
+                  <Setter Property="FrameworkElement.Margin" Value="0,0,4,0"/>
+                  <Setter Property="TextBlock.Foreground" Value="{DynamicResource AuroraGoldColorBrush}"/>
+                  <Style.Triggers>
+                    <Trigger Property="TextBlock.Text" Value="0">
+                      <Setter Property="UIElement.Opacity" Value="0.25"/>
+                      <Setter Property="TextBlock.FontWeight" Value="Normal"/>
+                      <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush6}"/>
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Resources>
+              <iconPacks:PackIconFontAwesome Kind="ExclamationTriangleSolid" Foreground="{DynamicResource DangerColorBrush}" Margin="0,0,8,0"
+                                             Width="16" Height="16" ToolTip="DANGER! DANGER!"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+      </Grid>
+      <Grid x:Name="ItemsGrid" Row="0" Column="3" Margin="10,0,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="0"/>
+          <RowDefinition/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto" MaxHeight="190"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Border x:Name="VisualFocusQue" BorderThickness="0" Width="4" BorderBrush="{DynamicResource GrayBrush1}"
+                Margin="0,0,10,0" Background="{DynamicResource HighlightBrush}" SnapsToDevicePixels="true"
+                Visibility="Collapsed" Grid.Column="0" Grid.RowSpan="4">
+          <FrameworkElement.Triggers>
+            <EventTrigger RoutedEvent="Border.RequestBringIntoView">
+              <BeginStoryboard>
+                <Storyboard>
+                  <DoubleAnimation From="1" To="0" AutoReverse="true" Duration="0:0:0.75" Storyboard.TargetName="VisualFocusQue"
+                                   Storyboard.TargetProperty="Opacity" RepeatBehavior="3x"/>
+                </Storyboard>
+              </BeginStoryboard>
+            </EventTrigger>
+          </FrameworkElement.Triggers>
+        </Border>
+        <DataGrid PreviewKeyDown="SelectionElementsDataGrid_OnPreviewKeyDown" x:Name="SelectionElementsDataGrid"
+                  Grid.Row="2" Grid.Column="1" BorderBrush="{DynamicResource AccentColorBrush}"
+                  BorderThickness="1,0,1,1" mah:DataGridRowHelper.SelectionUnit="FullRow" SelectionMode="Single"
+                  Margin="0" CanUserReorderColumns="false" GridLinesVisibility="Horizontal"
+                  HorizontalGridLinesBrush="#09000000" Style="{StaticResource SelectionRuleExpanderGridStyle}"
+                  MinRowHeight="{StaticResource RowHeight}" HeadersVisibility="Column"
+                  ItemsSource="{Binding ItemsCollection}"
+                  SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+          <FrameworkElement.ContextMenu>
+            <ContextMenu>
+              <MenuItem Header="ADD" Command="{Binding AddSelectedItemCommand}"/>
+              <MenuItem Header="BUY" Command="{Binding BuySelectedItemCommand}"/>
+            </ContextMenu>
+          </FrameworkElement.ContextMenu>
+          <DataGrid.RowStyle>
+            <Style TargetType="{x:Type DataGridRow}">
+            </Style>
+          </DataGrid.RowStyle>
+          <DataGrid.ColumnHeaderStyle>
+            <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+              <Setter Property="Control.BorderBrush" Value="{DynamicResource HighlightBrush}"/>
+              <Setter Property="Control.BorderThickness" Value="0,0,0,1"/>
+              <Setter Property="UIElement.SnapsToDevicePixels" Value="true"/>
+              <Setter Property="Control.FontSize" Value="9"/>
+              <Setter Property="Control.FontWeight" Value="SemiBold"/>
+              <Setter Property="Control.Padding" Value="5,2,5,2"/>
+              <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush}"/>
+              <Setter Property="Control.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+            </Style>
+          </DataGrid.ColumnHeaderStyle>
+          <FrameworkElement.Resources>
+            <ResourceDictionary/>
+          </FrameworkElement.Resources>
+          <DataGrid.Columns>
+            <DataGridTextColumn x:Name="NameColumn" Header="NAME" Width="*" MinWidth="100" Binding="{Binding Name}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <StackPanel IsHitTestVisible="false" Orientation="Horizontal">
+                          <TextBlock Margin="0,0" VerticalAlignment="Center" Text="{Binding Name}"
+                                     Visibility="{Binding Converter={StaticResource InvertedElementProficiencyValueConvereter}}"/>
+                          <TextBlock Margin="0,0" VerticalAlignment="Center" FontStyle="Italic" FontWeight="SemiBold"
+                                     Text="{Binding Name}"
+                                     Visibility="{Binding Converter={StaticResource ElementProficiencyValueConvereter}}"/>
+                        </StackPanel>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="ItemPriceColumn" Header="PRICE"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}" MinWidth="60"
+                                Binding="{Binding DisplayPrice}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Opacity="0.8" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding DisplayPrice}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="ItemWeightColumn" Header="WEIGHT" MinWidth="50"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}"
+                                Binding="{Binding CalculatableWeight}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Opacity="0.9" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                   Text="{Binding DisplayWeight}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="itemsRarityColumn" Header="RARITY" MinWidth="75" Visibility="Collapsed"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}" Binding="{Binding Rarity}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <Grid>
+                          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Opacity="0.9" FontStyle="Italic" Margin="0,0" VerticalAlignment="Center"
+                                       Text="{Binding Rarity, FallbackValue=Rarity}"/>
+                          </StackPanel>
+                        </Grid>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="attunementColumn" Header="ATTUNE" Width="75" Visibility="Collapsed"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}" MinWidth="50"
+                                Binding="{Binding RequiresAttunement}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <Grid>
+                          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <iconPacks:PackIconFontAwesome Kind="LinkSolid" Opacity="0.5"
+                                                           Visibility="{Binding RequiresAttunement, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                          </StackPanel>
+                        </Grid>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="slotColumn" Header="SLOT" Width="75" Visibility="Collapsed" Binding="{Binding Slot}">
+              <DataGridColumn.HeaderStyle>
+                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                  <Setter Property="Control.HorizontalContentAlignment" Value="Center"/>
+                  <Setter Property="Control.FontSize" Value="9"/>
+                  <Setter Property="Control.FontWeight" Value="SemiBold"/>
+                  <Setter Property="Control.Padding" Value="5,2,5,2"/>
+                  <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush}"/>
+                  <Setter Property="Control.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+                </Style>
+              </DataGridColumn.HeaderStyle>
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <Grid>
+                          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Opacity="0.9" FontStyle="Italic" Margin="0,0" VerticalAlignment="Center" Text="{Binding Slot}"/>
+                          </StackPanel>
+                        </Grid>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="ArmorClassColumn" Header="ARMOR CLASS" Visibility="Collapsed"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}" MinWidth="145"
+                                Binding="{Binding DisplayDamage}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Opacity="0.9" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                   Text="{Binding DisplayArmorClass}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="ArmorStrengthColumn" Header="STRENGTH" Visibility="Collapsed"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}" MinWidth="50"
+                                Binding="{Binding DisplayDamage}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Opacity="0.9" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                   Text="{Binding DisplayStrength}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="ArmorStealthColumn" Header="STEALTH" Visibility="Collapsed"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}" MinWidth="100"
+                                Binding="{Binding DisplayDamage}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Opacity="0.9" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                   Text="{Binding DisplayStealth}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="ArmorGroupColumn" Header="GROUP" Visibility="Collapsed"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}" MinWidth="100" MaxWidth="250"
+                                Binding="{Binding DisplayArmorGroups}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Opacity="0.9" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                   Text="{Binding DisplayArmorGroups}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="WeaponDamageColumn" Header="DAMAGE"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}" MinWidth="100"
+                                Visibility="Collapsed" Binding="{Binding DisplayDamage}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Opacity="0.9" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                   Text="{Binding DisplayDamage}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="WeaponRangeColumn" Header="RANGE" MinWidth="60"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}" Visibility="Collapsed"
+                                Binding="{Binding Range}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Opacity="0.9" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Range}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="WeaponGroupColumn" Header="GROUPS" MaxWidth="150" Width="Auto"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}" MinWidth="100"
+                                Visibility="Collapsed" Binding="{Binding DisplayWeaponGroups}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Opacity="0.9" VerticalAlignment="Center" TextWrapping="Wrap" MaxHeight="60"
+                                   Text="{Binding DisplayWeaponGroups}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="WeaponPropertiesColumn" Header="PROPERTIES" MinWidth="100" MaxWidth="250"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}" Visibility="Collapsed"
+                                Binding="{Binding DisplayWeaponProperties}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Opacity="0.9" VerticalAlignment="Center" TextWrapping="Wrap"
+                                   Text="{Binding DisplayWeaponProperties}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="SourceColumn" Header="SOURCE" Width="*" MinWidth="110" Binding="{Binding Source}">
+              <DataGridColumn.HeaderStyle>
+                <Style TargetType="{x:Type DataGridColumnHeader}"
+                       BasedOn="{StaticResource EquipmentDataGridColumnHeaderStyle}">
+                  <Setter Property="Control.HorizontalContentAlignment" Value="Right"/>
+                </Style>
+              </DataGridColumn.HeaderStyle>
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Margin="0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="{Binding Source}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+          </DataGrid.Columns>
+        </DataGrid>
+        <Border Background="{DynamicResource HighlightBrush}" BorderThickness="1"
+                BorderBrush="{DynamicResource AccentColorBrush}" Margin="0,0,0,0" Grid.Row="0" Grid.Column="1">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <FrameworkElement.Resources>
+              <ResourceDictionary/>
+            </FrameworkElement.Resources>
+            <TextBlock Style="{StaticResource HeaderTextBlockStyle}" Margin="5,4,0,5"
+                       Text="{Binding SelectedEquipmentCategory.DisplayName, Converter={StaticResource UpperCaseConverter}}"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,1">
+              <FrameworkElement.Resources>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HeaderTextBlockStyle}">
+                  <Setter Property="TextBlock.FontWeight" Value="Normal"/>
+                  <Setter Property="TextBlock.FontSize" Value="10"/>
+                  <Setter Property="TextBlock.LineHeight" Value="12"/>
+                  <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush6}"/>
+                  <Setter Property="FrameworkElement.Margin" Value="0,0,8,0"/>
+                </Style>
+              </FrameworkElement.Resources>
+              <TextBlock FontWeight="SemiBold" Text="COPPER:" Margin="0,0,5,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}" Text="{Binding Inventory.Coins.Copper}"/>
+              <TextBlock FontWeight="SemiBold" Text="SILVER:" Margin="0,0,5,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}" Text="{Binding Inventory.Coins.Silver}"/>
+              <TextBlock FontWeight="SemiBold" Text="ELECTRUM:" Margin="0,0,5,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}" Text="{Binding Inventory.Coins.Electrum}"/>
+              <TextBlock FontWeight="SemiBold" Text="GOLD:" Margin="0,0,5,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}" Text="{Binding Inventory.Coins.Gold}"/>
+              <TextBlock FontWeight="SemiBold" Text="PLATINUM:" Margin="0,0,5,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}" Text="{Binding Inventory.Coins.Platinum}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="5" Orientation="Horizontal" Margin="0,0,0,1" Visibility="Collapsed">
+              <FrameworkElement.Resources>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HeaderTextBlockStyle}">
+                  <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+                  <Setter Property="TextBlock.FontSize" Value="10"/>
+                  <Setter Property="TextBlock.LineHeight" Value="12"/>
+                  <Setter Property="FrameworkElement.Margin" Value="0,0,4,0"/>
+                  <Setter Property="TextBlock.Foreground" Value="{DynamicResource AuroraGoldColorBrush}"/>
+                  <Style.Triggers>
+                    <Trigger Property="TextBlock.Text" Value="0">
+                      <Setter Property="UIElement.Opacity" Value="0.25"/>
+                      <Setter Property="TextBlock.FontWeight" Value="Normal"/>
+                      <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush6}"/>
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </FrameworkElement.Resources>
+              <iconPacks:PackIconFontAwesome Kind="ExclamationTriangleSolid" Foreground="{DynamicResource DangerColorBrush}" Margin="0,0,8,0"
+                                             Width="16" Height="16" ToolTip="DANGER! DANGER!"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+      </Grid>
+      <Grid Row="1" Column="0" Margin="0,5,0,15">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="4"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <controls1:CommandButton CornerRadius="2 0 0 2" Padding="2,2" ToolTip="Add Selected Item" Content="ADD" Margin="0,0,0,0"
+                                 FontSize="10" Command="{Binding AddSelectedItemCommand}"/>
+        <mah:NumericUpDown BorderBrush="{DynamicResource LightColor1Brush}" Grid.Column="1" Minimum="1" Maximum="100"
+                           HideUpDownButtons="true" MaxWidth="40" MinWidth="21" TextAlignment="Left"
+                           NumericInputMode="Numbers"
+                           Value="{Binding AddAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <controls1:CommandButton CornerRadius="2 0 0 2" Grid.Column="3" Padding="2,2" ToolTip="Purchase Selected Item" Content="BUY"
+                                 FontSize="10" Margin="0,0,0,0" Command="{Binding BuySelectedItemCommand}"/>
+        <mah:NumericUpDown BorderBrush="{DynamicResource LightColor1Brush}" Grid.Column="4" Minimum="1" Maximum="100"
+                           HideUpDownButtons="true" MaxWidth="40" MinWidth="21" TextAlignment="Left"
+                           NumericInputMode="Numbers"
+                           Value="{Binding BuyAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      </Grid>
+      <Grid Row="1" Margin="10,5,0,15" Column="1" ColumnSpan="3">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition MinWidth="100" Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <FrameworkElement.Resources>
+          <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource MetroFlatToggleButton}">
+            <Setter Property="FrameworkElement.Margin" Value="0,0,2,0"/>
+            <Setter Property="Control.FontWeight" Value="SemiBold"/>
+            <Setter Property="Control.FontSize" Value="10"/>
+            <Style.Triggers>
+              <Trigger Property="ToggleButton.IsChecked" Value="True"/>
+              <Trigger Property="ToggleButton.IsChecked" Value="False">
+                <Setter Property="UIElement.Opacity" Value=".75"/>
+              </Trigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Resources>
+        <ToggleButton Grid.Row="1" Margin="0,0,5,0" Padding="5" Width="26"
+                      ToolTip="The filter only applies to the current category. You can lock the filter so it will apply directly when changing categories."
+                      Grid.Column="1"
+                      IsChecked="{Binding ItemFilter.IsLocked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+          <ContentControl.Content>
+            <iconPacks:PackIconMaterial Kind="Filter" Margin="1,0,0,0" Height="12" Width="13"/>
+          </ContentControl.Content>
+        </ToggleButton>
+        <TextBox MinWidth="100" BorderBrush="#FF242424" mah:TextBoxHelper.Watermark="filter name and keywords..."
+                 Grid.Column="2" Margin="0,0,0,0" Grid.Row="1" Height="26" mah:TextBoxHelper.ClearTextButton="true"
+                 Text="{Binding ItemFilter.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <ComboBox MinWidth="150" Margin="10,0,0,0" Grid.Column="7" Grid.Row="1"
+                  Visibility="{Binding ItemFilter.IsSourceFilterAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                  ItemsSource="{Binding ItemFilter.SourceCollection}"
+                  SelectedItem="{Binding ItemFilter.Source, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <StackPanel Grid.Column="8" Orientation="Horizontal" Margin="10,0,0,0" Grid.Row="1">
+          <controls1:CommandButton CommandText="{Binding Inventory.Coins.DisplayCoinage, Mode=OneWay, StringFormat='MANAGE COINS: 0 GP'}"
+                                   Command="{Binding ShowManageCoinageSliderCommand}"/>
+        </StackPanel>
+      </Grid>
+    </Grid>
+    <GridSplitter Grid.Row="1" Grid.Column="1" ResizeDirection="Rows" HorizontalAlignment="Stretch" Height="5"
+                  Margin="0,0,0,0" Background="{DynamicResource TransparentWhiteBrush}"/>
+    <Grid Row="2" Column="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <Grid Column="0" Margin="0,0,0,0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Border Background="{DynamicResource Aurora.Brushes.Light1}" Height="40" Grid.Row="0" Grid.ColumnSpan="1"
+                Visibility="Collapsed" BorderBrush="{DynamicResource Aurora.Brushes.Light2}" BorderThickness="0"
+                Grid.Column="0" Margin="0,0,0,10">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="INVENTORY" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}" Margin="20,0,20,0"
+                       Style="{StaticResource SectionHeaderTextBlockStyle}" VerticalAlignment="Center" FontSize="12"/>
+            <StackPanel Visibility="Collapsed" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"
+                        Margin="5,0">
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0" Text="{Binding Inventory.Coins.Copper, Mode=OneWay}"/>
+              <TextBlock Text="CP" Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,12,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0" Text="{Binding Inventory.Coins.Silver, Mode=OneWay}"/>
+              <TextBlock Text="SP" Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,12,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0" Text="{Binding Inventory.Coins.Electrum, Mode=OneWay}"/>
+              <TextBlock Text="EP" Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,12,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0" Text="{Binding Inventory.Coins.Gold, Mode=OneWay}"/>
+              <TextBlock Text="GP" Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,12,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0" Text="{Binding Inventory.Coins.Platinum, Mode=OneWay}"/>
+              <TextBlock Text="PP" Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,0,0"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+              <TextBlock Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="12" VerticalAlignment="Center"
+                         Margin="0,0,4,0" Text="{Binding SelectedEquipmentItem}"/>
+              <Separator Style="{StaticResource IconSeparatorStyle}"/>
+              <controls1:CommandButton CommandText="Edit" FontSize="11" Style="{StaticResource SuccessTextIconCommandButtonStyle}"
+                                       Margin="0,0,0,0" Cursor="Hand" Command="{Binding ManageEquipmentItemCommand}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0"
+                        Visibility="Collapsed">
+              <TextBlock Text="CARRIED WEIGHT: " Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={0:#.##}}"/>
+              <TextBlock Text="lb" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,0,0"/>
+            </StackPanel>
+            <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,10,0"
+                        Visibility="Collapsed">
+              <TextBlock Text="ATTUNEMENT: " Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0" Text="{Binding Inventory.AttunedItemCount, Mode=OneWay}"/>
+              <TextBlock Text="/" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0"/>
+              <TextBlock Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,0,0" Text="{Binding Inventory.MaxAttunedItemCount, Mode=OneWay}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Column="6" VerticalAlignment="Center" Margin="14,0,20,0">
+              <controls1:CommandButton FontSize="11" Style="{StaticResource TextIconCommandButtonStyle}" Margin="0,0,0,0" Cursor="Hand"
+                                       CommandText="{Binding Inventory.Coins.DisplayCoinage, StringFormat='Manage Gold ({0} GP)'}"
+                                       Command="{Binding ShowManageCoinageSliderCommand}"/>
+              <Separator Style="{StaticResource IconSeparatorStyle}" Margin="10,0"
+                         Background="{DynamicResource Aurora.Brushes.Text.Secondary}"/>
+              <TextBlock Text="Attuned Magic Items: " Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0"/>
+              <TextBlock Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0" Text="{Binding Inventory.AttunedItemCount, Mode=OneWay}"/>
+              <TextBlock Text="/" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0"/>
+              <TextBlock Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,0,0" Text="{Binding Inventory.MaxAttunedItemCount, Mode=OneWay}"/>
+              <Separator Style="{StaticResource IconSeparatorStyle}" Margin="10,0"
+                         Background="{DynamicResource Aurora.Brushes.Text.Secondary}"/>
+              <TextBlock Text="Carried Weight: " Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0"/>
+              <TextBlock Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={0:#.##}}"/>
+              <TextBlock Text="/" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,4,0"/>
+              <TextBlock Text="500" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,2,0"/>
+              <TextBlock Text="lb" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                         Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
+                         Margin="0,0,0,0"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+        <DataGrid PreviewKeyDown="SelectionEquipmentItem_OnPreviewKeyDown"
+                  KeyDown="SelectionElementsDataGrid2_OnKeyDown" KeyUp="SelectionElementsDataGrid2_OnKeyUp"
+                  x:Name="SelectionElementsDataGrid2" Grid.Row="2" Grid.Column="0"
+                  BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="0" CanUserSortColumns="false"
+                  mah:DataGridRowHelper.SelectionUnit="FullRow" SelectionMode="Single"
+                  GridLinesVisibility="Horizontal" Margin="0,0,0,0" HorizontalGridLinesBrush="#09000000"
+                  Style="{StaticResource SelectionRuleExpanderGridStyle}" MinRowHeight="21"
+                  HeadersVisibility="Column" ItemsSource="{Binding Inventory.Items}"
+                  SelectedItem="{Binding SelectedEquipmentItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+          <FrameworkElement.ContextMenu>
+            <ContextMenu>
+              <MenuItem Header="Item Details" Command="{Binding ManageEquipmentItemCommand}"/>
+              <MenuItem Header="Extract Item" Command="{Binding ExtractEquipmentItemCommand}"
+                        Visibility="{Binding AllowExtractEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+              <MenuItem Header="Add to Attacks &amp; Spellcasting" Command="{Binding AddToAttacksCommand}"
+                        Visibility="{Binding AllowEquipmentItemAddToAttacks, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+              <Separator/>
+              <MenuItem Header="Equip" Command="{Binding EquipEquipmentItemCommand}"
+                        Visibility="{Binding AllowEquipEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+              <MenuItem Header="Equip in Primary Hand" Command="{Binding EquipPrimaryEquipmentItemCommand}"
+                        Visibility="{Binding AllowEquipPrimaryEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+              <MenuItem Header="Equip in Secondary Hand" Command="{Binding EquipSecondaryEquipmentItemCommand}"
+                        Visibility="{Binding AllowEquipSecondaryEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+              <MenuItem Header="Equip as Versatile" Command="{Binding EquipVersatileEquipmentItemCommand}"
+                        Visibility="{Binding AllowEquipVersatileEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+              <Separator/>
+              <MenuItem Header="Toggle Attunement" Command="{Binding ToggleAttunementEquipmentItemCommand}"/>
+              <Separator/>
+              <MenuItem Header="Remove Item" Command="{Binding DeleteSelectedEquipmentCommand}"/>
+              <MenuItem Header="Remove Items (All Selected Stackables)"
+                        Command="{Binding DeleteAllSelectedEquipmentCommand}"/>
+            </ContextMenu>
+          </FrameworkElement.ContextMenu>
+          <DataGrid.RowStyle>
+            <Style TargetType="{x:Type DataGridRow}">
+            </Style>
+          </DataGrid.RowStyle>
+          <UIElement.InputBindings>
+            <KeyBinding Modifiers="Alt" Key="Up" Command="{Binding MoveSelectedEquipmentItemUpCommand}"/>
+            <KeyBinding Modifiers="Alt" Key="Down" Command="{Binding MoveSelectedEquipmentItemDownCommand}"/>
+            <KeyBinding Key="Delete" Command="{Binding DeleteSelectedEquipmentCommand}"/>
+            <KeyBinding Key="Space" Command="{Binding ActivateEquipmentItemCommand}"/>
+          </UIElement.InputBindings>
+          <DataGrid.ColumnHeaderStyle>
+            <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+              <Setter Property="Control.BorderBrush" Value="{DynamicResource HighlightBrush}"/>
+              <Setter Property="Control.BorderThickness" Value="0,0,0,1"/>
+              <Setter Property="UIElement.SnapsToDevicePixels" Value="true"/>
+              <Setter Property="Control.FontSize" Value="9"/>
+              <Setter Property="Control.FontWeight" Value="SemiBold"/>
+              <Setter Property="Control.Padding" Value="5,2,5,2"/>
+              <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush}"/>
+              <Setter Property="Control.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+            </Style>
+          </DataGrid.ColumnHeaderStyle>
+          <DataGrid.Columns>
+            <DataGridTextColumn x:Name="EquipmentItemActiveColumn" Width="20" MaxWidth="20">
+              <DataGridColumn.Header>
+                <iconPacks:PackIconFontAwesome Kind="CheckSolid" ToolTip="This check indicates whether the item is equipped."
+                                               HorizontalAlignment="Center" Padding="1" Foreground="{DynamicResource IdealForegroundColorBrush}"
+                                               Opacity="0.9" Margin="0,0" VerticalAlignment="Center"/>
+              </DataGridColumn.Header>
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="0,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <Grid>
+                          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <iconPacks:PackIconFontAwesome Kind="CheckCircleSolid" ToolTip="This item is equipped." HorizontalAlignment="Center"
+                                                           Foreground="{DynamicResource HighlightBrush}" Padding="0" Opacity="0.9" Margin="0,0"
+                                                           VerticalAlignment="Center"
+                                                           Visibility="{Binding IsEquipped, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                          </StackPanel>
+                        </Grid>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="EquipmentItemAttuneColumn" Width="20" MaxWidth="20">
+              <DataGridColumn.Header>
+                <iconPacks:PackIconFontAwesome Kind="LinkSolid" ToolTip="This icon indicates if the item is attuned." HorizontalAlignment="Center"
+                                               Foreground="{DynamicResource AuroraGoldColorBrush}" Padding="1" Opacity="0.9" Margin="0,0"
+                                               VerticalAlignment="Center"/>
+              </DataGridColumn.Header>
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="0,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <Grid>
+                          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Visibility="{Binding IsAttunable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <iconPacks:PackIconFontAwesome Kind="LinkSolid" ToolTip="This item is attuned." HorizontalAlignment="Center" Padding="0"
+                                                           Opacity="0.8" Margin="0,0" VerticalAlignment="Center"
+                                                           Visibility="{Binding IsAttuned, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <iconPacks:PackIconFontAwesome Kind="UnlinkSolid" ToolTip="This item requires attunement." HorizontalAlignment="Center"
+                                                           Padding="1" Opacity="0.25" Margin="0,0" VerticalAlignment="Center"
+                                                           Visibility="{Binding IsAttuned, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+                          </StackPanel>
+                        </Grid>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="EquipmentItemNameColumn" Header="NAME" Width="*" MinWidth="150" Binding="{Binding}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <StackPanel IsHitTestVisible="false" Orientation="Horizontal">
+                          <TextBlock Margin="0,0" VerticalAlignment="Center" Text="{Binding DisplayName}"
+                                     Visibility="{Binding IsActivated, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+                          <TextBlock Opacity="0.8" FontWeight="Bold" Margin="0,0" VerticalAlignment="Center"
+                                     Text="{Binding DisplayName}"
+                                     Visibility="{Binding IsActivated, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        </StackPanel>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="EquipmentItemAdditionColumn" Header="" Width="*" MinWidth="200">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <StackPanel VerticalAlignment="Center">
+                          <StackPanel Orientation="Horizontal"
+                                      Visibility="{Binding IsAdorned, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <TextBlock FontStyle="Italic" VerticalAlignment="Center" Text="{Binding Item.Name}"/>
+                          </StackPanel>
+                        </StackPanel>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="EquipmentItemAttunementColumn" Visibility="Collapsed" Width="Auto" MinWidth="125"
+                                HeaderStyle="{StaticResource EquipmentDataGridColumnHeaderStyle}">
+              <DataGridColumn.Header>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                  <iconPacks:PackIconFontAwesome Kind="LinkSolid" ToolTip="Indicates whether the item is attuned." Opacity="0.8" Margin="0,0,4,0"
+                                                 Padding="1" VerticalAlignment="Center"/>
+                  <TextBlock Text="ATTUNEMENT"/>
+                </StackPanel>
+              </DataGridColumn.Header>
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                          <StackPanel Orientation="Horizontal"
+                                      Visibility="{Binding IsAttunable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <TextBlock Opacity="0.8" Text="requires attunement" Margin="0,0,4,0" VerticalAlignment="Center"
+                                       FontStyle="Italic"
+                                       Visibility="{Binding IsAttuned, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+                            <TextBlock Opacity="0.8" Text="attuned" Margin="0,0,4,0" VerticalAlignment="Center" FontWeight="SemiBold"
+                                       FontStyle="Italic"
+                                       Visibility="{Binding IsAttuned, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                          </StackPanel>
+                        </StackPanel>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="EquipmentItemEquippedColumn" Width="Auto" MinWidth="150" Binding="{Binding IsEquipped}">
+              <DataGridColumn.Header>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <iconPacks:PackIconFontAwesome Kind="MapMarkerAltSolid" ToolTip="Indicates where the item is equipped." Opacity="0.8"
+                                                 Margin="0,0,4,0" Padding="1"/>
+                  <TextBlock Text="EQUIP LOCATION"/>
+                </StackPanel>
+              </DataGridColumn.Header>
+              <DataGridColumn.HeaderStyle>
+                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                  <Setter Property="Control.HorizontalContentAlignment" Value="Center"/>
+                  <Setter Property="Control.FontSize" Value="9"/>
+                  <Setter Property="Control.FontWeight" Value="SemiBold"/>
+                  <Setter Property="Control.Padding" Value="5,2,5,2"/>
+                  <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush}"/>
+                  <Setter Property="Control.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+                </Style>
+              </DataGridColumn.HeaderStyle>
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <Grid>
+                          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock FontWeight="SemiBold" VerticalAlignment="Center" FontStyle="Italic" TextWrapping="Wrap"
+                                       Text="{Binding EquippedLocation}"/>
+                          </StackPanel>
+                        </Grid>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="ItemcardVisibleColumn" Width="50" MinWidth="50">
+              <DataGridColumn.Header>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <iconPacks:PackIconFontAwesome Kind="EyeSolid" ToolTip="Indicates where the itemcard is shown." Opacity="0.8" Margin="0,0,4,0"
+                                                 Padding="0"/>
+                  <TextBlock Text="CARD"/>
+                </StackPanel>
+              </DataGridColumn.Header>
+              <DataGridColumn.HeaderStyle>
+                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                  <Setter Property="Control.HorizontalContentAlignment" Value="Center"/>
+                  <Setter Property="Control.FontSize" Value="9"/>
+                  <Setter Property="Control.FontWeight" Value="SemiBold"/>
+                  <Setter Property="Control.Padding" Value="5,2,5,2"/>
+                  <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush}"/>
+                  <Setter Property="Control.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+                </Style>
+              </DataGridColumn.HeaderStyle>
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="0,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <Grid>
+                          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <ToggleButton Padding="6,2" MinHeight="0" VerticalContentAlignment="Center" Margin="0" BorderThickness="0"
+                                          VerticalAlignment="Center" Cursor="Hand"
+                                          IsChecked="{Binding ShowCard, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                              <FrameworkElement.Style>
+                                <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource MetroToggleButton}">
+                                  <Setter Property="Control.Padding" Value="0"/>
+                                  <Setter Property="FrameworkElement.Margin" Value="0"/>
+                                  <Setter Property="Control.Background" Value="Transparent"/>
+                                  <Style.Triggers>
+                                    <Trigger Property="ToggleButton.IsChecked" Value="True">
+                                      <Trigger.Setters>
+                                        <Setter Property="Control.Background" Value="Transparent"/>
+                                        <Setter Property="ContentControl.Content">
+                                          <Setter.Value>
+                                            <iconPacks:PackIconFontAwesome Kind="EyeSolid" ToolTip="The itemcard is shown." Height="15" Width="15" Opacity="0.8" Margin="0"
+                                                                           Padding="0"/>
+                                          </Setter.Value>
+                                        </Setter>
+                                      </Trigger.Setters>
+                                    </Trigger>
+                                    <Trigger Property="ToggleButton.IsChecked" Value="False">
+                                      <Trigger.Setters>
+                                        <Setter Property="ContentControl.Content">
+                                          <Setter.Value>
+                                            <iconPacks:PackIconFontAwesome Kind="EyeSlashSolid" ToolTip="The itemcard is hidden."
+                                                                           Foreground="{DynamicResource DangerColorBrush}" Height="15" Width="15" Opacity="0.5" Margin="0"
+                                                                           Padding="0"/>
+                                          </Setter.Value>
+                                        </Setter>
+                                      </Trigger.Setters>
+                                    </Trigger>
+                                    <Trigger Property="UIElement.IsMouseOver" Value="true">
+                                      <Setter Property="Control.Background" Value="Transparent"/>
+                                    </Trigger>
+                                  </Style.Triggers>
+                                </Style>
+                              </FrameworkElement.Style>
+                            </ToggleButton>
+                          </StackPanel>
+                        </Grid>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="EquipmentItemStashColumn" Width="Auto" Visibility="Collapsed">
+              <DataGridColumn.Header>
+                <iconPacks:PackIconFontAwesome Kind="BoxesSolid" ToolTip="This icon indicates if the item is a stash for other items."
+                                               HorizontalAlignment="Center" Foreground="{DynamicResource AuroraGoldColorBrush}" Padding="1"
+                                               Opacity="0.9" Margin="0,0" VerticalAlignment="Center"/>
+              </DataGridColumn.Header>
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="0,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <Grid>
+                          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <iconPacks:PackIconFontAwesome Kind="BoxSolid" ToolTip="This item is a stash." HorizontalAlignment="Center" Padding="1"
+                                                           Opacity="0.8" Margin="0,0" VerticalAlignment="Center"
+                                                           Visibility="{Binding Item.IsStash, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                          </StackPanel>
+                        </Grid>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+          </DataGrid.Columns>
+        </DataGrid>
+        <Border Background="{DynamicResource HighlightBrush}" BorderThickness="1"
+                BorderBrush="{DynamicResource AccentColorBrush}" Grid.Row="1" Grid.ColumnSpan="2">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <FrameworkElement.Resources>
+              <Style x:Key="HeaderTextBlockStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+                <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+                <Setter Property="TextBlock.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+                <Setter Property="TextBlock.Text" Value="{Binding Converter={StaticResource ToUpperConverter}}"/>
+              </Style>
+            </FrameworkElement.Resources>
+            <TextBlock Text="INVENTORY (MORE OPTIONS IN NEW INVENTORY TAB)" Style="{StaticResource HeaderTextBlockStyle}"
+                       Margin="5,4,0,5"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,1">
+              <FrameworkElement.Resources>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource HeaderTextBlockStyle}">
+                  <Setter Property="TextBlock.FontWeight" Value="Normal"/>
+                  <Setter Property="TextBlock.FontSize" Value="10"/>
+                  <Setter Property="TextBlock.LineHeight" Value="12"/>
+                  <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush6}"/>
+                  <Setter Property="FrameworkElement.Margin" Value="0,0,8,0"/>
+                </Style>
+              </FrameworkElement.Resources>
+              <TextBlock FontWeight="SemiBold" Text="ATTUNED ITEMS:" Margin="10,0,5,0"/>
+              <TextBlock FontWeight="SemiBold" Margin="0" Foreground="{DynamicResource AuroraGoldColorBrush}"
+                         ToolTip="The number of currently attuned items."
+                         Text="{Binding Inventory.AttunedItemCount, Mode=OneWay}"/>
+              <TextBlock Text="/" Margin="2,0"/>
+              <TextBlock Margin="0" ToolTip="You can attune 3 items to your character by default."
+                         Text="{Binding Inventory.MaxAttunedItemCount, Mode=OneWay}"/>
+              <TextBlock FontWeight="SemiBold" Text="WEIGHT:" Margin="25,0,5,0"/>
+              <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}" Margin="0,0,2,0"
+                         Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, Converter={StaticResource UpperCaseConverter}}"/>
+              <TextBlock Text="lb."/>
+            </StackPanel>
+          </Grid>
+        </Border>
+        <Border Visibility="Collapsed" Grid.Row="4" Background="{DynamicResource HighlightBrush}"
+                BorderThickness="1" BorderBrush="{DynamicResource AccentColorBrush}" Grid.ColumnSpan="2">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <FrameworkElement.Resources>
+              <Style x:Key="HeaderTextBlockStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+                <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+                <Setter Property="TextBlock.Foreground" Value="{DynamicResource IdealForegroundColorBrush}"/>
+                <Setter Property="TextBlock.Text" Value="{Binding Converter={StaticResource ToUpperConverter}}"/>
+              </Style>
+              <Style TargetType="{x:Type Button}" BasedOn="{StaticResource StatusBarButtonStyle}">
+                <Setter Property="Control.FontSize" Value="11"/>
+                <Setter Property="FrameworkElement.Margin" Value="0,0,0,0"/>
+                <Setter Property="Control.Foreground" Value="{DynamicResource GrayBrush8}"/>
+                <Style.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="true">
+                    <Setter Property="Control.Background" Value="{DynamicResource StatusBarButtonOpacityColorBrush2}"/>
+                  </Trigger>
+                  <Trigger Property="UIElement.IsMouseOver" Value="false"/>
+                  <Trigger Property="UIElement.IsEnabled" Value="false">
+                    <Setter Property="Control.Foreground" Value="{DynamicResource GrayBrush2}"/>
+                  </Trigger>
+                </Style.Triggers>
+              </Style>
+              <Style TargetType="{x:Type iconPacks:PackIconFontAwesome}">
+                <Setter Property="FrameworkElement.Width" Value="16"/>
+                <Setter Property="FrameworkElement.Height" Value="16"/>
+                <Setter Property="FrameworkElement.Margin" Value="0,0,0,0"/>
+                <Setter Property="Control.Padding" Value="0,1"/>
+              </Style>
+            </FrameworkElement.Resources>
+            <TextBlock Text="" Style="{StaticResource HeaderTextBlockStyle}" Margin="5,4,0,5" Grid.Column="1"/>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,0">
+              <Button ToolTip="Move Item Up" Command="{Binding MoveSelectedEquipmentItemUpCommand}">
+                <StackPanel Orientation="Horizontal">
+                  <iconPacks:PackIconFontAwesome Kind="ArrowAltCircleUpRegular"/>
+                </StackPanel>
+              </Button>
+              <Button ToolTip="Move Item Down" Margin="0,0,10,0" Command="{Binding MoveSelectedEquipmentItemDownCommand}">
+                <StackPanel Orientation="Horizontal">
+                  <iconPacks:PackIconFontAwesome Kind="ArrowAltCircleDownRegular"/>
+                </StackPanel>
+              </Button>
+              <Button ToolTip="Delete the selected item." Command="{Binding DeleteSelectedEquipmentCommand}">
+                <StackPanel Orientation="Horizontal">
+                  <iconPacks:PackIconFontAwesome Kind="TrashAltRegular" Margin="0,0,0,0"/>
+                </StackPanel>
+              </Button>
+              <Button ToolTip="Delete the full amount of the selected item at once."
+                      Command="{Binding DeleteAllSelectedEquipmentCommand}">
+                <StackPanel Orientation="Horizontal">
+                  <iconPacks:PackIconFontAwesome Kind="TrashAltRegular" Margin="0,0,4,0"/>
+                  <TextBlock Text="ALL" FontSize="10" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Button>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,10,1">
+              <Button Margin="0,0,0,0" FontSize="10" Style="{StaticResource StatusBarButtonStyle}"
+                      VerticalAlignment="Center" Padding="4,4,4,4"
+                      Visibility="{Binding AllowEquipEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      Command="{Binding EquipEquipmentItemCommand}">
+                <StackPanel Orientation="Horizontal">
+                  <iconPacks:PackIconFontAwesome Kind="SignInAltSolid" Margin="0,0,4,0" RenderTransformOrigin="0.5,0.5">
+                    <UIElement.RenderTransform>
+                      <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="90"/>
+                        <TranslateTransform/>
+                      </TransformGroup>
+                    </UIElement.RenderTransform>
+                  </iconPacks:PackIconFontAwesome>
+                  <TextBlock Text="EQUIP" FontSize="10" VerticalAlignment="Center" Margin="0,0,0,1"/>
+                </StackPanel>
+              </Button>
+              <Button Margin="0,0,0,0" FontSize="10" Style="{StaticResource StatusBarButtonStyle}"
+                      VerticalAlignment="Center" Padding="4,4,4,4"
+                      Visibility="{Binding AllowEquipPrimaryEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      Command="{Binding EquipPrimaryEquipmentItemCommand}">
+                <StackPanel Orientation="Horizontal">
+                  <iconPacks:PackIconFontAwesome Kind="SignInAltSolid" Margin="0,0,4,0" RenderTransformOrigin="0.5,0.5">
+                    <UIElement.RenderTransform>
+                      <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="90"/>
+                        <TranslateTransform/>
+                      </TransformGroup>
+                    </UIElement.RenderTransform>
+                  </iconPacks:PackIconFontAwesome>
+                  <TextBlock Text="EQUIP PRIMARY" FontSize="10" VerticalAlignment="Center" Margin="0,0,0,1"/>
+                </StackPanel>
+              </Button>
+              <Button Margin="0,0,0,0" FontSize="10" Style="{StaticResource StatusBarButtonStyle}"
+                      VerticalAlignment="Center" Padding="4,4,4,4"
+                      Visibility="{Binding AllowEquipSecondaryEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      Command="{Binding EquipSecondaryEquipmentItemCommand}">
+                <StackPanel Orientation="Horizontal">
+                  <iconPacks:PackIconFontAwesome Kind="SignInAltSolid" Margin="0,0,4,0" RenderTransformOrigin="0.5,0.5">
+                    <UIElement.RenderTransform>
+                      <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="90"/>
+                        <TranslateTransform/>
+                      </TransformGroup>
+                    </UIElement.RenderTransform>
+                  </iconPacks:PackIconFontAwesome>
+                  <TextBlock Text="EQUIP SECONDARY" FontSize="10" VerticalAlignment="Center" Margin="0,0,0,1"/>
+                </StackPanel>
+              </Button>
+              <Button Margin="0,0,0,0" FontSize="10" Style="{StaticResource StatusBarButtonStyle}"
+                      VerticalAlignment="Center" Padding="4,4,4,4"
+                      Visibility="{Binding AllowEquipVersatileEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      Command="{Binding EquipVersatileEquipmentItemCommand}">
+                <StackPanel Orientation="Horizontal">
+                  <iconPacks:PackIconFontAwesome Kind="SignInAltSolid" Margin="0,0,4,0" RenderTransformOrigin="0.5,0.5">
+                    <UIElement.RenderTransform>
+                      <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="90"/>
+                        <TranslateTransform/>
+                      </TransformGroup>
+                    </UIElement.RenderTransform>
+                  </iconPacks:PackIconFontAwesome>
+                  <TextBlock Text="EQUIP VERSATILE" FontSize="10" VerticalAlignment="Center" Margin="0,0,0,1"/>
+                </StackPanel>
+              </Button>
+              <Button Margin="5,0,0,0" FontSize="10" Style="{StaticResource StatusBarButtonStyle}"
+                      VerticalAlignment="Center" Padding="4,4,4,4"
+                      Visibility="{Binding AllowToggleAttunementEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      Command="{Binding ToggleAttunementEquipmentItemCommand}">
+                <StackPanel Orientation="Horizontal">
+                  <iconPacks:PackIconFontAwesome Kind="LinkSolid" Margin="0,0,4,0" RenderTransformOrigin="0.5,0.5"/>
+                  <TextBlock Text="TOGGLE ATTUNEMENT" FontSize="10" VerticalAlignment="Center" Margin="0,0,0,1"/>
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Grid>
+        </Border>
+      </Grid>
+    </Grid>
+    <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="0,5,0,10" HorizontalAlignment="Left">
+      <FrameworkElement.Resources>
+        <Style TargetType="{x:Type iconPacks:PackIconFontAwesome}"
+               BasedOn="{StaticResource FullSizeFontAwesomeStyle}"/>
+      </FrameworkElement.Resources>
+      <controls1:CommandButton Style="{StaticResource TextIconCommandButtonStyle}"
+                               Visibility="{Binding AllowExtractEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               CommandText="{Binding SelectedEquipmentItem.DisplayName, StringFormat='EXTRACT {0}', Converter={StaticResource UpperCaseConverter}}"
+                               Command="{Binding ExtractEquipmentItemCommand}">
+        <iconPacks:PackIconMaterial Kind="PackageUp" Height="12" Width="12"/>
+      </controls1:CommandButton>
+      <Separator Style="{StaticResource IconSeperatorStyle}"
+                 Visibility="{Binding AllowExtractEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+      <controls1:CommandButton CommandText="DETAILS" Style="{StaticResource TextIconCommandButtonStyle}"
+                               Command="{Binding ManageEquipmentItemCommand}">
+        <iconPacks:PackIconMaterial Kind="Pencil" Height="12" Width="12"/>
+      </controls1:CommandButton>
+      <Separator Style="{StaticResource IconSeperatorStyle}"
+                 Visibility="{Binding AllowEquipmentItemAddToAttacks, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+      <controls1:CommandButton Style="{StaticResource TextIconCommandButtonStyle}"
+                               Visibility="{Binding AllowEquipmentItemAddToAttacks, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               CommandText="{Binding SelectedEquipmentItem.DisplayName, StringFormat='ADD {0} TO ATTACKS', Converter={StaticResource UpperCaseConverter}}"
+                               Command="{Binding AddToAttacksCommand}">
+        <iconPacks:PackIconMaterial Kind="SwordCross" Height="12" Width="12"/>
+      </controls1:CommandButton>
+      <Separator Style="{StaticResource IconSeperatorStyle}"/>
+      <controls1:CommandButton CommandText="UP" Style="{StaticResource TextIconCommandButtonStyle}"
+                               Command="{Binding MoveSelectedEquipmentItemUpCommand}">
+        <iconPacks:PackIconMaterial Kind="ArrowUp" Height="12" Width="12"/>
+      </controls1:CommandButton>
+      <controls1:CommandButton CommandText="DOWN" Style="{StaticResource TextIconCommandButtonStyle}"
+                               Command="{Binding MoveSelectedEquipmentItemDownCommand}">
+        <iconPacks:PackIconMaterial Kind="ArrowDown" Height="12" Width="12"/>
+      </controls1:CommandButton>
+      <Separator Style="{StaticResource IconSeperatorStyle}"/>
+      <controls1:CommandButton CommandText="DELETE" Style="{StaticResource DangerTextIconCommandButtonStyle}"
+                               Command="{Binding DeleteSelectedEquipmentCommand}">
+        <iconPacks:PackIconMaterial Kind="CloseBox" Height="12" Width="12"/>
+      </controls1:CommandButton>
+      <controls1:CommandButton CommandText="DELETE ALL" Style="{StaticResource DangerTextIconCommandButtonStyle}"
+                               Visibility="{Binding SelectedEquipmentItem.IsStackable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Command="{Binding DeleteAllSelectedEquipmentCommand}">
+        <iconPacks:PackIconMaterial Kind="CloseBox" Height="12" Width="12"/>
+      </controls1:CommandButton>
+      <StatusBar Background="{DynamicResource TransparentWhiteBrush}"/>
+    </StackPanel>
+    <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="0,5,0,10" HorizontalAlignment="Right">
+      <controls1:CommandButton CommandText="EQUIP" Style="{StaticResource SuccessTextIconCommandButtonStyle}"
+                               Visibility="{Binding AllowEquipEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Command="{Binding EquipEquipmentItemCommand}">
+        <iconPacks:PackIconMaterial Kind="CheckboxMultipleMarked" Height="12" Width="12"/>
+      </controls1:CommandButton>
+      <controls1:CommandButton CommandText="EQUIP PRIMARY" Style="{StaticResource SuccessTextIconCommandButtonStyle}"
+                               Visibility="{Binding AllowEquipPrimaryEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Command="{Binding EquipPrimaryEquipmentItemCommand}">
+        <iconPacks:PackIconMaterial Kind="Numeric1Box" Height="12" Width="12"/>
+      </controls1:CommandButton>
+      <controls1:CommandButton CommandText="EQUIP SECONDARY" Style="{StaticResource SuccessTextIconCommandButtonStyle}"
+                               Visibility="{Binding AllowEquipSecondaryEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Command="{Binding EquipSecondaryEquipmentItemCommand}">
+        <iconPacks:PackIconMaterial Kind="Numeric2Box" Height="12" Width="12"/>
+      </controls1:CommandButton>
+      <controls1:CommandButton CommandText="EQUIP VERSATILE" Style="{StaticResource SuccessTextIconCommandButtonStyle}"
+                               Visibility="{Binding AllowEquipVersatileEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Command="{Binding EquipVersatileEquipmentItemCommand}">
+        <iconPacks:PackIconMaterial Kind="Numeric1BoxMultipleOutline" Height="12" Width="12"/>
+      </controls1:CommandButton>
+      <Separator Style="{StaticResource IconSeperatorStyle}"
+                 Visibility="{Binding AllowToggleAttunementEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+      <controls1:CommandButton CommandText="ATTUNEMENT" Style="{StaticResource SuccessTextIconCommandButtonStyle}"
+                               Visibility="{Binding AllowToggleAttunementEquipmentItem, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Command="{Binding ToggleAttunementEquipmentItemCommand}">
+        <iconPacks:PackIconMaterial Kind="MultiplicationBox" Height="12" Width="12"/>
+      </controls1:CommandButton>
+    </StackPanel>
+  </Grid>
+</UserControl>

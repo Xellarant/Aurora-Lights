@@ -1,0 +1,102 @@
+<controls:Flyout x:Class="Builder.Presentation.Views.Sliders.SaveCharacterSlider"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:shell="clr-namespace:Builder.Presentation.ViewModels.Shell"
+                 xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+                 xmlns:controls1="clr-namespace:Builder.Presentation.Controls"
+                 xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                 xmlns:sliders="clr-namespace:Builder.Presentation.Views.Sliders"
+                 xmlns:controls2="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+                 MinWidth="400" Width="400" MaxWidth="400" CloseButtonVisibility="Collapsed"
+                 TitleVisibility="Collapsed" Position="Right" Margin="0,0,0,0" IsPinned="false"
+                 IsAutoCloseEnabled="false" Theme="Light" IsModal="true" Background="#151516">
+  <FrameworkElement.DataContext>
+    <sliders:SaveSliderViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid Margin="0,0,0,0">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel>
+      <controls1:SliderTitleBlock Margin="20" Content="SAVE CHARACTER"/>
+      <Grid Margin="20,10,20,10">
+        <Button x:Name="PortraitImage" Style="{StaticResource PortraitButtonStyle}" Margin="1"
+                Background="{DynamicResource HighlightBrush}" IsEnabled="false" Width="147" Height="147"
+                Command="{Binding ChangePortraitCommand}">
+          <ContentControl.Content>
+            <Grid>
+              <Image HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="UniformToFill"
+                     RenderTransformOrigin="0.5,0.5"
+                     Source="{Binding PortraitFileName, Converter={StaticResource ImageSourceConverter}}">
+                <FrameworkElement.LayoutTransform>
+                  <TransformGroup>
+                    <ScaleTransform ScaleY="0.5" ScaleX="0.5"/>
+                    <SkewTransform/>
+                    <RotateTransform/>
+                    <TranslateTransform/>
+                  </TransformGroup>
+                </FrameworkElement.LayoutTransform>
+              </Image>
+            </Grid>
+          </ContentControl.Content>
+        </Button>
+        <Ellipse StrokeThickness="3" Margin="0" Stroke="{DynamicResource HighlightBrush}" Width="150" Height="150">
+          <UIElement.Effect>
+            <DropShadowEffect BlurRadius="5" Opacity="1" ShadowDepth="1"/>
+          </UIElement.Effect>
+        </Ellipse>
+      </Grid>
+      <TextBlock FontSize="26" HorizontalAlignment="Center" FontWeight="Normal"
+                 Foreground="{DynamicResource GrayBrush5}" Margin="20,20,20,0" TextWrapping="Wrap"
+                 TextAlignment="Center" Text="{Binding DisplayName, Converter={StaticResource ToUpperConverter}}"
+                 Visibility="{Binding IsFavorite, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+      <TextBlock FontSize="26" HorizontalAlignment="Center" FontWeight="Normal"
+                 Foreground="{DynamicResource AuroraGoldColorBrush}" Margin="20,20,20,0" TextWrapping="Wrap"
+                 TextAlignment="Center" Text="{Binding DisplayName, Converter={StaticResource ToUpperConverter}}"
+                 Visibility="{Binding IsFavorite, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+      <TextBlock FontSize="11" HorizontalAlignment="Center" FontWeight="Normal"
+                 Foreground="{DynamicResource GrayBrush9}" Margin="0,0,0,20"
+                 Text="{Binding DisplayBuild, Converter={StaticResource ToUpperConverter}}"/>
+    </StackPanel>
+    <StackPanel Grid.Row="1" Margin="20,0,20,0">
+      <TextBlock Text="CHARACTER FILE" Style="{StaticResource SectionHeaderTextBlockStyle}"
+                 Foreground="{DynamicResource GrayBrush6}"/>
+      <TextBlock Text="FILENAME" Style="{StaticResource FieldHeaderTextBlockStyle}"
+                 Foreground="{DynamicResource GrayBrush9}"/>
+      <TextBox Margin="0,0,0,0" Text="{Binding Filename, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <StackPanel Margin="0,0">
+        <CheckBox Content="FAVORITE" Style="{StaticResource DarkCheckBoxStyle}" Margin="0,20,0,20"
+                  IsChecked="{Binding IsFavorite, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      </StackPanel>
+      <TextBlock Text="GROUP" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+      <ComboBox IsEditable="true" Margin="0,0,0,10"
+                Text="{Binding GroupName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                ItemsSource="{Binding Groups}"/>
+    </StackPanel>
+    <StackPanel Grid.Row="2" Visibility="Collapsed">
+      <TextBlock ToolTip="Invalid filename chars will be left out of the filename." Foreground="#6D3131"
+                 VerticalAlignment="Bottom" Margin="20,10" Style="{StaticResource SectionSubHeaderTextBlockStyle}"
+                 Text="{Binding Filepath}"
+                 Visibility="{Binding IsFileNameSanitized, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+      <TextBlock Foreground="#316D4A" VerticalAlignment="Bottom" Margin="20,10"
+                 Style="{StaticResource SectionSubHeaderTextBlockStyle}" Text="{Binding Filepath}"
+                 Visibility="{Binding IsFileNameSanitized, Mode=OneWay, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+    </StackPanel>
+    <UniformGrid Grid.Row="3" Margin="20,0,20,0">
+      <controls2:CommandButton Click="PageCloseClicked" Content="SAVE CHARACTER" IsDefault="true"
+                               Style="{StaticResource SuccessCommandButtonStyle}" FontSize="11" Margin="0,0,10,0"
+                               Command="{Binding SaveCommand}"/>
+      <controls2:CommandButton Click="PageCloseClicked" Content="CANCEL" Style="{StaticResource DangerCommandButtonStyle}"
+                               FontSize="11" Margin="10,0,0,0" IsCancel="true" Command="{Binding CancelCommand}"/>
+    </UniformGrid>
+  </Grid>
+</controls:Flyout>

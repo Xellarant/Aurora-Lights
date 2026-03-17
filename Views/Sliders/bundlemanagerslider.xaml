@@ -1,0 +1,117 @@
+<controls:Flyout x:Class="Builder.Presentation.Views.Sliders.BundleManagerSlider"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:local="clr-namespace:Builder.Presentation.Views.Sliders"
+                 xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+                 xmlns:controls1="clr-namespace:Builder.Presentation.Controls"
+                 x:Name="Main" Theme="Light" VerticalAlignment="Center" VerticalContentAlignment="Center"
+                 Background="{DynamicResource AuroraDarkColorBrush}" CloseButtonVisibility="Collapsed"
+                 TitleVisibility="Collapsed" Width="400" Position="Right" IsModal="true" IsPinned="false" Margin="0"
+                 BorderBrush="{DynamicResource HighlightBrush}">
+  <FrameworkElement.DataContext>
+    <local:BundleManagerSliderViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid x:Name="Container">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <controls1:SliderTitleBlock Margin="20" Content="CONTENT MANAGER"/>
+    <ScrollViewer Style="{StaticResource FlyoutScrollviewerStyle}" VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled" Grid.Row="3" Margin="20,0,20,20">
+      <ListView PreviewMouseWheel="ExpandersControlPreviewMouseWheel" Grid.Row="3" Margin="0,0,0,0"
+                Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                ScrollViewer.VerticalScrollBarVisibility="Disabled" ItemsSource="{Binding Indices}">
+        <ItemsControl.ItemContainerStyle>
+          <Style TargetType="{x:Type ListViewItem}">
+            <Setter Property="Control.HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Control.Padding" Value="0"/>
+            <Setter Property="FrameworkElement.Margin" Value="0"/>
+            <Setter Property="FrameworkElement.VerticalAlignment" Value="Top"/>
+            <Setter Property="Control.VerticalContentAlignment" Value="Top"/>
+            <Setter Property="Control.Background" Value="Transparent"/>
+            <Setter Property="Control.Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                  <ContentPresenter/>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+              <Trigger Property="UIElement.IsMouseOver" Value="true">
+                <Setter Property="Control.Background" Value="Red"/>
+                <Setter Property="Control.BorderBrush" Value="Transparent"/>
+                <Setter Property="Control.BorderThickness" Value="0"/>
+              </Trigger>
+              <Trigger Property="ListBoxItem.IsSelected" Value="true">
+                <Setter Property="Control.Background" Value="Yellow"/>
+                <Setter Property="Control.BorderBrush" Value="Transparent"/>
+                <Setter Property="Control.BorderThickness" Value="0"/>
+              </Trigger>
+            </Style.Triggers>
+          </Style>
+        </ItemsControl.ItemContainerStyle>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border SnapsToDevicePixels="true" Background="{DynamicResource AccentColorBrush4}" BorderThickness="1"
+                    Padding="0" Margin="0,5" VerticalAlignment="Top">
+              <Border.BorderBrush>
+                <VisualBrush>
+                  <VisualBrush.Visual>
+                    <Rectangle StrokeDashArray="2 2" Stroke="{DynamicResource HighlightBrush}" StrokeThickness="1"
+                               RadiusX="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=CornerRadius.TopRight}"
+                               RadiusY="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=CornerRadius.BottomLeft}"
+                               Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualWidth}"
+                               Height="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualHeight}"/>
+                  </VisualBrush.Visual>
+                </VisualBrush>
+              </Border.BorderBrush>
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="*"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto" MinWidth="0"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Margin="10,10,10,0" Grid.ColumnSpan="1" TextWrapping="Wrap" HorizontalAlignment="Left"
+                           Foreground="{DynamicResource GrayBrush6}" Style="{StaticResource SectionHeaderTextBlockStyle}"
+                           Text="{Binding Name, Converter={StaticResource UpperCaseConverter}}"/>
+                <CheckBox Grid.Column="1" HorizontalAlignment="Right" Margin="0,10,5,0" Content=""
+                          Foreground="{DynamicResource GrayBrush5}" FontSize="11" FontWeight="SemiBold"
+                          IsChecked="{Binding Include}"/>
+                <StackPanel Margin="10,10,5,10" Grid.Column="0" Grid.Row="1">
+                  <TextBlock LineHeight="14" LineStackingStrategy="BlockLineHeight" MaxHeight="942"
+                             Style="{StaticResource SectionSubHeaderTextBlockStyle}" Margin="0,0,0,10"
+                             TextTrimming="WordEllipsis" Text="{Binding Description}"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+        <FrameworkElement.Triggers>
+        </FrameworkElement.Triggers>
+      </ListView>
+    </ScrollViewer>
+    <StackPanel Grid.Row="5" Margin="20,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                Orientation="Horizontal">
+      <CheckBox Content="CHECK AT STARTUP" Margin="0,0,0,0" Style="{StaticResource DarkCheckBoxStyle}"
+                HorizontalAlignment="Left"
+                IsChecked="{Binding IsCheckContentUpdatesOnStartupEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <UniformGrid Grid.Row="6" Margin="10,20,10,20" Columns="2" HorizontalAlignment="Right">
+        <Button Content="UPDATE FILES" Margin="10,0" Style="{StaticResource AuroraFlatButton}" IsDefault="true"/>
+        <Button Content="CANCEL" Margin="10,0" Style="{StaticResource AuroraFlatButton}" IsCancel="true"/>
+      </UniformGrid>
+    </StackPanel>
+  </Grid>
+</controls:Flyout>

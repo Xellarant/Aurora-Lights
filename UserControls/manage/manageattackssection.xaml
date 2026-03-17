@@ -1,0 +1,140 @@
+<UserControl x:Class="Builder.Presentation.UserControls.Manage.ManageAttacksSection"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Builder.Presentation.UserControls.Manage"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:helpers="clr-namespace:Builder.Presentation.Models.Helpers"
+             xmlns:manage="clr-namespace:Builder.Presentation.ViewModels.Shell.Manage"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:controls="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation">
+  <FrameworkElement.Resources>
+    <DataTemplate x:Key="AttackTemplate">
+      <Border BorderBrush="#FF242424" Background="{DynamicResource LightColor1Brush}" BorderThickness="0"
+              Padding="0" Margin="0,0,0,0">
+        <Grid Margin="0,0,0,0">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource DangerColorBrush}" Opacity=".5" Grid.RowSpan="3"
+                  Margin="0,0,10,0"/>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource SuccessColorBrush}" Grid.RowSpan="3"
+                  Margin="0,0,10,0"
+                  Visibility="{Binding IsDisplayed, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+          <Grid Row="0" Column="1" RowSpan="3" Margin="0,0,10,0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="10"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,5">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource SectionPrimaryTextBlockStyle}" Margin="0,0,4,0"
+                           Text="{Binding Name.Content, Converter={StaticResource UpperCaseConverter}}"/>
+              </StackPanel>
+              <StackPanel Orientation="Vertical"
+                          Visibility="{Binding IsDisplayed, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock FontStyle="Italic" Style="{StaticResource SectionSecondaryTextBlockStyle}" Margin="0,0,0,0"
+                           Text="{Binding Range.Content, StringFormat='Range: {0}'}"/>
+                <TextBlock FontStyle="Italic" Style="{StaticResource SectionSecondaryTextBlockStyle}" Margin="0,0,0,0"
+                           Text="{Binding Attack.Content, StringFormat='Attack: {0}'}"/>
+                <TextBlock FontStyle="Italic" Style="{StaticResource SectionSecondaryTextBlockStyle}" Margin="0,0,0,0"
+                           Text="{Binding Damage.Content, StringFormat='Damage: {0}'}"/>
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+          <StackPanel x:Name="CommandPanel" Grid.RowSpan="3" Grid.Row="0" Grid.Column="2" Orientation="Horizontal"
+                      VerticalAlignment="Top" Visibility="Visible" Margin="5">
+            <controls:CommandButton ToolTip="Toggle Show/Hide" Style="{StaticResource IconCommandButtonStyle}" Margin="10,0,0,0"
+                                    Command="{Binding DataContext.ToggleDisplayAttackCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                    CommandParameter="{Binding}">
+              <iconPacks:PackIconModern Kind="ListHidden"/>
+            </controls:CommandButton>
+            <controls:CommandButton ToolTip="Edit" Style="{StaticResource IconCommandButtonStyle}" Margin="10,0,0,0"
+                                    Command="{Binding DataContext.EditAttackCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                    CommandParameter="{Binding}">
+              <iconPacks:PackIconFontAwesome Kind="PencilAltSolid" VerticalAlignment="Center"/>
+            </controls:CommandButton>
+            <controls:CommandButton ToolTip="Remove" Style="{StaticResource IconCommandButtonStyle}" Margin="10,0,10,0"
+                                    Command="{Binding DataContext.RemoveAttackCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                    CommandParameter="{Binding}">
+              <iconPacks:PackIconFontAwesome Kind="MinusSolid" VerticalAlignment="Center"/>
+            </controls:CommandButton>
+          </StackPanel>
+        </Grid>
+      </Border>
+      <DataTemplate.Triggers>
+        <Trigger Property="UIElement.IsMouseOver" Value="true">
+          <Setter TargetName="CommandPanel" Property="UIElement.Visibility" Value="Visible"/>
+        </Trigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+  </FrameworkElement.Resources>
+  <Grid Margin="0,0,20,0">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition Width="20"/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <StackPanel Margin="0,10,0,0">
+      <TextBlock Text="ATTACKS" Style="{StaticResource SectionPrimaryTextBlockStyle}"/>
+      <TextBlock Text="You can display up to 4 detailed attacks on your character sheet. These can be added from any weapon in your inventory by right clicking the weapon and selecting 'Add to Attacks &amp; Spellcasting'. This is also the recommended way to all the attack details as the attack bonus and damage can be calculated for you. You can also opt-in to show an attack card that will be appended at the end of the sheet."
+                 Style="{StaticResource SectionSecondaryTextBlockStyle}"/>
+      <TextBlock Text="Alternatively, you can add attack details that you can enter yourself."
+                 Style="{StaticResource SectionSecondaryTextBlockStyle}"/>
+      <StackPanel Orientation="Horizontal"/>
+    </StackPanel>
+    <ListView ItemTemplate="{StaticResource AttackTemplate}" Style="{StaticResource DefaultListView}"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+              ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="0,0,0,0" Grid.Row="2"
+              ItemsSource="{Binding Attacks.Items}"
+              SelectedItem="{Binding SelectedAttackItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+      <Interaction.Triggers>
+        <EventTrigger EventName="MouseDoubleClick">
+          <InvokeCommandAction Command="{Binding EditAttackCommand}" CommandParameter="{Binding SelectedAttackItem}"/>
+        </EventTrigger>
+      </Interaction.Triggers>
+    </ListView>
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,8">
+      <controls:CommandButton CommandText="Add Attack" Style="{StaticResource CommandButtonDefaultStyle}"
+                              Command="{Binding AddAttackCommand}">
+        <iconPacks:PackIconModern Kind="ListAddBelow"/>
+      </controls:CommandButton>
+      <controls:CommandButton Margin="10,0,0,0" Command="{Binding MoveAttackUpCommand}"
+                              CommandParameter="{Binding SelectedAttackItem}">
+        <iconPacks:PackIconModern Kind="ListReorderUp"/>
+      </controls:CommandButton>
+      <controls:CommandButton Margin="10,0,0,0" Command="{Binding MoveAttackDownCommand}"
+                              CommandParameter="{Binding SelectedAttackItem}">
+        <iconPacks:PackIconModern Kind="ListReorderDown"/>
+      </controls:CommandButton>
+    </StackPanel>
+    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,10,0,20" Grid.RowSpan="3">
+      <TextBlock Text="ADDITIONAL DETAILS" Style="{StaticResource SectionPrimaryTextBlockStyle}"/>
+      <TextBlock Text="Underneath your attacks is space for a few lines of additional details about the combat skills of you or your companion."
+                 Style="{StaticResource SectionSecondaryTextBlockStyle}"/>
+      <TextBlock Text="ADDITIONAL COMBAT DETAILS" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+      <TextBox TextWrapping="Wrap" AcceptsReturn="true" MinHeight="100"
+               Text="{Binding Manager.Character.AttacksSection.AttacksAndSpellcasting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+    </StackPanel>
+  </Grid>
+</UserControl>

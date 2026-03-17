@@ -1,0 +1,221 @@
+<controls:Flyout x:Class="Builder.Presentation.Views.Sliders.AdvancementSlider"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:local="clr-namespace:Builder.Presentation.Views.Sliders"
+                 xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+                 xmlns:controls1="clr-namespace:Builder.Presentation.Controls"
+                 xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                 xmlns:controls2="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+                 x:Name="Main" Theme="Light" VerticalAlignment="Center" VerticalContentAlignment="Center"
+                 Background="{DynamicResource AuroraDarkColorBrush}" CloseButtonVisibility="Collapsed"
+                 TitleVisibility="Collapsed" Width="400" Position="Right" IsModal="true" IsPinned="false" Margin="0"
+                 BorderBrush="{DynamicResource HighlightBrush}">
+  <FrameworkElement.DataContext>
+    <local:AdvancementSliderViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid x:Name="Container">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel Margin="20,20,20,10">
+      <controls1:SliderTitleBlock Content="LEVEL UP &amp; MULTICLASSING"/>
+      <userControls:ExperienceProgressBar FontSize="10" Foreground="{DynamicResource SuccessColorBrush}" Width="Auto" Margin="-5,5,-5,0"/>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="20,0,20,15" HorizontalAlignment="Center">
+      <TextBlock FontSize="11" Padding="0,2" VerticalAlignment="Center"
+                 Style="{StaticResource WindowHeaderTextBlockStyle}"
+                 Text="{Binding Manager.Character.Level, StringFormat='YOU CHARACTER IS LEVEL {0}'}"/>
+      <TextBlock Text="•" Margin="10,2,4,2" FontWeight="Normal" Foreground="{DynamicResource GrayBrush3}"
+                 FontSize="11" VerticalAlignment="Center"/>
+      <controls2:CommandButton CommandText="REMOVE THE LAST LEVEL" ToolTip="Remove the last level you gained."
+                               HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Style="{StaticResource DangerTextIconCommandButtonStyle}" Margin="0,0,0,0" FontSize="11"
+                               Foreground="{DynamicResource GrayBrush5}" Command="{Binding RemoveLastLevelCommand}"
+                               IsEnabled="{Binding DataContext.Manager.Status.CanLevelDown, ElementName=Container}">
+        <StackPanel Orientation="Horizontal">
+          <iconPacks:PackIconFontAwesome Kind="LevelDownAltSolid"/>
+        </StackPanel>
+      </controls2:CommandButton>
+    </StackPanel>
+    <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden"
+                  Margin="20,0,20,0">
+      <ItemsControl Grid.Row="2" Margin="0,0,0,0" ItemsSource="{Binding Containers}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <StackPanel>
+              <controls1:AuroraPanel Margin="0,0,0,8">
+                <StackPanel>
+                  <Grid Margin="4">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="Auto"/>
+                      <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock TextWrapping="Wrap" HorizontalAlignment="Left" Foreground="{DynamicResource GrayBrush6}"
+                               Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0"
+                               Text="{Binding Header, Converter={StaticResource UpperCaseConverter}}"/>
+                    <Button VerticalAlignment="Top" Grid.Row="0" Grid.Column="1" ToolTip="Click to level up this class."
+                            HorizontalAlignment="Right" FontSize="13"
+                            Style="{StaticResource SuccessChromelessAuroraButtonStyle}" Command="{Binding AdvanceCommand}"
+                            CommandParameter="{Binding ProgressionManager.ClassElement}"
+                            IsEnabled="{Binding DataContext.Manager.Status.CanLevelUp, ElementName=Container}">
+                      <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="LEVEL UP" Margin="0,0,2,0"/>
+                        <iconPacks:PackIconFontAwesome Kind="LevelUpAltSolid"/>
+                      </StackPanel>
+                    </Button>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                               Style="{StaticResource SectionSubHeaderTextBlockStyle}" FontSize="11" FontStyle="Italic"
+                               Margin="0,4,0,0" Text="{Binding Description}"/>
+                  </Grid>
+                  <controls1:AuroraExpander Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="4" Margin="-2,0,0,0"
+                                            Background="Transparent" BorderThickness="0" Header="Hit Points"
+                                            controls:ControlsHelper.HeaderFontSize="10"
+                                            controls:GroupBoxHelper.HeaderForeground="{DynamicResource GrayBrush2}"
+                                            IsExpanded="{Binding IsExpanded}"
+                                            Visibility="{Binding IsAverageHitPoints, Converter={StaticResource InvertedBooleanToVisibilityConverter}}">
+                    <controls1:AuroraExpander.AdditionalHeaderContent>
+                      <TextBlock Foreground="{DynamicResource GrayBrush2}" VerticalAlignment="Center"
+                                 Text="{Binding ProgressionManager.HD, Converter={StaticResource UpperCaseConverter}}"/>
+                    </controls1:AuroraExpander.AdditionalHeaderContent>
+                    <ItemsControl Margin="2,0,0,0" ItemsSource="{Binding HitPoints}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Grid Margin="0,2,0,2">
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="50"/>
+                              <ColumnDefinition Width="*"/>
+                              <ColumnDefinition Width="25"/>
+                              <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <FrameworkElement.Resources>
+                              <Style x:Key="IncreaseButtonStyle2" TargetType="{x:Type Button}"
+                                     BasedOn="{StaticResource ChromelessButtonStyle}">
+                                <Setter Property="Control.BorderThickness" Value="0"/>
+                                <Setter Property="ContentControl.Content" Value="🔺"/>
+                                <Setter Property="Control.FontSize" Value="20"/>
+                                <Setter Property="Control.FontFamily" Value="Segoe UI Symbol"/>
+                                <Setter Property="FrameworkElement.HorizontalAlignment" Value="Center"/>
+                                <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+                                <Setter Property="FrameworkElement.Margin" Value="0,0,0,0"/>
+                                <Setter Property="Control.Foreground" Value="{DynamicResource HighlightBrush}"/>
+                                <Setter Property="Control.Background" Value="{x:Null}"/>
+                                <Setter Property="Control.Padding" Value="5,5,5,0"/>
+                                <Setter Property="FrameworkElement.LayoutTransform">
+                                  <Setter.Value>
+                                    <TransformGroup>
+                                      <RotateTransform CenterX="0.5" CenterY="0.5" Angle="0"/>
+                                    </TransformGroup>
+                                  </Setter.Value>
+                                </Setter>
+                              </Style>
+                              <Style x:Key="DecreaseButtonStyle2" TargetType="{x:Type Button}"
+                                     BasedOn="{StaticResource IncreaseButtonStyle2}">
+                                <Setter Property="ContentControl.Content" Value="🔻"/>
+                                <Setter Property="Control.Padding" Value="5,0,5,5"/>
+                                <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+                                <Setter Property="FrameworkElement.Margin" Value="0,0,0,0"/>
+                              </Style>
+                              <Style x:Key="BaseScoreStyle" TargetType="{x:Type TextBlock}">
+                                <Setter Property="TextBlock.FontSize" Value="13"/>
+                                <Setter Property="FrameworkElement.HorizontalAlignment" Value="Center"/>
+                                <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+                                <Setter Property="TextBlock.Foreground" Value="{DynamicResource GrayBrush5}"/>
+                                <Setter Property="FrameworkElement.Margin" Value="0"/>
+                              </Style>
+                            </FrameworkElement.Resources>
+                            <Slider Grid.Column="1" Margin="0,0" SmallChange="1" LargeChange="1" TickPlacement="TopLeft"
+                                    Minimum="{Binding Min}" Maximum="{Binding Max}" Value="{Binding Value, Mode=TwoWay}"
+                                    IsEnabled="{Binding IsEnabled}"/>
+                            <TextBlock Grid.Column="2" Foreground="{DynamicResource AuroraGoldColorBrush}" HorizontalAlignment="Right"
+                                       VerticalAlignment="Center" FontSize="9" Text="{Binding Value, StringFormat=+0}"/>
+                            <TextBlock Grid.Column="3" Text="HP" Foreground="{DynamicResource GrayBrush2}" HorizontalAlignment="Right"
+                                       Margin="4,0,0,0" VerticalAlignment="Center" FontSize="9"/>
+                            <TextBlock Grid.Column="0" Foreground="{DynamicResource GrayBrush2}" HorizontalAlignment="Left" FontSize="9"
+                                       Margin="0,0,0,0" VerticalAlignment="Center" Text="{Binding Level, StringFormat='LEVEL {0}'}"/>
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </controls1:AuroraExpander>
+                </StackPanel>
+              </controls1:AuroraPanel>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+    <StackPanel Grid.Row="3" Margin="20,20,20,0"/>
+    <StackPanel Grid.Row="4" Margin="20,10,20,20">
+      <controls1:AuroraPanel Padding="2" Margin="0">
+        <StackPanel>
+          <controls1:AuroraExpander Header="Multiclassing" IsExpanded="true"
+                                    controls:GroupBoxHelper.HeaderForeground="{DynamicResource GrayBrush6}" Background="Transparent"
+                                    BorderThickness="0" Padding="4">
+            <Grid Margin="2,0,2,2">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <StackPanel Margin="0,0,0,10" Grid.ColumnSpan="2">
+                <TextBlock Text="Multiclassing allows you to gain levels in multiple classes. In order to qualify for a new class, you must meet the ability score prerequisites for both your current class and your new one."
+                           Style="{StaticResource SectionSubHeaderTextBlockStyle}" Margin="0"/>
+              </StackPanel>
+              <StackPanel Grid.Row="1" Margin="0,0,0,0">
+                <TextBlock Foreground="{DynamicResource GrayBrush6}" Style="{StaticResource SectionHeaderTextBlockStyle}"
+                           Margin="0" Text="{Binding MainClass.Name, Converter={StaticResource UpperCaseConverter}}"/>
+                <TextBlock Foreground="{DynamicResource DangerColorBrush}" FontStyle="Italic"
+                           Style="{StaticResource SectionSubHeaderTextBlockStyle}" Margin="0"
+                           Visibility="{Binding Manager.Status.CanMulticlass, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
+                           Text="{Binding MainclassPrerequisites}"/>
+                <TextBlock Foreground="{DynamicResource SuccessColorBrush}" FontStyle="Italic"
+                           Style="{StaticResource SectionSubHeaderTextBlockStyle}" Margin="0"
+                           Visibility="{Binding Manager.Status.CanMulticlass, Converter={StaticResource BooleanToVisibilityConverter}}"
+                           Text="{Binding MainclassPrerequisites}"/>
+              </StackPanel>
+              <controls2:CommandButton Content="NEW MULTICLASS" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right"
+                                       Style="{StaticResource SuccessCommandButtonStyle}" VerticalAlignment="Bottom" Margin="0,0,0,0"
+                                       Command="{Binding AddMulticlassCommand}" IsEnabled="{Binding Manager.Status.CanMulticlass}"/>
+            </Grid>
+          </controls1:AuroraExpander>
+        </StackPanel>
+      </controls1:AuroraPanel>
+      <controls1:AuroraPanel Padding="0" Background="Transparent" BorderThickness="0" Visibility="Collapsed">
+        <StackPanel>
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Margin="0" VerticalAlignment="Center">
+              <TextBlock Style="{StaticResource SectionSubHeaderTextBlockStyle}" Margin="0"
+                         Text="{Binding Manager.Character.Level, StringFormat='Lose level {0}, the last level you gained.'}"/>
+            </StackPanel>
+            <Button Grid.RowSpan="2" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Content="LOSE LEVEL"
+                    Margin="0,0,0,0" Command="{Binding RemoveLastLevelCommand}"
+                    IsEnabled="{Binding Manager.Status.CanLevelDown}"/>
+          </Grid>
+        </StackPanel>
+      </controls1:AuroraPanel>
+    </StackPanel>
+  </Grid>
+</controls:Flyout>

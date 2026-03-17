@@ -1,0 +1,6 @@
+﻿#lib for pdf viewer
+copy /Y "$(SolutionDir)packages\MoonPdfLib-x86.0.3.0\lib\libmupdf.dll" "$(TargetDir)libmupdf.dll"
+#html renderer builds (fork)
+copy /Y "$(SolutionDir)"..\"lib\HtmlRenderer.dll" "$(TargetDir)HtmlRenderer.dll"
+copy /Y "$(SolutionDir)"..\"lib\HtmlRenderer.WPF.dll" "$(TargetDir)HtmlRenderer.WPF.dll"
+

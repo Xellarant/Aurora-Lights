@@ -1,0 +1,70 @@
+<controls:MetroWindow x:Class="Builder.Presentation.Views.SaveCharacterWindow"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:local="clr-namespace:Builder.Presentation.Views"
+                      xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                      Title="save character" Height="286" Width="500" MinHeight="286" MinWidth="500"
+                      Style="{StaticResource IconlessCharacterBuilderWindowStyle}" WindowStartupLocation="CenterScreen"
+                      ResizeMode="NoResize" ShowInTaskbar="false" Topmost="true">
+  <FrameworkElement.DataContext>
+    <viewModels:SaveCharacterWindowViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid Margin="0,1,0,0" Background="{DynamicResource GrayBrush10}">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid VerticalAlignment="Top" Column="0">
+      <Border BorderThickness="2" BorderBrush="{DynamicResource HighlightBrush}" Margin="10" Grid.Row="0"
+              Width="150" Height="150" HorizontalAlignment="Left">
+        <Grid>
+          <Image Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"
+                 Source="{Binding CharacterFile.DisplayPortraitFilePath}"/>
+        </Grid>
+      </Border>
+    </Grid>
+    <Grid Row="0" Column="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+      <StackPanel Margin="0,10,10,10">
+        <TextBlock Style="{StaticResource SectionHeaderTextBlockStyle}" HorizontalAlignment="Left" TextWrapping="Wrap"
+                   Margin="0,0,0,0" FontSize="16"
+                   Text="{Binding CharacterFile.DisplayName, Converter={StaticResource UpperCaseConverter}}"/>
+        <TextBlock Style="{StaticResource SectionSubHeaderTextBlockStyle}" HorizontalAlignment="Left"
+                   TextWrapping="Wrap" Margin="0,0,0,0"
+                   Text="{Binding CharacterFile.DisplayBuild, Converter={StaticResource UpperCaseConverter}}"/>
+        <TextBlock Text="FILENAME" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+        <TextBox Grid.Column="0" Margin="0,0,10,0"
+                 Text="{Binding Filename, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <CheckBox Content="EMBED PORTRAIT" Style="{StaticResource DefaultCheckBoxStyle}" IsChecked="True"
+                  Margin="0,10,0,0" IsEnabled="false"/>
+        <CheckBox Content="FAVORITE" Style="{StaticResource DefaultCheckBoxStyle}" Margin="0,10,0,0"
+                  IsChecked="{Binding CharacterFile.IsFavorite, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      </StackPanel>
+    </Grid>
+    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" TextWrapping="Wrap" Margin="10,2,10,5"
+               FontSize="10" FontWeight="Light" VerticalAlignment="Bottom" Text="{Binding CharacterFile.FilePath}"/>
+    <Border Background="{DynamicResource HighlightBrush}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button FontSize="11" MinWidth="60" Content="SAVE" Style="{StaticResource MetroFlatButton}"
+                Margin="10,10,0,10" IsDefault="true" Command="{Binding SaveCharacterCommand}"/>
+        <Button FontSize="11" MinWidth="60" Content="CANCEL" Style="{StaticResource MetroFlatButton}"
+                Margin="10,10,10,10" IsCancel="true"/>
+      </StackPanel>
+    </Border>
+  </Grid>
+</controls:MetroWindow>

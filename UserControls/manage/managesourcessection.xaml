@@ -1,0 +1,412 @@
+<UserControl x:Class="Builder.Presentation.UserControls.Manage.ManageSourcesSection"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Builder.Presentation.UserControls.Manage"
+             xmlns:converters="clr-namespace:Builder.Presentation.Converters"
+             xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:controls="clr-namespace:Builder.Presentation.Controls"
+             xmlns:eventTriggers="clr-namespace:Aurora.Presentation.EventTriggers;assembly=Aurora.Presentation"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:controls1="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+             xmlns:sources="clr-namespace:Builder.Presentation.Models.Sources">
+  <FrameworkElement.Resources>
+    <converters:CampaignSourceConverter x:Key="CampaignSourceConverter"/>
+    <converters:NullableInvertedBooleanToVisibilityConverter x:Key="NullableInvertedBooleanToVisibilityConverter"/>
+    <converters:SourceListingNameReplaceConverter x:Key="SourceListingNameReplaceConverter"/>
+    <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type sources:SourcesGroup}}" DataType="{x:Type sources:SourcesGroup}"
+                              ItemsSource="{Binding Sources}">
+      <StackPanel Orientation="Horizontal">
+        <CheckBox Focusable="false" IsThreeState="false" IsChecked="{Binding IsChecked}"/>
+        <TextBlock Text="{Binding}"/>
+      </StackPanel>
+    </HierarchicalDataTemplate>
+    <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type sources:SourceItem}}" DataType="{x:Type sources:SourceItem}">
+      <StackPanel Orientation="Horizontal">
+        <CheckBox Focusable="false" IsThreeState="false" IsChecked="{Binding IsChecked}"/>
+        <TextBlock Text="{Binding}"/>
+      </StackPanel>
+    </HierarchicalDataTemplate>
+    <DataTemplate x:Key="RootTemplate">
+      <Border BorderBrush="#FF242424" Background="{DynamicResource LightColor1Brush}" BorderThickness="0"
+              Padding="0" Margin="0,0,0,0">
+        <Grid Margin="0,0,0,0">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource SuccessColorBrush}" Opacity="0.5"
+                  Grid.RowSpan="3" Margin="0,0,10,0"/>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource DangerColorBrush}" Grid.RowSpan="3"
+                  Margin="0,0,10,0"
+                  Visibility="{Binding IsChecked, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource SuccessColorBrush}" Grid.RowSpan="3"
+                  Margin="0,0,10,0"
+                  Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+          <Grid Row="0" Column="1" RowSpan="3" Margin="0,0,10,0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="10"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,5">
+              <StackPanel Orientation="Horizontal">
+                <CheckBox Margin="0,0,0,0" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Style="{StaticResource SectionPrimaryTextBlockStyle}" Margin="0,0,4,0"
+                           Text="{Binding Converter={StaticResource UpperCaseConverter}}"/>
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+        </Grid>
+      </Border>
+      <DataTemplate.Triggers>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+    <DataTemplate x:Key="SourceGroupTemplate">
+      <Border BorderBrush="#FF242424" Background="{DynamicResource LightColor1Brush}" BorderThickness="0"
+              Padding="0" Margin="0,0,0,0">
+        <Grid Margin="0,0,0,0">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource SuccessColorBrush}" Opacity="0.4"
+                  Grid.RowSpan="3" Margin="0,0,10,0"/>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource DangerColorBrush}" Grid.RowSpan="3"
+                  Margin="0,0,10,0"
+                  Visibility="{Binding IsChecked, Converter={StaticResource NullableInvertedBooleanToVisibilityConverter}}"/>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource SuccessColorBrush}" Grid.RowSpan="3"
+                  Margin="0,0,10,0"
+                  Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+          <Grid Row="0" Column="1" RowSpan="3" Margin="0,0,0,0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,5,5,5">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource SectionPrimaryTextBlockStyle}" Margin="0,0,4,0" Text="{Binding Name}"/>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock FontStyle="Italic" Style="{StaticResource SectionSecondaryTextBlockStyle}" Margin="0,0,0,0"
+                           Text="{Binding Underline}"/>
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+          <CheckBox Grid.Row="0" Grid.Column="2" VerticalAlignment="Top" BorderThickness="0" Padding="0"
+                    Margin="0,5,5,5" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Visibility="{Binding AllowUnchecking, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        </Grid>
+      </Border>
+      <DataTemplate.Triggers>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+    <DataTemplate x:Key="SourceItemTemplate">
+      <Border BorderBrush="#FF242424" Background="{DynamicResource LightColor1Brush}" BorderThickness="0"
+              Padding="0" Margin="0,0,0,0">
+        <Grid Margin="0,0,0,0">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource DangerColorBrush}" Grid.RowSpan="3"
+                  Margin="0,0,10,0"
+                  Visibility="{Binding IsChecked, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource SuccessColorBrush}" Grid.RowSpan="3"
+                  Margin="0,0,10,0"
+                  Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+          <Grid Row="0" Column="1" RowSpan="3" Margin="0,0,10,0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,5">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource SectionPrimaryTextBlockStyle}" Margin="0,0,4,0"
+                           Text="{Binding Converter={StaticResource UpperCaseConverter}}"/>
+                <TextBlock Style="{StaticResource SectionSecondaryTextBlockStyle}" Margin="0,2,4,0"
+                           Text="{Binding Elements.Count, Converter={StaticResource UpperCaseConverter}, StringFormat=({0})}"/>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock FontStyle="Italic" Style="{StaticResource SectionSecondaryTextBlockStyle}" Margin="0,0,0,0"
+                           Text="{Binding Source.Author}"/>
+                <TextBlock Text="•" FontStyle="Italic" Style="{StaticResource SectionSecondaryTextBlockStyle}" Margin="5,0"
+                           Visibility="{Binding Source.IsPlaytestContent, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                <TextBlock Text="Playtest Material" Foreground="{DynamicResource WarningColorBrush}" FontStyle="Italic"
+                           Style="{StaticResource SectionSecondaryTextBlockStyle}" Margin="0,0,0,0"
+                           Visibility="{Binding Source.IsPlaytestContent, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+              </StackPanel>
+            </StackPanel>
+            <CheckBox Grid.Column="1" Margin="0,0,0,0"
+                      IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      Visibility="{Binding AllowUnchecking, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+          </Grid>
+        </Grid>
+      </Border>
+      <DataTemplate.Triggers>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+    <DataTemplate x:Key="SourceItemBlockTemplate">
+      <Border BorderBrush="#FF242424" Background="{DynamicResource LightColor1Brush}" BorderThickness="0"
+              Padding="0" Margin="0,0,0,0" Width="250">
+        <Grid Margin="0,0,0,0">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource DangerColorBrush}" Grid.RowSpan="3"
+                  Margin="0,0,10,0"
+                  Visibility="{Binding IsChecked, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource SuccessColorBrush}" Grid.RowSpan="3"
+                  Margin="0,0,10,0"
+                  Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+          <Grid Row="0" Column="2" RowSpan="3" Margin="0,0,0,0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,5,2,5">
+              <StackPanel>
+                <TextBlock Style="{StaticResource SectionPrimaryTextBlockStyle}" TextTrimming="CharacterEllipsis"
+                           Margin="0,0,0,0" Text="{Binding Converter={StaticResource SourceListingNameReplaceConverter}}"/>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock TextTrimming="CharacterEllipsis" FontStyle="Italic"
+                           Style="{StaticResource SectionSecondaryTextBlockStyle}" Margin="0,0,0,0"
+                           Text="{Binding Source.Author}"/>
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+          <CheckBox Grid.Column="4" Grid.Row="0" Grid.RowSpan="3" BorderThickness="0"
+                    Foreground="{DynamicResource SuccessColorBrush}" Padding="0" Margin="0,5,5,5"
+                    VerticalAlignment="Top" HorizontalAlignment="Right"
+                    IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Visibility="{Binding AllowUnchecking, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+          <StackPanel Orientation="Horizontal" Grid.Column="4" Grid.Row="0" Grid.RowSpan="1" VerticalAlignment="Bottom"
+                      HorizontalAlignment="Right">
+            <Grid Visibility="{Binding Source.HasInformationMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
+              <Border CornerRadius="1" Width="5" Height="5" Background="#3aa6ae" Margin="0,5,6,5"
+                      ToolTip="Additional information available in the source description."/>
+            </Grid>
+            <Border CornerRadius="1" ToolTip="Playtest Material" Width="5" Height="5"
+                    Background="{DynamicResource Aurora.Brushes.Warning}" Margin="0,5,6,5"
+                    Visibility="{Binding Source.IsPlaytestContent, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            <Border CornerRadius="1" ToolTip="Incomplete Source" Width="5" Height="5"
+                    Background="{DynamicResource Aurora.Brushes.Danger}" Margin="0,5,6,5"
+                    Visibility="{Binding Source.IsIncomplete, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+          </StackPanel>
+        </Grid>
+      </Border>
+      <DataTemplate.Triggers>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+    <DataTemplate x:Key="ElementHeaderTemplate">
+      <Border BorderBrush="#FF242424" Background="{DynamicResource LightColor1Brush}" BorderThickness="0"
+              Padding="0" Margin="0,0,0,0">
+        <Grid Margin="0,0,0,0">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <Border BorderThickness="2" BorderBrush="{DynamicResource SuccessColorBrush}" Opacity="0.25"
+                  Grid.RowSpan="3" Margin="0,0,10,0"/>
+          <Grid Row="0" Column="1" RowSpan="3" Margin="0,0,10,0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="10"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,5">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource SectionPrimaryTextBlockStyle}" Margin="0,0,4,0"
+                           Text="{Binding Name, Converter={StaticResource UpperCaseConverter}}"/>
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+        </Grid>
+      </Border>
+      <DataTemplate.Triggers>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+  </FrameworkElement.Resources>
+  <FrameworkElement.DataContext>
+    <viewModels:CampaignManagerViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="250"/>
+      <ColumnDefinition Width="50"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"
+                HorizontalAlignment="Left" Margin="0,10,0,20">
+      <controls1:CommandButton BorderThickness="0"
+                               ToolTip="The default restrictions will automatically be applied when you create a new character."
+                               CommandText="Save As Default" Style="{StaticResource SuccessCommandButtonStyle}" Margin="0,0,10,0"
+                               Width="120" Command="{Binding StoreDefaultRestrictionsCommand}">
+        <iconPacks:PackIconMaterial Kind="TagHeart"/>
+      </controls1:CommandButton>
+      <controls1:CommandButton BorderThickness="0" CommandText="Load Default" Margin="0,0,0,0" Width="120"
+                               Command="{Binding LoadRestrictionsCommand}">
+        <iconPacks:PackIconMaterial Kind="TagMultiple"/>
+      </controls1:CommandButton>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="1"
+                HorizontalAlignment="Left" Margin="0,10,0,20">
+      <controls1:CommandButton CommandText="Apply Source Restrictions"
+                               ToolTip="Apply the restrictions to the currently loaded character."
+                               Style="{StaticResource SuccessClearCommandButtonStyle}"
+                               IsEnabled="{Binding Manager.Status.IsLoaded}" Command="{Binding ApplyRestrictionsCommand}">
+        <iconPacks:PackIconMaterial Kind="CheckboxMultipleMarked"/>
+      </controls1:CommandButton>
+      <Separator Style="{StaticResource IconSeperatorStyle}"/>
+      <controls1:CommandButton CommandText="Restrict Playtest Material"
+                               ToolTip="Uncheck playtest material from all source groups."
+                               Style="{StaticResource DangerClearCommandButtonStyle}"
+                               Command="{Binding RestrictAllPlaytestCommand}">
+        <iconPacks:PackIconMaterial Kind="TagMinus"/>
+      </controls1:CommandButton>
+      <Separator Style="{StaticResource IconSeperatorStyle}"
+                 Visibility="{Binding IsCompendiumSeachAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+      <controls1:CommandButton ToolTip="Open the compendium filtered on the selected source."
+                               Style="{StaticResource ClearCommandButtonStyle}"
+                               CommandText="{Binding SelectedSourceItem, StringFormat='View Compendium: {0}'}"
+                               Visibility="{Binding IsCompendiumSeachAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Command="{Binding ViewInCompendiumCommand}">
+        <iconPacks:PackIconFontAwesome Kind="SearchSolid"/>
+      </controls1:CommandButton>
+    </StackPanel>
+    <ListView Grid.Row="1" Grid.Column="0" SelectionMode="Single"
+              ItemTemplate="{StaticResource SourceGroupTemplate}" Style="{StaticResource DefaultListView}"
+              ItemsSource="{Binding SourcesManager.SourceGroups}" SelectedItem="{Binding SelectedSourcesGroup}">
+      <Interaction.Triggers>
+        <EventTrigger EventName="MouseDoubleClick">
+          <InvokeCommandAction Command="{Binding ToggleSelectedSourceGroupCommand}"
+                               CommandParameter="{Binding SelectedSourcesGroup}"/>
+        </EventTrigger>
+        <eventTriggers:SpaceUpEventTrigger>
+          <InvokeCommandAction Command="{Binding ToggleSelectedSourceGroupCommand}"
+                               CommandParameter="{Binding SelectedSourcesGroup}"/>
+        </eventTriggers:SpaceUpEventTrigger>
+      </Interaction.Triggers>
+    </ListView>
+    <ListView SelectionChanged="SourceItems_OnSelectionChanged" x:Name="SourceItems" Grid.Row="1" Grid.Column="2"
+              Grid.RowSpan="2" Grid.ColumnSpan="3" ItemTemplate="{StaticResource SourceItemBlockTemplate}"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionMode="Extended" Padding="0"
+              Margin="0,0,0,0" Style="{StaticResource DefaultWrappedListView}"
+              ItemsSource="{Binding SelectedSourcesGroup.Sources}" SelectedItem="{Binding SelectedSourceItem}">
+      <Interaction.Triggers>
+        <EventTrigger EventName="MouseDoubleClick">
+          <InvokeCommandAction Command="{Binding ToggleSelectedSourceItemCommand}" CommandParameter="{Binding SelectedSourceItem}"/>
+        </EventTrigger>
+      </Interaction.Triggers>
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <WrapPanel/>
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <FrameworkElement.ContextMenu>
+        <ContextMenu>
+          <MenuItem Header="Toggle this source" Command="{Binding ToggleSelectedSourceItemsCommand}"/>
+          <MenuItem Header="Toggle all selected sources" Command="{Binding ToggleSelectedSourceItemsCommand}"/>
+          <MenuItem Header="Toggle sources from this author" Command="{Binding ToggleSameAuthorSourcesCommand}"
+                    CommandParameter="{Binding SelectedSourceItem}"/>
+          <Separator/>
+          <MenuItem Header="View this source in the compendium"
+                    Visibility="{Binding IsCompendiumSeachAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Command="{Binding ViewInCompendiumCommand}"/>
+        </ContextMenu>
+      </FrameworkElement.ContextMenu>
+    </ListView>
+    <StackPanel Grid.Column="0" Grid.Row="2" Grid.RowSpan="1" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                Margin="0,20" MaxWidth="240">
+      <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
+                  ToolTip="Content from sources marked 'playtest material' is use for playtesting and might not be balanced. Ask your DM before using these sources.">
+        <Border CornerRadius="1" Width="6" Height="6" Background="{DynamicResource WarningColorBrush}" Margin="0"/>
+        <TextBlock Text="Playtest Material" Style="{StaticResource SectionSecondaryTextBlockStyle}" FontSize="11"
+                   Margin="4,0,0,0" VerticalAlignment="Center"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
+                  ToolTip="Content from sources marked 'incomplete' might not have been finished or tested yet. Also, certain character options might not be supported by Aurora.">
+        <Border CornerRadius="1" Width="6" Height="6" Background="{DynamicResource Aurora.Brushes.Danger}"
+                Margin="0"/>
+        <TextBlock Text="Incomplete Source" Style="{StaticResource SectionSecondaryTextBlockStyle}" FontSize="11"
+                   Margin="4,0,0,0" VerticalAlignment="Center"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
+                  ToolTip="Additional information might be listed in the description of the source.">
+        <Border CornerRadius="1" Width="6" Height="6" Background="#3aa6ae" Margin="0"/>
+        <TextBlock Text="Additional Information" Style="{StaticResource SectionSecondaryTextBlockStyle}" FontSize="11"
+                   Margin="4,0,0,0" VerticalAlignment="Center"/>
+      </StackPanel>
+    </StackPanel>
+    <StackPanel Visibility="Collapsed" Orientation="Vertical" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="0,0,0,20">
+      <Button Content="APPLY TO CHARACTER" MinWidth="40" Command="{Binding ApplyRestrictionsCommand}"/>
+      <Button Content="ALLOW ALL" MinWidth="40" Margin="0,10,0,0" Command="{Binding ClearRestrictionsCommand}"/>
+      <Button Content="RESTRICT PLAYTEST MATERIAL" MinWidth="40" Margin="0,5,0,0"
+              Command="{Binding RestrictAllPlaytestCommand}"/>
+      <Button Content="SAVE DEFAULT" MinWidth="40" Margin="0,5,0,0"
+              Command="{Binding StoreDefaultRestrictionsCommand}"/>
+      <Button Content="LOAD DEFAULT" MinWidth="40" Margin="0,5,0,0" Command="{Binding LoadRestrictionsCommand}"/>
+    </StackPanel>
+  </Grid>
+</UserControl>

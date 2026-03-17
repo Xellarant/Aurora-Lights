@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<elements>
+	<element name="Grappler" type="Feat" source="System Reference Document" id="ID_PHB_FEAT_GRAPPLER">
+		<prerequisite>Strength 13 or higher</prerequisite>
+		<requirements>[str:13]</requirements>
+		<description>
+			<p class="flavor">Prerequisite: Strength 13 or higher</p>
+			<p>You’ve developed the skills necessary to hold your own in close-quarters grappling. You gain the following benefits:</p>
+			<ul>
+				<li>You have advantage on attack rolls against a creature you are grappling.</li>
+				<li>You can use your action to try to pin a creature grappled by you. To do so, make another grapple check. If you succeed, you and the creature are both restrained until the grapple ends.</li>
+				<li>Creatures that are one size larger than you don’t automatically succeed on checks to escape your grapple.</li>
+			</ul>
+		</description>
+		<sheet>
+			<description>You have advantage on attack rolls against a creature you are grappling.
+			You can use your action to try to pin a creature grappled by you. To do so, make another grapple check. If you succeed, you and the creature are both restrained until the grapple ends.
+			Creatures that are one size larger than you don’t automatically succeed on checks to escape your grapple.</description>
+		</sheet>
+	</element>
+</elements>

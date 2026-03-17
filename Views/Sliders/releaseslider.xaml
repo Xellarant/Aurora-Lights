@@ -1,0 +1,86 @@
+<controls:Flyout x:Class="Builder.Presentation.Views.Sliders.ReleaseSlider"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:controls1="clr-namespace:Builder.Presentation.Controls"
+                 xmlns:models="clr-namespace:Builder.Presentation.Models"
+                 CloseButtonVisibility="Collapsed" Position="Top" IsPinned="false" Theme="Dark" IsModal="false"
+                 Background="#111113"
+                 Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=controls:MetroWindow}, Path=ActualWidth}"
+                 Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=controls:MetroWindow}, Path=ActualHeight}">
+  <Grid Margin="-40,0,0,0">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="1*"/>
+      <RowDefinition Height="4*"/>
+      <RowDefinition Height="2*"/>
+    </Grid.RowDefinitions>
+    <Image Grid.Row="0" Grid.RowSpan="3" Stretch="UniformToFill" VerticalAlignment="Center"
+           HorizontalAlignment="Center" Opacity="0.03"
+           Source="{Binding DisplayPortraitFilePath, Converter={StaticResource PortraitImageSourceConverter}}"/>
+    <StackPanel Grid.Row="1" VerticalAlignment="Center">
+      <StackPanel>
+        <Grid Margin="20,50">
+          <controls1:CircularProgressBar x:Name="CircularProgressBar" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         Style="{StaticResource circularProgressBar}" Value="27" StrokeThickness="17"
+                                         RenderTransformOrigin="0.5,0.5" Background="{DynamicResource SuccessDarkColorBrush}"
+                                         BorderBrush="#FFBCBCBC">
+            <UIElement.RenderTransform>
+              <TransformGroup>
+                <ScaleTransform ScaleX="2.00" ScaleY="2.00"/>
+                <SkewTransform/>
+                <RotateTransform/>
+                <TranslateTransform/>
+              </TransformGroup>
+            </UIElement.RenderTransform>
+            <UIElement.Effect>
+              <DropShadowEffect BlurRadius="5" Opacity="1" ShadowDepth="0"/>
+            </UIElement.Effect>
+          </controls1:CircularProgressBar>
+          <Button x:Name="PortraitImage" IsEnabled="false" Style="{StaticResource PortraitButtonStyle}" Margin="1"
+                  Background="{DynamicResource HighlightBrush}" Width="220" Height="220">
+            <ContentControl.Content>
+              <Grid>
+                <Image x:Name="PortraitImageControl" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Stretch="UniformToFill" RenderTransformOrigin="0.5,0.5"
+                       Source="{Binding DisplayPortraitFilePath, Converter={StaticResource PortraitImageSourceConverter}}">
+                  <FrameworkElement.LayoutTransform>
+                    <TransformGroup>
+                      <ScaleTransform ScaleY="1" ScaleX="1"/>
+                      <SkewTransform/>
+                      <RotateTransform/>
+                      <TranslateTransform/>
+                    </TransformGroup>
+                  </FrameworkElement.LayoutTransform>
+                </Image>
+              </Grid>
+            </ContentControl.Content>
+          </Button>
+          <Ellipse StrokeThickness="4" Margin="0" Stroke="{DynamicResource HighlightBrush}" Width="225" Height="225">
+            <UIElement.Effect>
+              <DropShadowEffect BlurRadius="5" Opacity="1" ShadowDepth="0"/>
+            </UIElement.Effect>
+          </Ellipse>
+        </Grid>
+        <TextBlock FontSize="30" HorizontalAlignment="Center" FontWeight="Normal"
+                   Foreground="{DynamicResource GrayBrush5}" Margin="0,0,0,0" TextWrapping="Wrap"
+                   Text="{Binding DisplayName, Converter={StaticResource ToUpperConverter}}"
+                   Visibility="{Binding IsFavorite, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+        <TextBlock FontSize="30" HorizontalAlignment="Center" FontWeight="Normal"
+                   Foreground="{DynamicResource PinnedCharacterIconColorBrush}" Margin="0,0,0,0"
+                   Text="{Binding DisplayName, Converter={StaticResource ToUpperConverter}}"
+                   Visibility="{Binding IsFavorite, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <TextBlock x:Name="BuildTextBlock" FontSize="13" HorizontalAlignment="Center" FontWeight="Normal"
+                   Foreground="{DynamicResource GrayBrush9}" Margin="0,0,0,20"
+                   Text="{Binding DisplayBuild, Converter={StaticResource ToUpperConverter}}"/>
+      </StackPanel>
+    </StackPanel>
+    <TextBlock x:Name="StatusMessage" Grid.Row="2" Text="LOADING CHARACTER" FontFamily="Segoe UI Symbol"
+               TextAlignment="Center" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"
+               FontWeight="Normal" Foreground="{DynamicResource SuccessDarkColorBrush}" Margin="0,0,0,0"/>
+  </Grid>
+</controls:Flyout>

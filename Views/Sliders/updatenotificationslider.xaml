@@ -1,0 +1,51 @@
+<controls:Flyout x:Class="Builder.Presentation.Views.Sliders.UpdateNotificationSlider"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:shell="clr-namespace:Builder.Presentation.ViewModels.Shell"
+                 xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+                 xmlns:controls1="clr-namespace:Builder.Presentation.Controls"
+                 xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                 xmlns:sliders="clr-namespace:Builder.Presentation.Views.Sliders"
+                 xmlns:controls2="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+                 MinWidth="400" MaxWidth="450" CloseButtonVisibility="Collapsed" TitleVisibility="Collapsed"
+                 Position="Right" Margin="0,0,0,0" IsPinned="false" IsAutoCloseEnabled="false" Theme="Dark"
+                 IsModal="false" Background="#151516">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <FrameworkElement.Resources>
+      <Style x:Key="SliderHeaderBorderStyle" TargetType="{x:Type Border}">
+        <Setter Property="UIElement.SnapsToDevicePixels" Value="true"/>
+        <Setter Property="Border.BorderThickness" Value="1"/>
+        <Setter Property="FrameworkElement.Margin" Value="20"/>
+        <Setter Property="Border.BorderBrush" Value="{DynamicResource AccentColorBrush3}"/>
+        <Setter Property="Border.Background" Value="{DynamicResource AccentColorBrush4}"/>
+      </Style>
+      <Style x:Key="SliderHeaderTextBlockStyle" TargetType="{x:Type TextBlock}"
+             BasedOn="{StaticResource WindowHeaderTextBlockStyle}"/>
+    </FrameworkElement.Resources>
+    <controls1:SliderTitleBlock Margin="20,20,20,20" Content="UPDATE AVAILABLE"/>
+    <StackPanel Grid.Row="1" Margin="20,0,20,0"/>
+    <controls1:ElementDescriptionPanel Grid.Row="2" Background="{DynamicResource DescriptionPanelBackgroundBrush}" Margin="0,0,0,20"
+                                       Padding="10,0,15,0" Description="{Binding Description}" StyleSheet="{Binding StyleSheet}">
+      <FrameworkElement.DataContext>
+        <viewModels:NotificationElementDescriptionPanelViewModel/>
+      </FrameworkElement.DataContext>
+    </controls1:ElementDescriptionPanel>
+    <UniformGrid Grid.Row="3" Margin="20,0,20,20" Columns="2" FirstColumn="0">
+      <controls2:CommandButton Content="DOWNLOAD" IsDefault="true" Style="{StaticResource SuccessCommandButtonStyle}"
+                               Margin="0,0,10,0"/>
+      <controls2:CommandButton Content="CLOSE" Margin="10,0,0,0" IsCancel="true"/>
+    </UniformGrid>
+  </Grid>
+</controls:Flyout>

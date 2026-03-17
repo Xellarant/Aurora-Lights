@@ -1,0 +1,17 @@
+<controls:MetroWindow x:Class="Builder.Presentation.Views.ElementInformationWindow"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:local="clr-namespace:Builder.Presentation.Views"
+                      xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+                      Title="Description Window" Height="600" Width="300"
+                      TitleTemplate="{StaticResource WindowTitleTemplate}" GlowBrush="{DynamicResource HighlightBrush}"
+                      Background="{DynamicResource AccentColorBrush}" Style="{StaticResource CleanWindowStyleKey}">
+  <Grid Background="{DynamicResource WhiteBrush}">
+    <ScrollViewer Margin="10">
+      <userControls:DescriptionPanel Margin="0,0"/>
+    </ScrollViewer>
+  </Grid>
+</controls:MetroWindow>

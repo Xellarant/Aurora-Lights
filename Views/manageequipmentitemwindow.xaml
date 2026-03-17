@@ -1,0 +1,181 @@
+<controls:MetroWindow x:Class="Builder.Presentation.Views.ManageEquipmentItemWindow"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:local="clr-namespace:Builder.Presentation.Views"
+                      xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      xmlns:system="clr-namespace:System;assembly=mscorlib"
+                      xmlns:wpf="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
+                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                      xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                      xmlns:converters="clr-namespace:Builder.Presentation.Converters"
+                      xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+                      xmlns:items="clr-namespace:Builder.Presentation.ViewModels.Shell.Items"
+                      xmlns:controls1="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+                      ResizeMode="NoResize" Style="{StaticResource IconlessCharacterBuilderWindowStyle}"
+                      TitleTemplate="{StaticResource IconlessCharacterBuilderWindowTitleDataTemplate}"
+                      Background="{DynamicResource HighlightBrush}" WindowStartupLocation="CenterScreen" MinHeight="300"
+                      MinWidth="350" MaxHeight="700" MaxWidth="700" Height="600" Width="400"
+                      Title="{Binding SelectedEquipmentItem}">
+  <FrameworkElement.Resources>
+    <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
+      <Setter Property="FrameworkElement.Margin" Value="0,5,0,5"/>
+      <Setter Property="Control.FontSize" Value="11"/>
+      <Setter Property="Control.FontFamily" Value="Segoe UI SemiBold"/>
+      <Setter Property="Control.Foreground" Value="#505050"/>
+    </Style>
+    <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+      <Setter Property="FrameworkElement.Margin" Value="0,0,0,10"/>
+    </Style>
+    <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Type ComboBox}}">
+      <Setter Property="FrameworkElement.Margin" Value="0,0,0,10"/>
+    </Style>
+  </FrameworkElement.Resources>
+  <Grid Background="{DynamicResource Aurora.Brushes.Light}">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Border Grid.Row="1" Grid.Column="1" BorderThickness="0" BorderBrush="{DynamicResource HighlightBrush}"
+            Padding="0">
+      <FrameworkElement.Resources>
+        <Style TargetType="{x:Type ScrollViewer}">
+          <Setter Property="FrameworkElement.Margin" Value="10,0,0,0"/>
+        </Style>
+      </FrameworkElement.Resources>
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Margin="20,10,20,0">
+          <TextBlock Text="Display Name" Style="{StaticResource FieldHeaderTextBlockStyle}"
+                     Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}" FontSize="12" Margin="0,10,0,4"/>
+          <TextBox Padding="4" BorderBrush="{DynamicResource Aurora.Brushes.Light2}"
+                   Text="{Binding SelectedEquipmentItem.AlternativeName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   controls:TextBoxHelper.Watermark="{Binding SelectedEquipmentItem}">
+          </TextBox>
+          <TextBlock Text="Notes" Style="{StaticResource FieldHeaderTextBlockStyle}"
+                     Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}" FontSize="12" Margin="0,10,0,4"/>
+          <TextBox VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"
+                   controls:TextBoxHelper.Watermark="Optional notes to override the default description and display in the equipment page sidebar."
+                   BorderBrush="{DynamicResource Aurora.Brushes.Light2}" TextBlock.LineHeight="20" FontSize="12"
+                   AcceptsReturn="true" AcceptsTab="true" MinHeight="100" MaxHeight="200" Margin="0" Padding="4"
+                   Text="{Binding SelectedEquipmentItem.Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+          </TextBox>
+          <TextBlock Text="Display notes in the equipment page sidebar." FontSize="11" Margin="0,4,0,4"
+                     Style="{StaticResource SectionSecondaryTextBlockStyle}" HorizontalAlignment="Right"
+                     Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}"/>
+          <TextBlock Text="Amount (Stackable)" FontSize="12" Margin="0,10,0,4"
+                     Style="{StaticResource FieldHeaderTextBlockStyle}"
+                     Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}"
+                     Visibility="{Binding SelectedEquipmentItem.IsStackable, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+          <StackPanel Orientation="Horizontal"
+                      Visibility="{Binding SelectedEquipmentItem.IsStackable, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <controls1:CommandButton HorizontalAlignment="Right" Style="{StaticResource SuccessTextIconCommandButtonStyle}"
+                                     Command="{Binding IncrementSelectedEquipmentItemAmountCommand}">
+              <iconPacks:PackIconFontAwesome Kind="PlusSolid"/>
+            </controls1:CommandButton>
+            <controls:NumericUpDown BorderThickness="0" Background="Transparent" Minimum="1" FontWeight="SemiBold" FontSize="12"
+                                    HideUpDownButtons="true" TextAlignment="Center" MinWidth="20" HorizontalContentAlignment="Center"
+                                    BorderBrush="{DynamicResource Aurora.Brushes.Light2}"
+                                    Value="{Binding SelectedEquipmentItem.Amount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <controls1:CommandButton HorizontalAlignment="Left" Style="{StaticResource DangerTextIconCommandButtonStyle}"
+                                     Command="{Binding DecrementSelectedEquipmentItemAmountCommand}">
+              <iconPacks:PackIconFontAwesome Kind="MinusSolid"/>
+            </controls1:CommandButton>
+          </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Margin="20,0,20,20">
+          <TextBlock Text="Character Sheet Options" Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="13"
+                     Margin="0,0,0,0"/>
+          <TextBlock Text="Change how this specific item is displayed." FontSize="12"
+                     Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+          <Grid Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Include in Inventory" Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="12"
+                       Margin="0"/>
+            <controls:ToggleSwitch OnLabel="" OffLabel="" controls:ControlsHelper.HeaderFontSize="14" FontSize="12"
+                                   Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                                   Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" HorizontalAlignment="Right"
+                                   ContentDirection="LeftToRight" FontFamily="Segoe UI SemiBold" Grid.Column="1"
+                                   IsChecked="{Binding SelectedEquipmentItem.IncludeInEquipmentPageInventory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+          </Grid>
+          <Grid Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Include in Inventory Descriptions" Style="{StaticResource SectionHeaderTextBlockStyle}"
+                       FontSize="12" Margin="0"/>
+            <controls:ToggleSwitch OnLabel="" OffLabel="" controls:ControlsHelper.HeaderFontSize="14" FontSize="12"
+                                   Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                                   Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" HorizontalAlignment="Right"
+                                   ContentDirection="LeftToRight" FontFamily="Segoe UI SemiBold" Grid.Column="1"
+                                   IsChecked="{Binding SelectedEquipmentItem.IncludeInEquipmentPageDescriptionSidebar, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+          </Grid>
+          <Grid Margin="0,10,0,0" IsEnabled="{Binding Settings.IncludeItemcards}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Include in Item Cards" Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="12"
+                       Margin="0"/>
+            <controls:ToggleSwitch OnLabel="" OffLabel="" controls:ControlsHelper.HeaderFontSize="14" FontSize="12"
+                                   Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
+                                   Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" HorizontalAlignment="Right"
+                                   ContentDirection="LeftToRight" FontFamily="Segoe UI SemiBold" Grid.Column="1"
+                                   IsChecked="{Binding SelectedEquipmentItem.ShowCard, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+          </Grid>
+        </StackPanel>
+      </Grid>
+    </Border>
+    <Border Grid.Row="1" Grid.Column="0" BorderThickness="0,0,1,0"
+            Background="{DynamicResource Aurora.Brushes.Light1}"
+            BorderBrush="{DynamicResource Aurora.Brushes.Light2}" Padding="10" Visibility="Collapsed">
+      <StackPanel Orientation="Vertical" Margin="10,10,0,0">
+        <userControls:DescriptionCheckBox Header="Include in Inventory" Margin="0,0,0,10"
+                                          Description="This item will listed in your inventory."
+                                          IsChecked="{Binding SelectedEquipmentItem.IncludeInEquipmentPageInventory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <userControls:DescriptionCheckBox Header="Show in Description Sidebar" Margin="0,10,0,10"
+                                          Description="Allow the item to be listed in the 'Description Sidebar' section."
+                                          IsChecked="{Binding SelectedEquipmentItem.IncludeInEquipmentPageDescriptionSidebar, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <userControls:DescriptionCheckBox Header="Include as Item Card" Margin="0,10,0,10"
+                                          Description="Include as item card when you're displaying them."
+                                          IsChecked="{Binding SelectedEquipmentItem.ShowCard, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      </StackPanel>
+    </Border>
+    <Border Background="{DynamicResource Aurora.Brushes.Light1}" Grid.Row="2" SnapsToDevicePixels="true"
+            BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Aurora.Brushes.Light2}" Grid.ColumnSpan="2">
+      <FrameworkElement.Resources>
+        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource MetroFlatButton}">
+          <Setter Property="UIElement.SnapsToDevicePixels" Value="true"/>
+          <Setter Property="FrameworkElement.Margin" Value="10"/>
+          <Setter Property="Control.FontSize" Value="11"/>
+          <Setter Property="FrameworkElement.MinWidth" Value="70"/>
+          <Setter Property="FrameworkElement.MaxHeight" Value="25"/>
+          <Setter Property="Control.Padding" Value="10,5"/>
+        </Style>
+      </FrameworkElement.Resources>
+      <Grid Margin="0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10,0,0,0">
+          <CheckBox Content="Show Quick Edit in Inventory" FontFamily="Segoe UI SemiBold" FontSize="11"
+                    Foreground="{DynamicResource Aurora.Brushes.Text.Primary}" Visibility="Collapsed"
+                    IsChecked="{Binding IsQuickEditEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0">
+          <controls1:CommandButton Content="OK" Margin="0,10,10,10" IsDefault="true" MinWidth="80"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</controls:MetroWindow>

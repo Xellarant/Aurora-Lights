@@ -1,0 +1,439 @@
+<controls:MetroWindow x:Class="Builder.Presentation.Views.ApplicationSettingsWindow"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:local="clr-namespace:Builder.Presentation.Views"
+                      xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      xmlns:system="clr-namespace:System;assembly=mscorlib"
+                      xmlns:wpf="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
+                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                      xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                      xmlns:converters="clr-namespace:Builder.Presentation.Converters"
+                      xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+                      xmlns:aurora="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+                      Title="Application Settings" ResizeMode="NoResize"
+                      Style="{StaticResource IconlessCharacterBuilderWindowStyle}"
+                      TitleTemplate="{StaticResource IconlessCharacterBuilderWindowTitleDataTemplate}"
+                      WindowStartupLocation="CenterScreen" Height="600" Width="425" MinHeight="600" MinWidth="500"
+                      MaxHeight="700" MaxWidth="700">
+  <FrameworkElement.DataContext>
+    <viewModels:SettingsWindowViewModel/>
+  </FrameworkElement.DataContext>
+  <FrameworkElement.Resources>
+    <converters:AccentColorConverter x:Key="AccentColorConverter"/>
+    <converters:ThemeColorConverter x:Key="ThemeColorConverter"/>
+    <converters:InvertedThemeColorConverter x:Key="InvertedThemeColorConverter"/>
+  </FrameworkElement.Resources>
+  <Grid Background="{DynamicResource WhiteBrush}" Margin="0,1,0,0">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Border Grid.Row="1">
+      <controls:MetroTabControl x:Name="SettingsTabControl" TabStripPlacement="Left" Margin="0,10,0,10"
+                                controls:TabControlHelper.Underlined="TabPanel"
+                                Background="{DynamicResource TransparentWhiteBrush}"
+                                Style="{DynamicResource SettingsTabControlStyle}">
+        <FrameworkElement.Resources>
+          <Style TargetType="{x:Type controls:MetroTabItem}" BasedOn="{StaticResource MetroTabItem}">
+            <Setter Property="controls:TabControlHelper.UnderlineSelectedBrush"
+                    Value="{DynamicResource HighlightBrush}"/>
+            <Setter Property="controls:ControlsHelper.ContentCharacterCasing" Value="Upper"/>
+            <Setter Property="HeaderedContentControl.HeaderTemplate">
+              <Setter.Value>
+                <DataTemplate>
+                  <TextBlock Margin="0" FontSize="12" Padding="10,5,10,5" FontWeight="SemiBold"
+                             Text="{Binding Converter={StaticResource UpperCaseConverter}}"/>
+                </DataTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+          <Style x:Key="SettingsSectionScrollViewerStyle" TargetType="{x:Type ScrollViewer}">
+            <Setter Property="FrameworkElement.Margin" Value="20,0,0,0"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+          </Style>
+        </FrameworkElement.Resources>
+        <controls:MetroTabItem Header="GENERAL">
+          <ScrollViewer Style="{StaticResource SettingsSectionScrollViewerStyle}">
+            <StackPanel Margin="0,5,20,0">
+              <TextBlock Text="APPLICATION SETTINGS" Style="{StaticResource SectionPrimaryTextBlockStyle}"/>
+              <TextBlock Text="The behaviour of the application and its UI elements."
+                         Style="{StaticResource SectionSecondaryTextBlockStyle}"/>
+              <TextBlock Text="PLAYER NAME" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <TextBox Margin="0" Text="{Binding DefaultPlayerName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="ABILITY SCORE GENERATION OPTION" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <ComboBox ItemsSource="{Binding AbilitiesGenerationSelectionItems}"
+                        SelectedItem="{Binding SelectedAbilityGenerateOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="SELECTION PICKERS" Style="{StaticResource SectionPrimaryTextBlockStyle}" Margin="0,25,0,0"/>
+              <TextBlock Text="ROW HEIGHT" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <ComboBox Margin="0" ItemsSource="{Binding SelectionExpanderItemsSize}"
+                        SelectedItem="{Binding SelectedSelectionExpanderItemsSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="Reduce the height of the rows to fit more content on your screen."
+                         Style="{StaticResource SectionSecondaryTextBlockStyle}" FontSize="10"/>
+              <userControls:DescriptionCheckBox Header="Selection Flow" Margin="0,10,0,0"
+                                                Description="Automatically navigate to the next available selection. Alternatively, toggle this behaviour from the status bar."
+                                                IsChecked="{Binding AutoNavigateNextSelectionWhenAvailable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="CHARACTER INFORMATION PANEL" Style="{StaticResource SectionPrimaryTextBlockStyle}"
+                         Margin="0,25,0,0"/>
+              <TextBlock Text="Click the character portrait at the top of the main window to open the character information panel."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+              <userControls:DescriptionCheckBox Header="Skills Panel Expanded" Margin="0,0,0,10"
+                                                Description="Expand by default when the application loads."
+                                                IsChecked="{Binding CharacterPanelSkillsIsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <userControls:DescriptionCheckBox Header="Saving Throws Expanded" Margin="0,0,0,0"
+                                                Description="Expand by default when the application loads."
+                                                IsChecked="{Binding CharacterPanelSavingThrowsIsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="CHARACTER ADVANCEMENT" Style="{StaticResource SectionPrimaryTextBlockStyle}"
+                         Margin="0,25,0,0"/>
+              <userControls:DescriptionCheckBox Header="'Remove Level' Confirmation" Margin="0,10,0,10"
+                                                Description="Display a confirmation box when removing the last level of your character."
+                                                IsChecked="{Binding DisplayRemoveLevelConfirmation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+          </ScrollViewer>
+        </controls:MetroTabItem>
+        <controls:MetroTabItem Header="Appearance">
+          <ScrollViewer Style="{StaticResource SettingsSectionScrollViewerStyle}">
+            <StackPanel Margin="0,5,10,0">
+              <TextBlock Text="APPEARANCE" Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0,0,0,0"/>
+              <TextBlock Text="Customize the appearance of the application."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+              <TextBlock Text="SELECT YOUR ACCENT COLOR" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <ListView BorderThickness="0" Padding="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="0,0,0,10" ItemsSource="{Binding Accents}"
+                        SelectedItem="{Binding SelectedAccent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <ItemsControl.ItemContainerStyle>
+                  <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource {x:Type ListViewItem}}">
+                    <Setter Property="FrameworkElement.Margin" Value="2"/>
+                    <Setter Property="Control.Padding" Value="0"/>
+                  </Style>
+                </ItemsControl.ItemContainerStyle>
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel/>
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border BorderBrush="{DynamicResource GrayHoverBrush}" BorderThickness="0" SnapsToDevicePixels="true"
+                            Width="50" Height="50" Margin="2"
+                            Background="{Binding Converter={StaticResource AccentColorConverter}}"/>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ListView>
+              <TextBlock Text="SELECT YOUR THEME COLOR" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <ListView BorderThickness="0" Padding="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="0,0,0,20" ItemsSource="{Binding Themes}"
+                        SelectedItem="{Binding SelectedTheme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <ItemsControl.ItemContainerStyle>
+                  <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource {x:Type ListViewItem}}">
+                    <Setter Property="FrameworkElement.Margin" Value="2"/>
+                    <Setter Property="Control.Padding" Value="0"/>
+                  </Style>
+                </ItemsControl.ItemContainerStyle>
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel/>
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border BorderBrush="{DynamicResource GrayHoverBrush}" BorderThickness="0" SnapsToDevicePixels="true"
+                            Width="50" Height="50" Margin="2"
+                            Background="{Binding Converter={StaticResource ThemeColorConverter}}">
+                      <Path x:Name="ContrastDragonPath" Width="28" Height="28" HorizontalAlignment="Center"
+                            VerticalAlignment="Center" Margin="2" Style="{StaticResource DragonHeadPathStyle}"
+                            Fill="{Binding Converter={StaticResource InvertedThemeColorConverter}}"/>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ListView>
+              <TextBlock Style="{StaticResource FieldHeaderTextBlockStyle}"
+                         Text="{Binding CharactersCollectionSize, StringFormat='CHARACTER COLLECTION PORTRAIT SIZE ({0}px)'}"/>
+              <Slider Minimum="125" Maximum="175" SmallChange="5" LargeChange="10" TickFrequency="25"
+                      TickPlacement="BottomRight" IsSnapToTickEnabled="true" Margin="0,5,0,0"
+                      Value="{Binding CharactersCollectionSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+          </ScrollViewer>
+        </controls:MetroTabItem>
+        <controls:MetroTabItem Header="CHARACTER BUILD">
+          <ScrollViewer Style="{StaticResource SettingsSectionScrollViewerStyle}">
+            <StackPanel Margin="0,5,20,0">
+              <TextBlock Text="BUILD" Style="{StaticResource SectionPrimaryTextBlockStyle}"/>
+              <TextBlock Text="The behaviour of character creation." Style="{StaticResource SectionSecondaryTextBlockStyle}"/>
+              <TextBlock Text="ABILITY SCORE GENERATION OPTION" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <ComboBox Margin="0,0,0,10" ItemsSource="{Binding AbilitiesGenerationSelectionItems}"
+                        SelectedItem="{Binding SelectedAbilityGenerateOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <userControls:DescriptionCheckBox Header="Ability Score Maximum (default)" Margin="0,10,0,0"
+                                                Description="You ability score can't exceed the maximum of 20. This can still be increased by certain features or items."
+                                                IsChecked="{Binding UseDefaultAbilityScoreMaximum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+          </ScrollViewer>
+        </controls:MetroTabItem>
+        <controls:MetroTabItem Header="DATA FILES">
+          <ScrollViewer Style="{StaticResource SettingsSectionScrollViewerStyle}">
+            <StackPanel Margin="0,5,20,0">
+              <TextBlock Text="DATA FILES" Style="{StaticResource SectionPrimaryTextBlockStyle}"/>
+              <TextBlock Text="Your data directories and additional content settings."
+                         Style="{StaticResource SectionSecondaryTextBlockStyle}"/>
+              <TextBlock Text="DOCUMENTS DIRECTORY" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <TextBox IsReadOnly="true" controls:TextBoxHelper.TextButton="true"
+                       Style="{DynamicResource MetroButtonTextBox}" Text="{Binding CustomRootDirectory}"
+                       controls:TextBoxHelper.ButtonCommand="{Binding BrowseCustomRootDirectoryCommand}">
+                <controls:TextBoxHelper.ButtonContent>
+                  <iconPacks:PackIconMaterial Kind="FolderSearch" Width="14" Height="14"/>
+                </controls:TextBoxHelper.ButtonContent>
+              </TextBox>
+              <TextBlock Text="The directory where your characters and gallery images are stored."
+                         Style="{StaticResource SectionSecondaryTextBlockStyle}" FontSize="10"/>
+              <TextBlock Text="ADDITIONAL CONTENT" Style="{StaticResource SectionPrimaryTextBlockStyle}" Margin="0,25,0,0"/>
+              <TextBlock Text="Manage additional content added through index files."
+                         Style="{StaticResource SectionSecondaryTextBlockStyle}"/>
+              <userControls:DescriptionCheckBox Header="Automatic Updates" Margin="0,10"
+                                                Description="Check for updates to additional content at startup."
+                                                IsChecked="{Binding StartupCheckForContentUpdated, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="SECONDARY CONTENT DIRECTORY" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <TextBox IsReadOnly="true" controls:TextBoxHelper.TextButton="true"
+                       Style="{DynamicResource MetroButtonTextBox}" Text="{Binding AdditionalCustomDirectory}"
+                       controls:TextBoxHelper.ButtonCommand="{Binding BrowseAdditionalCustomDirectoryCommand}">
+                <controls:TextBoxHelper.ButtonContent>
+                  <iconPacks:PackIconMaterial Kind="FolderSearch" Width="14" Height="14"/>
+                </controls:TextBoxHelper.ButtonContent>
+              </TextBox>
+              <TextBlock Text="A separate directory where custom files can be loaded from. An ideal place for your own custom content."
+                         Style="{StaticResource SectionSecondaryTextBlockStyle}" FontSize="10"/>
+              <aurora:CommandButton CommandText="UNLINK SECONDARY DIRECTORY" Style="{StaticResource TextIconCommandButtonStyle}"
+                                    HorizontalAlignment="Right" Margin="0,0,0,10"
+                                    Command="{Binding ClearAdditionalCustomDirectoryCommand}">
+                <iconPacks:PackIconMaterial Kind="FolderRemove" Width="14" Height="14"/>
+              </aurora:CommandButton>
+              <aurora:CommandButton Click="ClearNewsArticlesCache" x:Name="ClearNewsCacheButton"
+                                    CommandText="Clear News Articles Cache" Margin="0,20,0,0" MinWidth="75"/>
+            </StackPanel>
+          </ScrollViewer>
+        </controls:MetroTabItem>
+        <controls:MetroTabItem Header="Equipment">
+          <ScrollViewer Style="{StaticResource SettingsSectionScrollViewerStyle}">
+            <StackPanel Margin="0,5,10,0">
+              <TextBlock Text="EQUIPMENT" Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0,0,0,0"/>
+              <TextBlock Text="General behaviour of the equipment section and your inventory."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+              <userControls:DescriptionCheckBox Header="'Add Weapon to Attacks' Confirmation" Margin="0,10,0,10"
+                                                Description="Display a confirmation box when equipping a weapon that is not included in your 'Attacks' section to add it."
+                                                IsChecked="{Binding RequestAddAttackWhenEquippingWeapon, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+          </ScrollViewer>
+        </controls:MetroTabItem>
+        <controls:MetroTabItem Header="Character" Visibility="Collapsed">
+          <ScrollViewer>
+            <StackPanel Margin="0,5,20,0">
+              <TextBlock Text="CHARACTER GENERATION OPTIONS" Style="{StaticResource SectionHeaderTextBlockStyle}"
+                         Margin="0,0,0,0"/>
+              <TextBlock Text="Configue the character options for new characters. You can still change the options for each character individually after creating it."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+              <TextBlock Text="DEFAULT PLAYER NAME" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <TextBox Text="{Binding DefaultPlayerName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="ABILITY SCORE GENERATION OPTION" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <ComboBox ItemsSource="{Binding AbilitiesGenerationSelectionItems}"
+                        SelectedItem="{Binding SelectedAbilityGenerateOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="Access and edit more options for your character from the menu with your characters name."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+            </StackPanel>
+          </ScrollViewer>
+        </controls:MetroTabItem>
+        <controls:MetroTabItem Header="Character Sheet">
+          <ScrollViewer Style="{StaticResource SettingsSectionScrollViewerStyle}">
+            <StackPanel Margin="0,5,10,0">
+              <TextBlock Text="CHARACTER SHEET" Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0"/>
+              <TextBlock Text="Manage some aspects of the output of your character sheet."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+              <userControls:DescriptionCheckBox Header="Form Fillable" Description="Generate the sheet as form fillable so you can edit fields."
+                                                Margin="0,10,0,10"
+                                                IsChecked="{Binding AllowEditableSheet, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <userControls:DescriptionCheckBox Header="Style Formatting (Recommended)"
+                                                Description="Apply some styling for certain fields such as Features &amp; Traits to improve readability. This option can be used in combination with form-fillable."
+                                                Margin="0,0,0,10"
+                                                IsChecked="{Binding IncludeFormatting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <userControls:DescriptionCheckBox Header="Invert Ability Score"
+                                                Description="This will switch the location of the ability score and modifier. This includes the companion page if you have it."
+                                                Margin="0,0,0,0"
+                                                IsChecked="{Binding FlippedAbilities, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="SPELLCASTING PAGE" Style="{StaticResource SectionPrimaryTextBlockStyle}" Margin="0,25,0,0"/>
+              <TextBlock Text="Options specific to the spellcasting page."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+              <userControls:DescriptionCheckBox Header="Include Non-Prepared Spells"
+                                                Description="When you need to prepare spells you can include spells you have not prepared to the spellcasting page. With the dynamic spellcasting page there is room for all the unprepared spells."
+                                                Margin="0,0,0,0"
+                                                IsChecked="{Binding SheetIncludeNonPreparedSpells, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="GENERATED CARDS" Style="{StaticResource SectionPrimaryTextBlockStyle}" Margin="0,25,0,0"/>
+              <TextBlock Text="Include some of the additional custom generated cards."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+              <userControls:DescriptionCheckBox Header="Spell cards" Margin="0,0,0,10"
+                                                Description="A description of the spell as well as the casting time, range, duration, and required components."
+                                                IsChecked="{Binding IncludeSpellcards, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <userControls:DescriptionCheckBox Header="Item cards" Margin="0,0,0,10" Description="A description, details, and added notes."
+                                                IsChecked="{Binding IncludeItemcards, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <userControls:DescriptionCheckBox Header="Start Item Cards on a New Page" Margin="20,0,0,0"
+                                                Visibility="{Binding IncludeItemcards, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                IsChecked="{Binding StartItemCardsOnNewPage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <userControls:DescriptionCheckBox Header="Attack Cards" Margin="0,0,0,10"
+                                                Description="Detailed attack cards for your weapon(s). Not to be confused with item cards for your weapons."
+                                                IsChecked="{Binding IncludeAttackCards, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <userControls:DescriptionCheckBox Header="Start Attack Cards on a New Page" Margin="20,0,0,0"
+                                                Visibility="{Binding IncludeAttackCards, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                IsChecked="{Binding StartAttackCardsOnNewPage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <userControls:DescriptionCheckBox Header="Feature Cards" Margin="0,0,0,10"
+                                                Description="Detailed description for features such as racial traits, class and archetype features, and feats."
+                                                IsChecked="{Binding IncludeFeatureCards, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <userControls:DescriptionCheckBox Header="Start Feature Cards on a New Page" Margin="20,0,0,0"
+                                                Visibility="{Binding IncludeFeatureCards, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                IsChecked="{Binding StartFeatureCardsOnNewPage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="LEGACY" Style="{StaticResource SectionPrimaryTextBlockStyle}" Margin="0,25,0,0"/>
+              <TextBlock Text="While the Aurora sheets are not yet finalized the legacy pages are still available should you choose to use it."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+              <userControls:DescriptionCheckBox Header="Legacy Spellcasting Page" Margin="0,0,0,10"
+                                                Description="Use the single page basic spellcasting page layout. It's best not to use the non-prepared spells option when using this option due to limited space for spells."
+                                                IsChecked="{Binding UseLegacySpellcastingPage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+          </ScrollViewer>
+        </controls:MetroTabItem>
+        <controls:MetroTabItem Header="Developer"
+                               Visibility="{Binding IsInDeveloperMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <ScrollViewer Style="{StaticResource SettingsSectionScrollViewerStyle}">
+            <StackPanel Margin="0,5,20,0">
+              <TextBlock Text="SO YOU'RE A DEVELOPER NOW?" Style="{StaticResource SectionHeaderTextBlockStyle}"
+                         Margin="0,0,0,0"/>
+              <TextBlock Text="In the future you might find some special settings here, for now I'll only use this while debugging. :)"
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+              <TextBlock Text="There is no priority on the developer window at the moment so this will be outdated and has limited usage."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+              <TextBlock Text="It's recommended not to use developer mode for normal usage as it does some extra's behind the scenes that might slow down the application. It's best to create one shortcut for normal use and one for developer mode."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+              <aurora:CommandButton Click="OnBrowseGitHubClick" CommandText="GitHub Repository" Margin="0,10,10,10" MinWidth="75"/>
+            </StackPanel>
+          </ScrollViewer>
+        </controls:MetroTabItem>
+        <controls:MetroTabItem Header="License">
+          <Grid Margin="0,0,0,0">
+            <ScrollViewer Style="{StaticResource SettingsSectionScrollViewerStyle}">
+              <StackPanel Margin="0,5,20,0">
+                <TextBlock Text="OPEN GAMING LICENSE" Style="{StaticResource SectionPrimaryTextBlockStyle}" Margin="0,0,0,0"/>
+                <TextBlock Text="Version 1.0a" Style="{StaticResource SectionSecondaryTextBlockStyle}"/>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  The following text is the property of Wizards of the Coast, Inc. and is Copyright 2000 Wizards of the Coast, Inc ("Wizards"). All Rights Reserved.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  1. Definitions: (a)"Contributors"means the copyright and/or trademark owners who have contributed Open Game Content; (b)"Derivative Material"means copyrighted material including derivative works and translations (including into other computer languages), potation, modification, correction, addition, extension, upgrade, improvement, compilation, abridgment or other form in which an existing work may be recast, transformed or adapted; (c) "Distribute"means to reproduce, license, rent, lease, sell, broadcast, publicly display, transmit or otherwise distribute; (d)"Open Game Content"means the game mechanic and includes the methods, procedures, processes and routines to the extent such content does not embody the Product Identity and is an enhancement over the prior art and any additional content clearly identified as Open Game Content by the Contributor, and means any work covered by this License, including translations and derivative works under copyright law, but specifically excludes Product Identity. (e) "Product Identity"means product and product line names, logos and identifying marks including trade dress; artifacts; creatures characters; stories, storylines, plots, thematic elements, dialogue, incidents, language, artwork, symbols, designs, depictions, likenesses, formats, poses, concepts, themes and graphic, photographic and other visual or audio representations; names and descriptions of characters, spells, enchantments, personalities, teams, personas, likenesses and special abilities; places, locations, environments, creatures, equipment, magical or supernatural abilities or effects, logos, symbols, or graphic designs; and any other trademark or registered trademark clearly identified as Product identity by the owner of the Product Identity, and which specifically excludes the Open Game Content; (f) "Trademark"means the logos, names, mark, sign, motto, designs that are used by a Contributor to identify itself or its products or the associated products contributed to the Open Game License by the Contributor (g) "Use", "Used"or "Using"means to use, Distribute, copy, edit, format, modify, translate and otherwise create Derivative Material of Open Game Content. (h) "You" or "Your"means the licensee in terms of this agreement.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  2. The License: This License applies to any Open Game Content that contains a notice indicating that the Open Game Content may only be Used under and in terms of this License. You must affix such a notice to any Open Game Content that you Use. No terms may be added to or subtracted from this License except as described by the License itself. No other terms or conditions may be applied to any Open Game Content distributed using this License.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  3.Offer and Acceptance: By Using the Open Game Content You indicate Your acceptance of the terms of this License.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  4. Grant and Consideration: In consideration for agreeing to use this License, the Contributors grant You a perpetual, worldwide, royalty-­‐‑free, non-­‐‑ exclusive license with the exact terms of this License to Use, the Open Game Content.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  5.Representation of Authority to Contribute: If You are contributing original material as Open Game Content, You represent that Your Contributions are Your original creation and/or You have sufficient rights to grant the rights conveyed by this License.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  6.Notice of License Copyright: You must update the COPYRIGHT NOTICE portion of this License to include the exact text of the COPYRIGHT NOTICE of any Open Game Content You are copying, modifying or distributing, and You must add the title, the copyright date, and the copyright holder's name to the COPYRIGHT NOTICE of any original Open Game Content you Distribute.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  7. Use of Product Identity: You agree not to Use any Product Identity, including as an indication as to compatibility, except as expressly licensed in another, independent Agreement with the owner of each element of that Product Identity. You agree not to indicate compatibility or co-­‐‑adaptability with any Trademark or Registered Trademark in conjunction with a work containing Open Game Content except as expressly licensed in another, independent Agreement with the owner of such Trademark or Registered Trademark. The use of any Product Identity in Open Game Content does not constitute a challenge to the ownership of that Product Identity. The owner of any Product Identity used in Open Game Content shall retain all rights, title and interest in and to that Product Identity.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  8. Identification: If you distribute Open Game Content You must clearly indicate which portions of the work that you are distributing are Open Game Content.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  9. Updating the License: Wizards or its designated Agents may publish updated versions of this License. You may use any authorized version of this License to copy, modify and distribute any Open Game Content originally distributed under any version of this License.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  10. Copy of this License: You MUST include a copy of this License with every copy of the Open Game Content You Distribute.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  11. Use of Contributor Credits: You may not market or advertise the Open Game Content using the name of any Contributor unless You have written permission from the Contributor to do so.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  12. Inability to Comply: If it is impossible for You to comply with any of the terms of this License with respect to some or all of the Open Game Content due to statute, judicial order, or governmental regulation then You may not Use any Open Game Material so affected.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  13. Termination: This License will terminate automatically if You fail to comply with all terms herein and fail to cure such breach within 30 days of becoming aware of the breach. All sublicenses shall survive the termination of this License.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  14. Reformation: If any provision of this License is held to be unenforceable, such provision shall be reformed only to the extent necessary to make it enforceable.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  15. COPYRIGHT NOTICE
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                  Open Game License v 1.0a Copyright 2000, Wizards of the Coast, LLC. System Reference Document 5.1 Copyright 2016, Wizards of the Coast, Inc.; Authors Mike Mearls, Jeremy Crawford, Chris Perkins, Rodney Thompson, Peter Lee, James Wyatt, Robert J. Schwalb, Bruce R. Cordell, Chris Sims, and Steve Townshend, based on original material by E. Gary Gygax and Dave Arneson.
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">END OF LICENSE</TextBlock>
+              </StackPanel>
+            </ScrollViewer>
+          </Grid>
+        </controls:MetroTabItem>
+        <controls:MetroTabItem Header="About">
+          <ScrollViewer Style="{StaticResource SettingsSectionScrollViewerStyle}">
+            <Grid>
+              <StackPanel Margin="0,5,20,0">
+                <TextBlock Text="AURORA" Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0,0,0,0"/>
+                <TextBlock Style="{StaticResource SectionSubHeaderTextBlockStyle}"
+                           Foreground="{DynamicResource DeveloperIndicatorForegroundColorBrush}"
+                           Text="{Binding Version, StringFormat=v{0}}"/>
+                <TextBlock Text="Aurora is a free tool that lets you create characters for your dungeons and dragons game using the bundled content, your own content, and content created by others."
+                           Style="{StaticResource SectionSubHeaderTextBlockStyle}" FontSize="12"/>
+                <aurora:CommandButton Click="BrowseDiscordChannelClick" CommandText="Discord Channel" Margin="0,10,10,0" MinWidth="75"/>
+                <aurora:CommandButton Click="BrowsePatreonPageClick" CommandText="Support on Patreon" Margin="0,10,10,0" MinWidth="75"/>
+              </StackPanel>
+              <StackPanel VerticalAlignment="Bottom" Margin="0">
+                <TextBlock Margin="0,0,0,2" Text="© 2020 BAS DRIESSEN. ALL RIGHTS RESERVED"
+                           Style="{StaticResource SectionSubHeaderTextBlockStyle}" FontSize="11"/>
+              </StackPanel>
+            </Grid>
+          </ScrollViewer>
+        </controls:MetroTabItem>
+        <controls:MetroTabItem Header="DEFAULT SECTION" Visibility="Collapsed">
+          <ScrollViewer Style="{StaticResource SettingsSectionScrollViewerStyle}">
+            <StackPanel Margin="0,5,10,0">
+              <TextBlock Text="DEFAULT SECTION" Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0,0,0,0"/>
+              <TextBlock Text="This is the default section layout. Copy this MetroTabItem to start a new section."
+                         Style="{StaticResource SectionSubHeaderTextBlockStyle}"/>
+            </StackPanel>
+          </ScrollViewer>
+        </controls:MetroTabItem>
+      </controls:MetroTabControl>
+    </Border>
+    <Border Background="{DynamicResource DescriptionPanelBackgroundBrush}" Grid.Row="2"
+            SnapsToDevicePixels="true" BorderThickness="0,1,0,0"
+            BorderBrush="{DynamicResource LightColor1Brush}">
+      <FrameworkElement.Resources>
+        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource MetroFlatButton}">
+          <Setter Property="UIElement.SnapsToDevicePixels" Value="true"/>
+          <Setter Property="FrameworkElement.Margin" Value="10"/>
+          <Setter Property="Control.FontSize" Value="11"/>
+          <Setter Property="FrameworkElement.MinWidth" Value="70"/>
+          <Setter Property="FrameworkElement.MaxHeight" Value="25"/>
+          <Setter Property="Control.Padding" Value="10,5"/>
+        </Style>
+      </FrameworkElement.Resources>
+      <Grid Margin="0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0">
+          <aurora:CommandButton CommandText="Restore Defaults" Margin="10,0,0,0" Command="{Binding SetDefaultsSettingsCommand}">
+            <iconPacks:PackIconMaterial Kind="BackupRestore"/>
+          </aurora:CommandButton>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0">
+          <aurora:CommandButton Click="OnSaveClicked" CommandText="Save" Style="{DynamicResource SuccessCommandButtonStyle}"
+                                Margin="0,10,10,10" MinWidth="75" IsDefault="true" Command="{Binding SaveSettingsCommand}"/>
+          <aurora:CommandButton Click="OnCancelClicked" CommandText="Cancel"
+                                Style="{DynamicResource DangerClearCommandButtonStyle}" Margin="0,10,10,10" MinWidth="75"
+                                IsCancel="true" Command="{Binding CancelSettingsCommand}"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</controls:MetroWindow>

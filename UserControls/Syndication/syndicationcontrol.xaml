@@ -1,0 +1,97 @@
+<UserControl x:Class="Builder.Presentation.UserControls.Syndication.SyndicationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Builder.Presentation.UserControls.Syndication"
+             xmlns:controls="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:eventTriggers="clr-namespace:Aurora.Presentation.EventTriggers;assembly=Aurora.Presentation"
+             xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
+             MinWidth="350">
+  <FrameworkElement.DataContext>
+    <local:SyndicationViewModel/>
+  </FrameworkElement.DataContext>
+  <FrameworkElement.Resources>
+    <DataTemplate x:Key="SyndicationItemTemplate">
+      <Border BorderBrush="{DynamicResource Aurora.Brushes.Light2}"
+              Background="{DynamicResource Aurora.Brushes.Light1}" BorderThickness="0" Padding="0"
+              Margin="0,0,0,0">
+        <Grid Margin="0,0,0,0">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <Border BorderThickness="0" BorderBrush="{DynamicResource Aurora.Brushes.Success}" Grid.RowSpan="3"
+                  Margin="0,0,0,0"
+                  Visibility="{Binding IsNew, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+          <Grid Row="0" Column="2" RowSpan="3" Margin="8,8,8,6">
+            <StackPanel>
+              <TextBlock Style="{StaticResource SectionPrimaryTextBlockStyle}" FontSize="13" TextWrapping="Wrap"
+                         Margin="0,0,40,4" Text="{Binding Title, Converter={StaticResource UpperCaseConverter}}"/>
+              <TextBlock Style="{StaticResource SectionSecondaryTextBlockStyle}" FontSize="12" TextWrapping="Wrap"
+                         Margin="0" LineHeight="17" Text="{Binding Content}"/>
+            </StackPanel>
+          </Grid>
+          <StackPanel Grid.Row="0" Grid.Column="2" Grid.RowSpan="3" Orientation="Horizontal" VerticalAlignment="Top"
+                      HorizontalAlignment="Right" Margin="4">
+            <controls:CommandButton ToolTip="View Article Online" Style="{StaticResource IconCommandButtonStyle}" MinWidth="20"
+                                    Height="20" Margin="5,0,0,0"
+                                    Command="{Binding DataContext.ViewParameterPostCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                    CommandParameter="{Binding}">
+              <iconPacks:PackIconMaterial Kind="Web" Height="10" Width="10"/>
+            </controls:CommandButton>
+            <controls:CommandButton ToolTip="Dismiss Notification" Style="{StaticResource DangerIconCommandButtonStyle}" MinWidth="20"
+                                    Height="20" Margin="5,0,0,0"
+                                    Command="{Binding DataContext.IndividualDismissCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                    CommandParameter="{Binding}">
+              <iconPacks:PackIconMaterial Kind="Close" Height="10" Width="10"/>
+            </controls:CommandButton>
+          </StackPanel>
+        </Grid>
+      </Border>
+      <DataTemplate.Triggers>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+  </FrameworkElement.Resources>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid Row="1">
+      <Border Padding="5">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,0" VerticalAlignment="Center"/>
+      </Border>
+      <StackPanel Margin="2,0,0,10" VerticalAlignment="Center" HorizontalAlignment="Left">
+        <TextBlock Text="WHAT'S NEW" Style="{StaticResource SectionPrimaryTextBlockStyle}" FontSize="13"/>
+      </StackPanel>
+    </Grid>
+    <ListView Style="{StaticResource DefaultWrappedListView}" Grid.Row="2"
+              ItemTemplate="{StaticResource SyndicationItemTemplate}" BorderThickness="0"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+              ScrollViewer.VerticalScrollBarVisibility="Hidden"
+              Visibility="{Binding HasPosts, Converter={StaticResource BooleanToVisibilityConverter}}"
+              ItemsSource="{Binding Posts}" SelectedItem="{Binding SelectedPost}">
+      <Interaction.Triggers>
+        <EventTrigger EventName="MouseDoubleClick">
+          <InvokeCommandAction Command="{Binding ViewPostCommand}" CommandParameter="{Binding SelectedPost}"/>
+        </EventTrigger>
+      </Interaction.Triggers>
+    </ListView>
+    <TextBlock Grid.Row="2" Text="There are no new articles available." Margin="2,0" FontFamily="Segoe UI Light"
+               LineHeight="20" Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}" FontSize="13"
+               Opacity="1" Style="{StaticResource FlavorDescriptionTextBlockStyle}"
+               Visibility="{Binding HasPosts, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+  </Grid>
+</UserControl>

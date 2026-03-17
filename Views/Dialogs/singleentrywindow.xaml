@@ -1,0 +1,32 @@
+<controls:MetroWindow x:Class="Builder.Presentation.Views.Dialogs.SingleEntryWindow"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      xmlns:dialogs="clr-namespace:Builder.Presentation.Views.Dialogs"
+                      ResizeMode="NoResize" GlowBrush="{DynamicResource HighlightBrush}"
+                      Background="{DynamicResource HighlightBrush}" Style="{StaticResource CleanWindowStyleKey}"
+                      WindowStartupLocation="CenterScreen" TitleTemplate="{StaticResource WindowTitleTemplate}"
+                      Height="168" Width="460" Title="{Binding Title}">
+  <FrameworkElement.DataContext>
+    <dialogs:SingleEntryWindowViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel>
+      <TextBox controls:TextBoxHelper.UseFloatingWatermark="true" Margin="10,10,10,10"
+               Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+               controls:TextBoxHelper.Watermark="{Binding Header}"/>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="10">
+      <Button Content="ACCEPT" IsDefault="true" HorizontalAlignment="Right" Margin="0,0,10,0"
+              FontFamily="Segoe UI Symbol" Style="{StaticResource MetroFlatButton}" FontSize="10"/>
+      <Button Content="CANCEL" IsCancel="true" HorizontalAlignment="Right" Margin="0,0,0,0"
+              FontFamily="Segoe UI Symbol" Style="{StaticResource MetroFlatButton}" FontSize="10"/>
+    </StackPanel>
+  </Grid>
+</controls:MetroWindow>

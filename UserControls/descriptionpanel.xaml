@@ -1,0 +1,32 @@
+<UserControl x:Class="Builder.Presentation.UserControls.DescriptionPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:wpf="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
+             xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+             xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             Background="White">
+  <FrameworkElement.DataContext>
+    <viewModels:DescriptionPanelViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid>
+    <Grid>
+      <wpf:HtmlPanel x:Name="ContentPanel" Background="Transparent" Margin="0,0,0,0" IsSelectionEnabled="true"
+                     IsContextMenuEnabled="true" BaseStylesheet="{Binding StyleSheet}"
+                     Text="{Binding ElementDescription}"/>
+    </Grid>
+    <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,10,0,10">
+      <Button Click="Speech" x:Name="speak" Style="{StaticResource ChromelessButtonStyle}"
+              Foreground="{DynamicResource SuccessColorBrush}" Padding="10" Margin="0">
+        <iconPacks:PackIconFontAwesome Kind="MicrophoneSolid" Height="17" Width="17"/>
+      </Button>
+      <Button Click="StopSpeech" x:Name="cancel" Visibility="Collapsed"
+              Style="{StaticResource ChromelessButtonStyle}" VerticalAlignment="Bottom"
+              Foreground="{DynamicResource DangerColorBrush}" Padding="10" Margin="0" HorizontalAlignment="Right">
+        <iconPacks:PackIconFontAwesome Kind="MicrophoneSlashSolid" Height="17" Width="17"/>
+      </Button>
+    </Grid>
+  </Grid>
+</UserControl>

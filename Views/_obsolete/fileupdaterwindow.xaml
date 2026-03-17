@@ -1,0 +1,85 @@
+<controls:MetroWindow x:Class="Builder.Presentation.Views.FileUpdaterWindow"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:local="clr-namespace:Builder.Presentation.Views"
+                      xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      Title="Index &amp; Elements File Generator"
+                      Style="{StaticResource IconlessCharacterBuilderWindowStyle}" MinHeight="485" MinWidth="309"
+                      Height="384" Width="589">
+  <FrameworkElement.DataContext>
+    <local:UpdaterWindowViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid>
+    <FrameworkElement.Resources>
+      <Style TargetType="{x:Type controls:MetroTabItem}"
+             BasedOn="{StaticResource MainNavigationChildTabItemStyle}"/>
+    </FrameworkElement.Resources>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="1"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid Row="1" Background="White">
+      <Border Style="{StaticResource UnderlayBorderStyle}"/>
+      <controls:MetroTabControl Grid.Column="0" Margin="0,0,0,0">
+        <controls:MetroTabItem Header="INDEX FILE">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel Margin="10,0">
+              <TextBlock Text="DISPLAY NAME" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <TextBox SnapsToDevicePixels="true"
+                       Text="{Binding InformationBlock.DisplayName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="DESCRIPTION" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <TextBox SnapsToDevicePixels="true"
+                       Text="{Binding InformationBlock.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="AUTHOR" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <TextBox SnapsToDevicePixels="true"
+                       Text="{Binding InformationBlock.Author, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock Text="INDEX FILE NAME" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <TextBox SnapsToDevicePixels="true"
+                       Text="{Binding FileName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+              <TextBlock FontFamily="segoe ui light" Margin="0,0,0,0" Foreground="{DynamicResource GrayBrush3}"
+                         Style="{StaticResource FieldHeaderTextBlockStyle}" Text="{Binding InformationBlock.UpdateName}"/>
+              <TextBlock Text="INDEX FILE URL" Style="{StaticResource FieldHeaderTextBlockStyle}"/>
+              <TextBox Text="{Binding InformationBlock.UpdateUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="0"
+                        Grid.ColumnSpan="2">
+              <Button Content="Load" Margin="10,10,0,10" FontSize="11" Style="{StaticResource MetroFlatButton}"
+                      Command="{Binding LoadCommand}"/>
+              <Button Content="UPDATE" Margin="10,10,0,10" FontSize="11" Style="{StaticResource MetroFlatButton}"
+                      Command="{Binding UpdateCommand}"/>
+              <Button Content="GENERATE INDEX FILE" Margin="10" FontSize="11" Style="{StaticResource MetroFlatButton}"
+                      Command="{Binding GenerateIndexCommand}"/>
+            </StackPanel>
+          </Grid>
+        </controls:MetroTabItem>
+      </controls:MetroTabControl>
+      <Border Style="{StaticResource OverlayBorderStyle}"/>
+    </Grid>
+    <Grid Row="2" Column="0" Background="{StaticResource WhiteBrush}">
+      <Border BorderThickness="0,0,0,0" BorderBrush="{DynamicResource AccentColorBrush}"
+              SnapsToDevicePixels="true">
+        <StatusBar x:Name="StatusBar" Style="{StaticResource StatusBarDefaultStyle}">
+          <StatusBarItem>
+            <TextBlock Style="{StaticResource StatusBarStatusMessageStyle}" TextWrapping="NoWrap"
+                       Text="{Binding StatusMessage}"/>
+          </StatusBarItem>
+          <StatusBarItem HorizontalContentAlignment="Right" HorizontalAlignment="Right" DockPanel.Dock="Right">
+            <controls:MetroProgressBar x:Name="ProgressBarMain" Style="{StaticResource StatusBarProgressBarStyle}"
+                                       Value="{Binding ProgressPercentage}"/>
+          </StatusBarItem>
+        </StatusBar>
+      </Border>
+    </Grid>
+  </Grid>
+</controls:MetroWindow>

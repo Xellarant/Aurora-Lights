@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<elements>
+    <!-- use this file to test elements while developing -->
+    <!-- don't embed this file into resources when building a release version or make sure it's empty -->
+
+    <element name="Companion Selection" type="Item" source="Player’s Handbook" id="ID_INTERNAL_ITEM_PROXY_COMPANION_SELECTION">
+      <compendium display="false" />
+      <description>
+        <p>
+          <em>You can equip this item to “enable” it. It remains hidden from the inventory on your character sheet.</em>
+        </p>
+      </description>
+      <setters>
+        <set name="category">Additional Feature</set>
+        <set name="inventory-hidden">true</set>
+        <set name="slot">companion</set>
+      </setters>
+      <rules>
+        <select type="Companion" name="Companion" requirements="!ID_INTERNAL_ITEM_PROXY_FAMILIAR_SELECTION" />
+      </rules>
+    </element>
+
+    <element name="Familiar Selection" type="Item" source="Player’s Handbook" id="ID_INTERNAL_ITEM_PROXY_FAMILIAR_SELECTION">
+      <compendium display="false" />
+      <description>
+        <p>
+          <em>You can equip this item to “enable” it. It remains hidden from the inventory on your character sheet.</em>
+        </p>
+      </description>
+      <setters>
+        <set name="category">Additional Feature</set>
+        <set name="inventory-hidden">true</set>
+        <set name="slot">companion</set>
+      </setters>
+      <rules>
+        <select type="Companion" name="Companion" supports="Familiar" requirements="!ID_INTERNAL_ITEM_PROXY_COMPANION_SELECTION" />
+      </rules>
+    </element>
+
+
+</elements>

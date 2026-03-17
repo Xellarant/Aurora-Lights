@@ -1,0 +1,18 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Builder.Presentation.Factories.ResourceFactory
+// Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
+// MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
+// Assembly location: C:\Program Files (x86)\Aurora\Aurora Character Builder\Aurora Builder.exe
+
+using Builder.Presentation.Models.CharacterSheet;
+
+#nullable disable
+namespace Builder.Presentation.Factories;
+
+public static class ResourceFactory
+{
+  public static CharacterSheetResourcePage CreateCharacterSheetResourcePage(string resourcePath)
+  {
+    return new CharacterSheetResourcePage(resourcePath);
+  }
+}

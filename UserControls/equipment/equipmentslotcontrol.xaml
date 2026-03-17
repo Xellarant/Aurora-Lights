@@ -1,0 +1,25 @@
+<UserControl x:Class="Builder.Presentation.UserControls.Equipment.EquipmentSlotControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Builder.Presentation.UserControls.Equipment"
+             xmlns:items="clr-namespace:Builder.Presentation.ViewModels.Shell.Items"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="Auto"/>
+    </Grid.ColumnDefinitions>
+    <TextBlock Style="{StaticResource FieldHeaderTextBlockStyle}" Grid.Column="1" VerticalAlignment="Center"
+               Text="{Binding DisplayName, Converter={StaticResource UpperCaseConverter}, StringFormat={0}:}"/>
+    <ComboBox mah:TextBoxHelper.ClearTextButton="true" MinWidth="200" Grid.Column="1" Grid.Row="1"
+              ItemsSource="{Binding EquippableItems}"
+              SelectedItem="{Binding EquippedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+              mah:TextBoxHelper.ButtonCommand="{Binding UnequipCommand}" IsEnabled="{Binding IsEnabled}"/>
+  </Grid>
+</UserControl>

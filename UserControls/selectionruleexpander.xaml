@@ -1,0 +1,195 @@
+<UserControl x:Class="Builder.Presentation.UserControls.SelectionRuleExpander"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+             xmlns:converters="clr-namespace:Builder.Presentation.Converters"
+             xmlns:controls="clr-namespace:Builder.Presentation.Controls"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:controls1="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
+             IsEnabled="{Binding IsEnabled}"
+             Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+  <FrameworkElement.DataContext>
+    <viewModels:SelectionRuleExpanderViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid Margin="0,0,0,0">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid Margin="0,0,10,0">
+      <FrameworkElement.Resources>
+        <Style TargetType="{x:Type Border}">
+          <Setter Property="FrameworkElement.Width" Value="4"/>
+          <Setter Property="UIElement.SnapsToDevicePixels" Value="true"/>
+          <Setter Property="UIElement.Visibility"
+                  Value="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        </Style>
+      </FrameworkElement.Resources>
+      <Border Background="{DynamicResource PinnedCharacterIconColorBrush}"/>
+      <Border x:Name="VisualFocusQue" Background="{DynamicResource HighlightBrush}">
+        <FrameworkElement.Triggers>
+          <EventTrigger RoutedEvent="Border.RequestBringIntoView">
+            <BeginStoryboard>
+              <Storyboard>
+                <DoubleAnimation From="1" To="0" AutoReverse="true" Duration="0:0:0.75" Storyboard.TargetName="VisualFocusQue"
+                                 Storyboard.TargetProperty="Opacity" RepeatBehavior="4x"/>
+              </Storyboard>
+            </BeginStoryboard>
+          </EventTrigger>
+        </FrameworkElement.Triggers>
+      </Border>
+      <Border Background="{DynamicResource DangerColorBrush}"
+              Visibility="{Binding IsEnabled, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+    </Grid>
+    <Border Grid.Column="1" Margin="0,0,0,15">
+      <controls:AuroraExpander x:Name="Expander" Padding="0" Header="{Binding Header}" IsExpanded="{Binding IsExpanded}"
+                               FooterVisibility="{Binding ElementRegistered, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <DataGrid KeyDown="ElementsGridKeyDown" MouseDoubleClick="ElementsGridMouseDoubleClick"
+                  x:Name="SelectionElementsDataGrid" BorderBrush="{DynamicResource GrayBrush5}"
+                  BorderThickness="0,0,0,0" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#09000000"
+                  SelectionMode="Single" Style="{StaticResource SelectionRuleExpanderGridStyle}" MinRowHeight="21"
+                  HeadersVisibility="Column" ItemsSource="{Binding SelectionElementsCollection}"
+                  SelectedItem="{Binding SelectedSelectionElement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+          <DataGrid.ColumnHeaderStyle>
+            <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+              <Setter Property="Control.FontSize" Value="9"/>
+              <Setter Property="UIElement.SnapsToDevicePixels" Value="true"/>
+              <Setter Property="Control.BorderBrush" Value="{DynamicResource AccentColorBrush}"/>
+              <Setter Property="Control.BorderThickness" Value="0,0,0,1"/>
+              <Setter Property="Control.FontWeight" Value="SemiBold"/>
+              <Setter Property="Control.Padding" Value="5,2,5,2"/>
+              <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush4}"/>
+              <Setter Property="Control.Foreground" Value="{DynamicResource DarkColor4Brush}"/>
+            </Style>
+          </DataGrid.ColumnHeaderStyle>
+          <DataGrid.Columns>
+            <DataGridTextColumn x:Name="NameColumn" Header="NAME" Width="*" MinWidth="200" Binding="{Binding DisplayName}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock Margin="0,0" VerticalAlignment="Center"
+                                     Foreground="{DynamicResource DragonHeadForegroundColorBrush}" Text="{Binding DisplayName}"
+                                     Visibility="{Binding IsEnabled, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+                          <TextBlock Margin="0,0" VerticalAlignment="Center" Text="{Binding DisplayName}"
+                                     Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        </StackPanel>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="ShortDescriptionColumn" Header="" Width="3*" Binding="{Binding DisplayShortDescription}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock FontStyle="Italic" Margin="0,0" VerticalAlignment="Center" Text="{Binding DisplayShortDescription}"/>
+                        </StackPanel>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="PrerequisitesColumn" Header="PREREQUISITES" Width="*"
+                                Binding="{Binding DisplayPrerequisites}">
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock FontStyle="Italic" Margin="0,0" VerticalAlignment="Center" Text="{Binding DisplayPrerequisites}"/>
+                        </StackPanel>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+            <DataGridTextColumn x:Name="SourceColumn" Header="SOURCE" Width="Auto" MinWidth="180" Binding="{Binding DisplaySource}">
+              <DataGridColumn.HeaderStyle>
+                <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                  <Setter Property="Control.HorizontalContentAlignment" Value="Right"/>
+                  <Setter Property="UIElement.SnapsToDevicePixels" Value="true"/>
+                  <Setter Property="Control.BorderBrush" Value="{DynamicResource AccentColorBrush}"/>
+                  <Setter Property="Control.BorderThickness" Value="0,0,0,1"/>
+                  <Setter Property="Control.FontSize" Value="9"/>
+                  <Setter Property="Control.FontWeight" Value="SemiBold"/>
+                  <Setter Property="Control.Padding" Value="5,2,5,2"/>
+                  <Setter Property="Control.Background" Value="{DynamicResource AccentColorBrush4}"/>
+                  <Setter Property="Control.Foreground" Value="{DynamicResource HighlightBrush}"/>
+                </Style>
+              </DataGridColumn.HeaderStyle>
+              <DataGridColumn.CellStyle>
+                <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                  <Setter Property="Control.Padding" Value="5,0"/>
+                  <Setter Property="ContentControl.ContentTemplate">
+                    <Setter.Value>
+                      <DataTemplate>
+                        <TextBlock Margin="0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="{Binding DisplaySource}"/>
+                      </DataTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </DataGridColumn.CellStyle>
+            </DataGridTextColumn>
+          </DataGrid.Columns>
+        </DataGrid>
+        <controls:AuroraExpander.AdditionalHeaderContent>
+          <Grid>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
+              <controls1:CommandButton CommandText="" Foreground="{DynamicResource IdealForegroundColorBrush}" ToolTip="Manage Sources"
+                                       Style="{StaticResource HighlightTextIconCommandButtonStyle}"
+                                       Command="{Binding ManageSourcesCommand}">
+                <iconPacks:PackIconMaterial Kind="TagMultiple" Height="10" Width="10" Foreground="{DynamicResource AuroraLightBrush}"/>
+              </controls1:CommandButton>
+            </StackPanel>
+          </Grid>
+        </controls:AuroraExpander.AdditionalHeaderContent>
+        <controls:AuroraExpander.FooterContent>
+          <Grid Height="24" Background="{DynamicResource WhiteBrush}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <FrameworkElement.Resources>
+              <Style x:Key="SelectedElementTextBlockStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+                <Setter Property="TextBlock.FontSize" Value="11"/>
+                <Setter Property="FrameworkElement.Margin" Value="4,0"/>
+                <Setter Property="TextBlock.FontWeight" Value="SemiBold"/>
+                <Setter Property="TextBlock.TextWrapping" Value="WrapWithOverflow"/>
+                <Setter Property="TextBlock.Foreground" Value="{DynamicResource DarkColor1Brush}"/>
+              </Style>
+            </FrameworkElement.Resources>
+            <iconPacks:PackIconMaterial Width="12" Height="12" Kind="CheckboxMarkedOutline" Margin="6,0,4,0"
+                                        Foreground="{DynamicResource SuccessDarkColorBrush}"/>
+            <TextBlock Style="{StaticResource SelectedElementTextBlockStyle}" Grid.Column="1"
+                       Text="{Binding RegisteredElement.Name}"/>
+            <TextBlock Style="{StaticResource SelectedElementTextBlockStyle}" Grid.Column="2"
+                       Text="{Binding RegisteredElement.Source}"/>
+            <controls1:CommandButton Click="UnregisterElement" ToolTip="Deselect the current selection." Grid.Column="3" Margin="4,0"
+                                     Style="{StaticResource DangerIconCommandButtonStyle}">
+              <iconPacks:PackIconMaterial Kind="Close" Height="10" Width="10"/>
+            </controls1:CommandButton>
+          </Grid>
+        </controls:AuroraExpander.FooterContent>
+      </controls:AuroraExpander>
+    </Border>
+  </Grid>
+</UserControl>

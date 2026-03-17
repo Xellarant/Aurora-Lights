@@ -1,0 +1,402 @@
+<controls:MetroWindow x:Class="Builder.Presentation.Views.DeveloperWindow"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:local="clr-namespace:Builder.Presentation.Views"
+                      xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      xmlns:system="clr-namespace:System;assembly=mscorlib"
+                      xmlns:presentation="clr-namespace:Builder.Presentation"
+                      xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                      xmlns:wpf="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
+                      xmlns:development="clr-namespace:Builder.Presentation.ViewModels.Development"
+                      xmlns:converters="clr-namespace:Builder.Presentation.Converters"
+                      Title="Developer Window" Height="800" Width="1200" GlowBrush="{DynamicResource HighlightBrush}"
+                      Background="{DynamicResource AccentColorBrush}" Style="{StaticResource CleanWindowStyleKey}"
+                      WindowStartupLocation="CenterScreen" TitleTemplate="{StaticResource WindowTitleTemplate}">
+  <FrameworkElement.DataContext>
+    <development:DeveloperWindowViewModel/>
+  </FrameworkElement.DataContext>
+  <FrameworkElement.Resources>
+    <converters:AccentColorConverter x:Key="AccentColorConverter"/>
+  </FrameworkElement.Resources>
+  <controls:MetroWindow.RightWindowCommands>
+    <controls:WindowCommands ShowSeparators="false" Foreground="{StaticResource WhiteBrush}">
+      <Button Click="BrowseHomepageClick" ToolTip="Character Builder Homepage" Margin="10,0,20,0"
+              Style="{StaticResource CleanWindowButtonStyle}" Background="{DynamicResource AccentColorBrush}"
+              Height="30" Width="Auto">
+        <TextBlock FontFamily="Segoe UI Symbol" Text="" Margin="10,0" Foreground="{StaticResource WhiteBrush}"/>
+      </Button>
+    </controls:WindowCommands>
+  </controls:MetroWindow.RightWindowCommands>
+  <Grid Margin="0,0,0,0">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="25"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid ColumnSpan="3">
+      <FrameworkElement.Resources>
+        <ResourceDictionary>
+          <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/VS/Menu.xaml"/>
+          </ResourceDictionary.MergedDictionaries>
+          <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource StandardMenuItem}"/>
+          <Style TargetType="{x:Type Menu}" BasedOn="{StaticResource StandardMenu}">
+            <Setter Property="Control.Background" Value="{StaticResource AccentColorBrush}"/>
+            <Setter Property="FrameworkElement.Height" Value="30"/>
+            <Setter Property="Control.Foreground" Value="{DynamicResource GrayBrush5}"/>
+            <Setter Property="Control.FontFamily" Value="Segoe UI"/>
+            <Setter Property="Control.FontSize" Value="12"/>
+            <Setter Property="Control.FontWeight" Value="Normal"/>
+          </Style>
+        </ResourceDictionary>
+      </FrameworkElement.Resources>
+      <Menu Margin="10,0,0,0" Background="{DynamicResource TransparentWhiteBrush}"
+            Visibility="{Binding EnableDeveloperTools, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <MenuItem Header="START">
+          <MenuItem Header="EXIT APPLICATION"/>
+        </MenuItem>
+        <MenuItem Header="WINDOWS">
+          <MenuItem Header="SPLASH SCREEN"/>
+          <MenuItem Header="LAUNCHER"/>
+          <MenuItem Header="SETTINGS"/>
+          <MenuItem Header="UPDATE"/>
+          <MenuItem Header="DESCRIPTION PANEL"/>
+          <MenuItem Header="SAVE CHARACTER WINDOW"/>
+          <MenuItem Header="INFORMATION WINDOW"/>
+          <MenuItem Header="SUPPORT TEST WINDOW"/>
+          <MenuItem Header="ELEMENT COMPARE WINDOW"/>
+          <Separator/>
+          <MenuItem Header="EXCEPTION WINDOW"/>
+          <Separator/>
+          <MenuItem Click="MenuItem_OnClick" Header="NEW DEVELOPER TOOLS WINDOW"/>
+        </MenuItem>
+        <MenuItem Header="DEVELOPER TOOLS">
+          <MenuItem Header="SHOW DEVELOPER WINDOW"/>
+        </MenuItem>
+        <MenuItem Header="HELP"/>
+      </Menu>
+    </Grid>
+    <controls:MetroTabControl Grid.Row="2" Grid.Column="0" Margin="0,0,0,0" controls:TabControlHelper.IsUnderlined="true"
+                              Grid.ColumnSpan="2" Style="{DynamicResource MainNavigationTabControlStyle}"
+                              BorderThickness="0,0,0,0 " BorderBrush="{DynamicResource GrayNormalBrush}"
+                              Background="{DynamicResource WhiteBrush}">
+      <FrameworkElement.Resources>
+        <system:Double x:Key="SubHeaderSizeKey">14</system:Double>
+        <FontWeight x:Key="FontWeightTabItem">SemiBold</FontWeight>
+        <Style TargetType="{x:Type controls:MetroTabItem}" BasedOn="{StaticResource NewMainMetroTabItemStyle}">
+          <Setter Property="FrameworkElement.Width" Value="125"/>
+          <Setter Property="controls:ControlsHelper.HeaderFontSize" Value="18"/>
+          <Setter Property="controls:ControlsHelper.HeaderFontWeight" Value="SemiBold"/>
+        </Style>
+        <Style x:Key="SecondaryTabItemStyle" TargetType="{x:Type controls:MetroTabItem}"
+               BasedOn="{StaticResource NewMainMetroTabItemStyle}">
+          <Setter Property="FrameworkElement.Width" Value="125"/>
+          <Setter Property="controls:ControlsHelper.HeaderFontSize" Value="18"/>
+          <Setter Property="controls:ControlsHelper.HeaderFontWeight" Value="SemiBold"/>
+        </Style>
+      </FrameworkElement.Resources>
+      <controls:MetroTabItem Header="TOOLS">
+        <FrameworkElement.DataContext>
+          <development:DeveloperToolsCreateViewModel/>
+        </FrameworkElement.DataContext>
+        <Grid>
+          <Border Height="30" Background="{DynamicResource AccentColorBrush4}" VerticalAlignment="Top"
+                  Grid.ColumnSpan="2"/>
+          <controls:MetroTabControl Grid.Column="0" Style="{DynamicResource MainNavigationTabControlStyle}" Margin="26,0,0,0">
+            <controls:MetroTabItem Header="ELEMENT" Style="{DynamicResource NewMainMetroTabItemStyle2}">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="*"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <StackPanel Margin="10" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2">
+                  <TextBlock Text="NAME" FontSize="10" Margin="0,0,10,5"/>
+                  <TextBox Text="{Binding Element.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  <TextBlock Text="TYPE" FontSize="10" Margin="0,10,10,5"/>
+                  <ComboBox IsEditable="true" ItemsSource="{Binding ElementTypes}"
+                            Text="{Binding Element.Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  <TextBlock Text="SOURCE" FontSize="10" Margin="0,0,10,5"/>
+                  <ComboBox IsEditable="true" ItemsSource="{Binding ElementSources}"
+                            Text="{Binding Element.Source, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  <TextBlock Text="ID" FontSize="10" Margin="0,0,10,5"/>
+                  <TextBox Text="{Binding Element.Id, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  <CheckBox Content="Auto Generate ID" HorizontalAlignment="Right" Margin="0,10,0,0"
+                            IsChecked="{Binding IsAutoGenerateIdEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  <TextBlock Text="CUSTOM ID ABBREVIATION" FontSize="10" Margin="0,10,10,5"/>
+                  <TextBox Text="{Binding CustomAbbreviation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="10" Grid.Row="0" Grid.Column="3" Grid.RowSpan="2">
+                  <TextBlock Text="LOAD ELEMENT" FontSize="10" Margin="0,0,10,5"/>
+                  <ComboBox IsEditable="true" ItemsSource="{Binding Elements}"
+                            SelectedItem="{Binding SelectedElement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  <Button Content="SET SELECTED ELEMENT" Style="{StaticResource ChromelessButtonStyle}" FontSize="11"
+                          Margin="0,10,0,0" HorizontalAlignment="Right" Command="{Binding LoadSelectedElementCommand}"/>
+                </StackPanel>
+                <Grid Row="1" Column="1">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                  </Grid.RowDefinitions>
+                  <StackPanel Margin="10" Visibility="Collapsed">
+                    <TextBlock Text="EXISTING SUPPORTS" FontSize="10" Margin="0,0,10,5"/>
+                    <ComboBox IsEditable="true" ItemsSource="{Binding ExistingSupports}"/>
+                    <TextBlock Text="EXISTING STATISTIC NAMES" FontSize="10" Margin="0,10,10,5"/>
+                    <ComboBox IsEditable="true" ItemsSource="{Binding ExistingStatNames}"/>
+                  </StackPanel>
+                </Grid>
+                <StackPanel Margin="10" Grid.Row="2" Grid.ColumnSpan="4" Grid.Column="0">
+                  <TextBlock Text="GENERATED OUTPUT" FontSize="10" Margin="0,0,0,5"/>
+                  <TextBox TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsTab="true" AcceptsReturn="true"
+                           Height="300" Text="{Binding GeneratedXmlNode}"/>
+                </StackPanel>
+              </Grid>
+            </controls:MetroTabItem>
+            <controls:MetroTabItem Header="SUPPORTS" Style="{DynamicResource SubMetroTabItemStyle}"
+                                   controls:ControlsHelper.HeaderFontWeight="{StaticResource FontWeightTabItem}"
+                                   controls:ControlsHelper.HeaderFontSize="{StaticResource SubHeaderSizeKey}">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="*"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <StackPanel Margin="10" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2">
+                  <TextBlock Text="EXISTING SUPPORTS" FontSize="10" Margin="0,0,10,5"/>
+                  <ComboBox IsEditable="true" ItemsSource="{Binding ExistingSupports}"
+                            Text="{Binding SelectedSupport, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  <Button Content="ADD" Style="{StaticResource ChromelessButtonStyle}" FontSize="11" Margin="0,10,0,0"
+                          HorizontalAlignment="Right" Command="{Binding AddSupportCommand}"/>
+                  <Button Content="REMOVE" Style="{StaticResource ChromelessButtonStyle}" FontSize="11" Margin="0,10,0,0"
+                          HorizontalAlignment="Right"/>
+                  <Button Content="UP" Style="{StaticResource ChromelessButtonStyle}" FontSize="11" Margin="0,10,0,0"
+                          HorizontalAlignment="Right"/>
+                  <Button Content="DOWN" Style="{StaticResource ChromelessButtonStyle}" FontSize="11" Margin="0,10,0,0"
+                          HorizontalAlignment="Right"/>
+                </StackPanel>
+                <Grid Row="0" Column="1" Margin="10" RowSpan="2">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                  </Grid.RowDefinitions>
+                  <TextBlock Text="EXISTING SUPPORTS" FontSize="10" Margin="0,0,10,5"/>
+                  <ListView Grid.Row="1" BorderThickness="0" ItemsSource="{Binding Element.Supports}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock VerticalAlignment="Center" Margin="5,0,0,0" Text="{Binding}"/>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ListView>
+                </Grid>
+                <StackPanel Margin="10" Grid.Row="2" Grid.ColumnSpan="4" Grid.Column="0">
+                  <TextBlock Text="GENERATED OUTPUT" FontSize="10" Margin="0,0,0,5"/>
+                  <TextBox TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsTab="true" AcceptsReturn="true"
+                           Height="300" Text="{Binding GeneratedXmlNode}"/>
+                </StackPanel>
+              </Grid>
+            </controls:MetroTabItem>
+            <controls:MetroTabItem Header="REQUIREMENTS" Style="{DynamicResource SubMetroTabItemStyle}"
+                                   controls:ControlsHelper.HeaderFontWeight="{StaticResource FontWeightTabItem}"
+                                   controls:ControlsHelper.HeaderFontSize="{StaticResource SubHeaderSizeKey}">
+              <Grid/>
+            </controls:MetroTabItem>
+            <controls:MetroTabItem Header="DESCRIPTION" Style="{DynamicResource SubMetroTabItemStyle}"
+                                   controls:ControlsHelper.HeaderFontWeight="{StaticResource FontWeightTabItem}"
+                                   controls:ControlsHelper.HeaderFontSize="{StaticResource SubHeaderSizeKey}">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="5*"/>
+                  <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="6*"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+                  <StackPanel Margin="10,20,10,0">
+                    <ComboBox Margin="0,0,0,10" ItemsSource="{Binding Elements}"
+                              SelectedItem="{Binding SelectedElement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <StackPanel Orientation="Horizontal">
+                      <CheckBox Content="IsSelectionEnabled" Margin="0,0,0,10"
+                                IsChecked="{Binding IsSelectionEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      <CheckBox Content="IsContextMenuEnabled" Margin="10,0,0,10"
+                                IsChecked="{Binding IsContextMenuEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                  </StackPanel>
+                  <TextBox TextChanged="BrowseTextBox_OnTextChanged" Grid.Row="1" AcceptsReturn="true" AcceptsTab="true"
+                           HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"
+                           MinHeight="100" Margin="10,0,10,0"
+                           Text="{Binding StyleSheet, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  <TextBox TextChanged="BrowseTextBox_OnTextChanged" x:Name="BrowseTextBox" Grid.Row="2" AcceptsReturn="true"
+                           AcceptsTab="true" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                           TextWrapping="Wrap" MinHeight="200" Margin="10"
+                           Text="{Binding Input, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  <StackPanel Grid.Row="3" Margin="10,0,10,10">
+                    <Button Content="Generate Description Node" HorizontalAlignment="Right"
+                            Style="{DynamicResource ChromelessButtonStyle}" Command="{Binding GenerateDescriptionNodeCommand}"/>
+                  </StackPanel>
+                </Grid>
+                <ScrollViewer x:Name="WebScrollView" Grid.Column="1" Margin="0,10,10,10">
+                  <wpf:HtmlPanel x:Name="html" ScrollViewer.VerticalScrollBarVisibility="Disabled" Foreground="Red"
+                                 Text="{Binding Output, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 IsSelectionEnabled="{Binding IsSelectionEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 IsContextMenuEnabled="{Binding IsContextMenuEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 BaseStylesheet="{Binding StyleSheet}"/>
+                </ScrollViewer>
+              </Grid>
+            </controls:MetroTabItem>
+            <controls:MetroTabItem Header="SHEET DESCRIPTION" Style="{DynamicResource SubMetroTabItemStyle}"
+                                   controls:ControlsHelper.HeaderFontWeight="{StaticResource FontWeightTabItem}"
+                                   controls:ControlsHelper.HeaderFontSize="{StaticResource SubHeaderSizeKey}">
+              <Grid/>
+            </controls:MetroTabItem>
+            <controls:MetroTabItem Header="SETTERS" Style="{DynamicResource SubMetroTabItemStyle}"
+                                   controls:ControlsHelper.HeaderFontWeight="{StaticResource FontWeightTabItem}"
+                                   controls:ControlsHelper.HeaderFontSize="{StaticResource SubHeaderSizeKey}">
+              <Grid/>
+            </controls:MetroTabItem>
+            <controls:MetroTabItem Header="RULES" Style="{DynamicResource SubMetroTabItemStyle}"
+                                   controls:ControlsHelper.HeaderFontWeight="{StaticResource FontWeightTabItem}"
+                                   controls:ControlsHelper.HeaderFontSize="{StaticResource SubHeaderSizeKey}">
+              <Grid/>
+            </controls:MetroTabItem>
+            <controls:MetroTabItem Header="OUTPUT" Style="{DynamicResource SubMetroTabItemStyle}"
+                                   controls:ControlsHelper.HeaderFontWeight="{StaticResource FontWeightTabItem}"
+                                   controls:ControlsHelper.HeaderFontSize="{StaticResource SubHeaderSizeKey}">
+              <Grid/>
+            </controls:MetroTabItem>
+          </controls:MetroTabControl>
+          <Border Height="1" BorderBrush="{DynamicResource AccentColorBrush}" VerticalAlignment="Top"
+                  BorderThickness="0,0,0,1" Grid.ColumnSpan="2" Margin="0,29,0,0"/>
+        </Grid>
+      </controls:MetroTabItem>
+      <controls:MetroTabItem Header="OVERVIEW">
+        <Grid>
+          <Border Height="30" Background="{DynamicResource AccentColorBrush4}" VerticalAlignment="Top"
+                  Grid.ColumnSpan="2"/>
+          <controls:MetroTabControl Grid.Column="0" Style="{DynamicResource ModifiedMetroTabControlStyle}" Margin="26,0,0,0">
+            <controls:MetroTabItem Header="VIEWS" Style="{DynamicResource SubMetroTabItemStyle}"
+                                   controls:ControlsHelper.HeaderFontWeight="{StaticResource FontWeightTabItem}"
+                                   controls:ControlsHelper.HeaderFontSize="{StaticResource SubHeaderSizeKey}">
+              <Grid>
+                <StackPanel Margin="10" Width="200" HorizontalAlignment="Left">
+                  <Button Click="OpenInformationWindow" Content="Information Window" Margin="0,0,0,10"
+                          Style="{StaticResource MetroFlatButton}" FontSize="12"/>
+                  <Button Click="OpenIntroductionWindow" Content="Introduction Window" Margin="0,0,0,10"
+                          Style="{StaticResource MetroFlatButton}" FontSize="12"/>
+                  <Button Click="OpenSettingsWindow" Content="Settings Window" Margin="0,0,0,10"
+                          Style="{StaticResource MetroFlatButton}" FontSize="12"/>
+                  <Button Click="OpenSplash" IsEnabled="false" Content="Splash Window" Margin="0,0,0,10"
+                          Style="{StaticResource MetroFlatButton}" FontSize="12"/>
+                  <Button Click="OpenEntry" Content="Entry Window" Margin="0,0,0,10" Style="{StaticResource MetroFlatButton}"
+                          FontSize="12"/>
+                  <Button Click="OpenSupportTestWindow" Content="SUPPORT TEST WINDOW" Margin="0,0,0,10"
+                          Style="{StaticResource MetroFlatButton}" FontSize="12"/>
+                  <Button Click="OpenCompareWindow" Content="ELEMENT COMPARE WINDOW" Margin="0,0,0,10"
+                          Style="{StaticResource MetroFlatButton}" FontSize="12"/>
+                  <Button Click="OpenLauncherWindow" Content="OpenLauncherWindow" Margin="0,0,0,10"
+                          Style="{StaticResource MetroFlatButton}" FontSize="12"/>
+                </StackPanel>
+              </Grid>
+            </controls:MetroTabItem>
+          </controls:MetroTabControl>
+          <Border Height="1" BorderBrush="{DynamicResource AccentColorBrush}" VerticalAlignment="Top"
+                  BorderThickness="0,0,0,1" Grid.ColumnSpan="2" Margin="0,29,0,0"/>
+        </Grid>
+      </controls:MetroTabItem>
+      <controls:MetroTabItem Header="DATA">
+        <FrameworkElement.DataContext>
+          <development:DeveloperWindowDataViewModel/>
+        </FrameworkElement.DataContext>
+        <Grid>
+          <Border Height="30" Background="{DynamicResource AccentColorBrush4}" VerticalAlignment="Top"
+                  Grid.ColumnSpan="2"/>
+          <controls:MetroTabControl Grid.Column="0" Style="{DynamicResource ModifiedMetroTabControlStyle}" Margin="26,0,0,0">
+            <controls:MetroTabItem Header="ELEMENTS" Style="{DynamicResource SubMetroTabItemStyle}"
+                                   controls:ControlsHelper.HeaderFontWeight="{StaticResource FontWeightTabItem}"
+                                   controls:ControlsHelper.HeaderFontSize="{StaticResource SubHeaderSizeKey}">
+              <Grid Margin="10">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="375*"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Row="0">
+                  <TextBlock>TYPE</TextBlock>
+                  <ComboBox IsEditable="true" Margin="0,0,0,10" ItemsSource="{Binding ElementTypes}"
+                            Text="{Binding SelectedType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  <TextBlock>NAME</TextBlock>
+                  <TextBox Margin="0,0,0,0" Text="{Binding NameFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Grid.Row="1">
+                  <TextBlock>GRANT</TextBlock>
+                  <TextBox Margin="0,0,0,0" Text="{Binding Grant}"/>
+                  <TextBlock>SELECT</TextBlock>
+                  <TextBox Margin="0,0,0,0" Text="{Binding Select}"/>
+                  <CheckBox HorizontalAlignment="Right" Margin="0,5,0,10"
+                            IsChecked="{Binding CopyGrant, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    Copy Grant On Selection
+                  </CheckBox>
+                  <CheckBox HorizontalAlignment="Right" Margin="0,5,0,10"
+                            IsChecked="{Binding CopySelect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    Copy Select On Selection
+                  </CheckBox>
+                </StackPanel>
+                <ScrollViewer Grid.Column="1" Margin="10,0,0,0" Grid.Row="0" Grid.RowSpan="2">
+                  <ListView BorderThickness="0" ItemsSource="{Binding FilteredElements}"
+                            SelectedItem="{Binding SelectedFilterElement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Grid>
+                          <TextBlock VerticalAlignment="Center" Text="{Binding}"/>
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ListView>
+                </ScrollViewer>
+              </Grid>
+            </controls:MetroTabItem>
+          </controls:MetroTabControl>
+          <Border Height="1" BorderBrush="{DynamicResource AccentColorBrush}" VerticalAlignment="Top"
+                  BorderThickness="0,0,0,1" Grid.ColumnSpan="2" Margin="0,29,0,0"/>
+        </Grid>
+      </controls:MetroTabItem>
+    </controls:MetroTabControl>
+    <Grid Row="3" Column="0" ColumnSpan="2">
+      <StatusBar x:Name="StatusBar" Visibility="Visible" HorizontalAlignment="Stretch" Height="26">
+        <StatusBarItem HorizontalContentAlignment="Left">
+          <TextBlock x:Name="TextBlockStatus" Style="{StaticResource StatusBarStatusMessageStyle}"
+                     Text="{Binding StatusMessage}"/>
+        </StatusBarItem>
+        <StatusBarItem HorizontalContentAlignment="Right" HorizontalAlignment="Right">
+          <controls:MetroProgressBar x:Name="ProgressBarMain" Style="{StaticResource StatusBarProgressBarStyle}"
+                                     Value="{Binding ProgressPercentage}"/>
+        </StatusBarItem>
+      </StatusBar>
+    </Grid>
+  </Grid>
+</controls:MetroWindow>

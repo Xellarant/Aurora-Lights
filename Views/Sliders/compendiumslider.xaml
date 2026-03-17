@@ -1,0 +1,42 @@
+<controls:Flyout x:Class="Builder.Presentation.Views.Sliders.CompendiumSlider"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:shell="clr-namespace:Builder.Presentation.ViewModels.Shell"
+                 xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
+                 xmlns:controls1="clr-namespace:Builder.Presentation.Controls"
+                 xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                 xmlns:sliders="clr-namespace:Builder.Presentation.Views.Sliders"
+                 MinWidth="400" CloseButtonVisibility="Collapsed" Position="Bottom" Margin="0,98,0,26"
+                 IsPinned="false" BorderThickness="0,2,0,0" BorderBrush="{DynamicResource HighlightBrush}"
+                 IsAutoCloseEnabled="false" TitleVisibility="Collapsed" IsModal="false" Theme="Adapt"
+                 Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=controls:MetroWindow}, Path=ActualWidth}">
+  <FrameworkElement.DataContext>
+    <sliders:CompendiumSliderViewModel/>
+  </FrameworkElement.DataContext>
+  <Grid Margin="30,0,0,0">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="11*"/>
+      <ColumnDefinition Width="5*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel Grid.Row="2" Margin="20,0,20,0"/>
+    <userControls:CompendiumControl Grid.Row="3" Margin="20,0,10,10"/>
+    <GridSplitter Grid.Row="1" Grid.Column="0" Grid.RowSpan="5" Style="{StaticResource GridsplitterStyle}"/>
+    <Grid Row="1" RowSpan="5" Column="1">
+      <FrameworkElement.DataContext>
+        <viewModels:CompendiumElementDescriptionPanelViewModel IsSpeechEnabled="true"/>
+      </FrameworkElement.DataContext>
+      <controls1:ElementDescriptionPanel Description="{Binding Description}" StyleSheet="{Binding StyleSheet}"/>
+    </Grid>
+  </Grid>
+</controls:Flyout>

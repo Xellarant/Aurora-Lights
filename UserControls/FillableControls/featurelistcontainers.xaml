@@ -1,0 +1,55 @@
+<UserControl x:Class="Builder.Presentation.UserControls.FillableControls.FeatureListContainers"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Builder.Presentation.UserControls.FillableControls"
+             xmlns:newFolder1="clr-namespace:Builder.Presentation.Models.NewFolder1"
+             xmlns:userControls="clr-namespace:Builder.Presentation.UserControls">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    <FrameworkElement.DataContext>
+      <local:FeatureContainersViewModel/>
+    </FrameworkElement.DataContext>
+    <StackPanel Margin="0,0,0,10">
+      <userControls:FillableFieldTextBox Header="Name" DataContext="{Binding SelectedContainer.Name}"/>
+      <userControls:FillableFieldTextBox Header="Description" MinContentHeight="100" DataContext="{Binding SelectedContainer.Description}"/>
+      <CheckBox Content="Enabled" Margin="0,10,0,0"
+                IsChecked="{Binding SelectedContainer.IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+      <CheckBox Content="Nested" Margin="0,10,0,10"
+                IsChecked="{Binding SelectedContainer.IsNested, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+    </StackPanel>
+    <ListView x:Name="lvFeatures" Grid.Row="1" BorderThickness="0"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Containers}"
+              SelectedItem="{Binding SelectedContainer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+      <ItemsControl.ItemContainerStyle>
+        <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource {x:Type ListViewItem}}">
+          <Setter Property="FrameworkElement.Margin" Value="0"/>
+          <Setter Property="Control.Padding" Value="0"/>
+          <Setter Property="FrameworkElement.HorizontalAlignment" Value="Stretch"/>
+          <Setter Property="Control.HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+      </ItemsControl.ItemContainerStyle>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <StackPanel x:Name="TemplateContainer" Margin="5,0,5,0">
+            <TextBlock FontStyle="Italic" FontSize="12" FontFamily="segoe ui" FontWeight="SemiBold"
+                       Foreground="{DynamicResource GrayBrush1}" Style="{StaticResource FieldHeaderTextBlockStyle}"
+                       Text="{Binding Name.Content}"/>
+            <TextBlock x:Name="LV_DESC" Visibility="Visible" TextWrapping="Wrap" Foreground="{DynamicResource GrayBrush1}"
+                       Style="{StaticResource SectionSubHeaderTextBlockStyle}" Text="{Binding Description.Content}"/>
+          </StackPanel>
+          <DataTemplate.Triggers>
+            <DataTrigger Value="True"
+                         Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}}">
+              <Setter TargetName="LV_DESC" Property="UIElement.Visibility" Value="Visible"/>
+            </DataTrigger>
+          </DataTemplate.Triggers>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ListView>
+  </Grid>
+</UserControl>

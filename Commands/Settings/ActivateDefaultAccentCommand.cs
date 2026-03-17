@@ -1,0 +1,26 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Builder.Presentation.Commands.Settings.ActivateDefaultAccentCommand
+// Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
+// MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
+// Assembly location: C:\Program Files (x86)\Aurora\Aurora Character Builder\Aurora Builder.exe
+
+using MahApps.Metro;
+using System.Windows;
+
+#nullable disable
+namespace Builder.Presentation.Commands.Settings;
+
+internal class ActivateDefaultAccentCommand : SettingsCommand
+{
+  public override bool CanExecute(object parameter) => true;
+
+  public override void Execute(object parameter)
+  {
+    this.Settings.Accent = "Aurora Default";
+    this.Settings.Save();
+    Accent accent = ThemeManager.GetAccent(this.Settings.Accent);
+    AppTheme appTheme = ThemeManager.GetAppTheme(this.Settings.Theme);
+    foreach (Window window in Application.Current.Windows)
+      ThemeManager.ChangeAppStyle(window, accent, appTheme);
+  }
+}
