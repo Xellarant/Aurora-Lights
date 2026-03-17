@@ -59,7 +59,6 @@ public partial class App : Application
     current.ValidateConfiguration(true);
     current.UpgradeConfigurationCheck();
     current.LoadThemes();
-    current.SetSecurityProtocol();
   }
 
   [DebuggerNonUserCode]

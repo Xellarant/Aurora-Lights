@@ -17,7 +17,6 @@ using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Windows;
 using System.Windows.Media;
 
@@ -61,11 +60,6 @@ public sealed class ApplicationManager
     if (!killCurrentProcess)
       return;
     Process.GetCurrentProcess().Kill();
-  }
-
-  public void SetSecurityProtocol()
-  {
-    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
   }
 
   private void ThemeManagerIsThemeChanged(object sender, OnThemeChangedEventArgs e)
@@ -191,22 +185,23 @@ public sealed class ApplicationManager
     }
   }
 
+  private static void OpenDirectory(string? path)
+  {
+      if (string.IsNullOrWhiteSpace(path)) return;
+      if (OperatingSystem.IsWindows())
+          System.Diagnostics.Process.Start("explorer.exe", path);
+      else if (OperatingSystem.IsMacOS())
+          System.Diagnostics.Process.Start("open", path);
+      else
+          System.Diagnostics.Process.Start("xdg-open", path);
+  }
+
   public void UpgradeConfigurationCheck()
   {
-    // ISSUE: variable of a compiler-generated type
-    Builder.Presentation.Properties.Settings settings = Builder.Presentation.Properties.Settings.Default;
-    if (!settings.ConfigurationUpgradeRequired)
-      return;
-    try
-    {
-      settings.Upgrade();
-      settings.ConfigurationUpgradeRequired = false;
-      settings.Save();
-    }
-    catch (Exception ex)
-    {
-      AnalyticsErrorHelper.Exception(ex, method: nameof (UpgradeConfigurationCheck), line: 227);
-    }
+      AppSettingsStore store = this.Settings.Settings;
+      if (!store.ConfigurationUpgradeRequired)
+          return;
+      AppSettingsStore.MigrateFromLegacyConfig(store);
   }
 
   public void ValidateConfiguration(bool openDirectory)
@@ -262,13 +257,13 @@ public sealed class ApplicationManager
           {
             FileInfo fileInfo = new FileInfo(innerException4.Filename);
             if (fileInfo.DirectoryName != null)
-              Process.Start(fileInfo.DirectoryName);
+              OpenDirectory(fileInfo.DirectoryName);
           }
           if (ex != null)
           {
             FileInfo fileInfo = new FileInfo(ex.Filename);
             if (fileInfo.DirectoryName != null)
-              Process.Start(fileInfo.DirectoryName);
+              OpenDirectory(fileInfo.DirectoryName);
           }
         }
         Process.GetCurrentProcess().Kill();

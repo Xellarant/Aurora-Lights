@@ -32,11 +32,11 @@ public class ApplicationSettings : ObservableObject, ISubscriber<SettingsChanged
     this.AbilitiesGenerationSelectionItems.Add(new SelectionItem("Roll 4d6 - Discard Lowest", 1));
     this.AbilitiesGenerationSelectionItems.Add(new SelectionItem("Standard Array (15, 14, 13, 12, 10, 8)", 2));
     this.AbilitiesGenerationSelectionItems.Add(new SelectionItem("Point Buy", 3));
-    this.Settings = Builder.Presentation.Properties.Settings.Default;
+    this.Settings = AppSettingsStore.Load();
     this._eventAggregator.Subscribe((object) this);
   }
 
-  internal Builder.Presentation.Properties.Settings Settings { get; }
+  AppSettingsStore Settings { get; private set; }
 
   public bool IsSaveSettingsOnChangeEnabled
   {
@@ -264,7 +264,12 @@ public class ApplicationSettings : ObservableObject, ISubscriber<SettingsChanged
     }
   }
 
-  public void Reload() => this.Settings.Reload();
+  public void Reload()
+  {
+      this.Settings.Reload();
+      // Notify the UI that all bound settings may have changed
+      this.OnPropertyChanged(string.Empty);
+  }
 
   public void Reset() => this.Settings.Reset();
 
