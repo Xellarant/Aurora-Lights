@@ -17,7 +17,7 @@
                    xmlns:sliders="clr-namespace:Builder.Presentation.Views.Sliders"
                    xmlns:spellcasting="clr-namespace:Builder.Presentation.UserControls.Spellcasting"
                    xmlns:aurora="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
-                   xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                   xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
                    xmlns:models="clr-namespace:Builder.Presentation.Models"
                    xmlns:manage1="clr-namespace:Builder.Presentation.UserControls.Manage"
                    xmlns:syndication="clr-namespace:Builder.Presentation.UserControls.Syndication"
@@ -1723,7 +1723,7 @@
                           <TextBlock Style="{StaticResource PopupScoreTextBlockStyle}" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2"
                                      Text="{Binding Character.Initiative, Mode=OneWay, Converter={StaticResource BonusStringValueConverter}}"/>
                           <TextBlock Style="{StaticResource PopupScoreTextBlockStyle}" Grid.Column="3" Grid.Row="1" Grid.ColumnSpan="2"
-                                     Text="{Binding Character.Speed, StringFormat={0}ft.}"/>
+                                     Text="{Binding Character.Speed, StringFormat={}{0}ft.}"/>
                           <TextBlock Style="{StaticResource PopupScoreTextBlockStyle}" Grid.Column="5" Grid.Row="1"
                                      Text="{Binding Character.MaxHp}"/>
                         </Grid>

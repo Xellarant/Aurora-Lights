@@ -34,7 +34,7 @@ public class NotificationElementDescriptionPanelViewModel :
       using (HttpClient client = new HttpClient())
       {
         // ISSUE: reference to a compiler-generated method
-        this.\u003C\u003En__0(new HtmlDisplayRequestEvent(await client.GetStringAsync(url)));
+        this.<>n__0(new HtmlDisplayRequestEvent(await client.GetStringAsync(url)));
       }
     }
     catch (Exception ex)

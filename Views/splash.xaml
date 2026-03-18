@@ -124,7 +124,7 @@
     <StackPanel Grid.Row="4" Margin="5,0,5,5" Grid.ColumnSpan="2" Grid.Column="0" HorizontalAlignment="Left">
       <TextBlock Style="{StaticResource DefaultInformationStyle}" FontSize="10" TextWrapping="Wrap"
                  Foreground="#bbb" Margin="0,0"
-                 Text="{Binding ProgressMessage, Converter={StaticResource UpperCaseConverter}, StringFormat={0}}">
+                 Text="{Binding ProgressMessage, Converter={StaticResource UpperCaseConverter}, StringFormat={}{0}}">
         <UIElement.Effect>
           <DropShadowEffect BlurRadius="15" Color="#000" Opacity=".5" RenderingBias="Quality" ShadowDepth="0" Direction="90"/>
         </UIElement.Effect>

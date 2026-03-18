@@ -6,21 +6,21 @@
                  xmlns:local="clr-namespace:Builder.Presentation.Views"
                  xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
                  xmlns:converters="clr-namespace:Builder.Presentation.Converters"
-                 xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                 xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                  xmlns:sources="clr-namespace:Builder.Presentation.Models.Sources"
                  Title="CharacterSourceManagerWindow" Height="450" Width="872.992">
   <FrameworkElement.Resources>
     <converters:CampaignSourceConverter x:Key="CampaignSourceConverter"/>
-    <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type sources:SourcesGroup}}" DataType="{x:Type sources:SourcesGroup}"
+    <HierarchicalDataTemplate  DataType="{x:Type sources:SourcesGroup}"
                               ItemsSource="{Binding Sources}">
       <StackPanel Orientation="Horizontal">
         <CheckBox Focusable="false" IsThreeState="false" IsChecked="{Binding IsChecked}"/>
         <TextBlock Text="{Binding}"/>
       </StackPanel>
     </HierarchicalDataTemplate>
-    <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type sources:SourceItem}}" DataType="{x:Type sources:SourceItem}">
+    <HierarchicalDataTemplate  DataType="{x:Type sources:SourceItem}">
       <StackPanel Orientation="Horizontal">
         <CheckBox Focusable="false" IsThreeState="false" IsChecked="{Binding IsChecked}"/>
         <TextBlock Text="{Binding}"/>
@@ -237,12 +237,12 @@
     </StackPanel>
     <TreeView x:Name="SourcesTree" FontSize="12" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,0,200,0"
               ItemsSource="{Binding RootGroups}">
-      <Interaction.Triggers>
-        <EventTrigger EventName="SelectedItemChanged">
-          <InvokeCommandAction Command="{Binding SelectedItemChangedCommand}"
+      <i:Interaction.Triggers>
+        <i:EventTrigger EventName="SelectedItemChanged">
+          <i:InvokeCommandAction Command="{Binding SelectedItemChangedCommand}"
                                CommandParameter="{Binding ElementName=SourcesTree, Path=SelectedItem}"/>
-        </EventTrigger>
-      </Interaction.Triggers>
+        </i:EventTrigger>
+      </i:Interaction.Triggers>
     </TreeView>
     <ListView Grid.Column="2" Margin="5" ItemTemplate="{StaticResource SourceGroupTemplate}"
               Style="{StaticResource DefaultListView}" Grid.ColumnSpan="2" ItemsSource="{Binding RootGroups}"

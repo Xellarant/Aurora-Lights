@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Builder.Presentation.UserControls.Manage"
              xmlns:converters="clr-namespace:Builder.Presentation.Converters"
              xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:controls="clr-namespace:Builder.Presentation.Controls"
              xmlns:eventTriggers="clr-namespace:Aurora.Presentation.EventTriggers;assembly=Aurora.Presentation"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
@@ -16,14 +16,14 @@
     <converters:CampaignSourceConverter x:Key="CampaignSourceConverter"/>
     <converters:NullableInvertedBooleanToVisibilityConverter x:Key="NullableInvertedBooleanToVisibilityConverter"/>
     <converters:SourceListingNameReplaceConverter x:Key="SourceListingNameReplaceConverter"/>
-    <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type sources:SourcesGroup}}" DataType="{x:Type sources:SourcesGroup}"
+    <HierarchicalDataTemplate  DataType="{x:Type sources:SourcesGroup}"
                               ItemsSource="{Binding Sources}">
       <StackPanel Orientation="Horizontal">
         <CheckBox Focusable="false" IsThreeState="false" IsChecked="{Binding IsChecked}"/>
         <TextBlock Text="{Binding}"/>
       </StackPanel>
     </HierarchicalDataTemplate>
-    <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type sources:SourceItem}}" DataType="{x:Type sources:SourceItem}">
+    <HierarchicalDataTemplate  DataType="{x:Type sources:SourceItem}">
       <StackPanel Orientation="Horizontal">
         <CheckBox Focusable="false" IsThreeState="false" IsChecked="{Binding IsChecked}"/>
         <TextBlock Text="{Binding}"/>
@@ -337,27 +337,27 @@
     <ListView Grid.Row="1" Grid.Column="0" SelectionMode="Single"
               ItemTemplate="{StaticResource SourceGroupTemplate}" Style="{StaticResource DefaultListView}"
               ItemsSource="{Binding SourcesManager.SourceGroups}" SelectedItem="{Binding SelectedSourcesGroup}">
-      <Interaction.Triggers>
-        <EventTrigger EventName="MouseDoubleClick">
-          <InvokeCommandAction Command="{Binding ToggleSelectedSourceGroupCommand}"
+      <i:Interaction.Triggers>
+        <i:EventTrigger EventName="MouseDoubleClick">
+          <i:InvokeCommandAction Command="{Binding ToggleSelectedSourceGroupCommand}"
                                CommandParameter="{Binding SelectedSourcesGroup}"/>
-        </EventTrigger>
+        </i:EventTrigger>
         <eventTriggers:SpaceUpEventTrigger>
-          <InvokeCommandAction Command="{Binding ToggleSelectedSourceGroupCommand}"
+          <i:InvokeCommandAction Command="{Binding ToggleSelectedSourceGroupCommand}"
                                CommandParameter="{Binding SelectedSourcesGroup}"/>
         </eventTriggers:SpaceUpEventTrigger>
-      </Interaction.Triggers>
+      </i:Interaction.Triggers>
     </ListView>
     <ListView SelectionChanged="SourceItems_OnSelectionChanged" x:Name="SourceItems" Grid.Row="1" Grid.Column="2"
               Grid.RowSpan="2" Grid.ColumnSpan="3" ItemTemplate="{StaticResource SourceItemBlockTemplate}"
               ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionMode="Extended" Padding="0"
               Margin="0,0,0,0" Style="{StaticResource DefaultWrappedListView}"
               ItemsSource="{Binding SelectedSourcesGroup.Sources}" SelectedItem="{Binding SelectedSourceItem}">
-      <Interaction.Triggers>
-        <EventTrigger EventName="MouseDoubleClick">
-          <InvokeCommandAction Command="{Binding ToggleSelectedSourceItemCommand}" CommandParameter="{Binding SelectedSourceItem}"/>
-        </EventTrigger>
-      </Interaction.Triggers>
+      <i:Interaction.Triggers>
+        <i:EventTrigger EventName="MouseDoubleClick">
+          <i:InvokeCommandAction Command="{Binding ToggleSelectedSourceItemCommand}" CommandParameter="{Binding SelectedSourceItem}"/>
+        </i:EventTrigger>
+      </i:Interaction.Triggers>
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
           <WrapPanel/>

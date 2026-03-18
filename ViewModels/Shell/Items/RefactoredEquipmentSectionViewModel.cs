@@ -1363,7 +1363,7 @@ public class RefactoredEquipmentSectionViewModel :
     if (displayName == null)
       return;
     // ISSUE: reference to a compiler-generated method
-    switch (\u003CPrivateImplementationDetails\u003E.ComputeStringHash(displayName))
+    switch (<PrivateImplementationDetails>.ComputeStringHash(displayName))
     {
       case 569789288:
         if (!(displayName == "Rings"))

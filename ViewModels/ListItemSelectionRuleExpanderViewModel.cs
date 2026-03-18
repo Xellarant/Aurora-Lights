@@ -129,7 +129,7 @@ public sealed class ListItemSelectionRuleExpanderViewModel :
       MessageDialogService.ShowException(ex, title);
     }
     // ISSUE: reference to a compiler-generated method
-    await expanderViewModel.\u003C\u003En__0(args);
+    await expanderViewModel.<>n__0(args);
   }
 
   public string GetKey() => $"{this.SelectionRule.Attributes.Name}:{this._number}";

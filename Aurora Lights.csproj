@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!--
     Aurora Lights - Phase 1 project file
@@ -16,16 +16,10 @@
     <AssemblyName>Aurora Builder</AssemblyName>
     <RootNamespace>Builder.Presentation</RootNamespace>
     <ApplicationVersion>1.0.166.7407</ApplicationVersion>
-
-    <!-- Modern C# features -->
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-
-    <!-- Suppress warnings expected from decompiled code -->
     <NoWarn>$(NoWarn);CS8618;CS0618;CS0612</NoWarn>
-
-    <!-- AllowUnsafeBlocks needed by iTextSharp / CRC32 utilities -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -40,27 +34,15 @@
     <DebugType>pdbonly</DebugType>
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
-
-  <!-- NuGet packages: cross-platform, included unconditionally -->
+  
+  <!--
+    All references are local /lib DLLs.
+    Going fully local avoids NuGet transitive dependency conflicts
+    between the 2018-era MahApps stack and newer packages.
+    NuGet packages are reintroduced in Phase 2 with the Avalonia stack.
+  -->
   <ItemGroup>
-    <PackageReference Include="DynamicExpresso.Core" Version="2.16.0" />
-    <PackageReference Include="iTextSharp" Version="5.5.13.3" />
-    <PackageReference Include="Microsoft.AppCenter" Version="5.0.3" />
-    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="5.0.3" />
-    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.3" />
-    <!-- System.Text.Json is built into the .NET 8 SDK, no reference needed -->
-  </ItemGroup>
-
-  <!-- WPF-only UI packages, Phase 1 only, removed in Phase 2 -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
-    <PackageReference Include="MahApps.Metro" Version="2.4.10" />
-    <PackageReference Include="MahApps.Metro.IconPacks" Version="4.11.0" />
-    <PackageReference Include="HtmlRenderer.WPF" Version="1.5.0.6" />
-  </ItemGroup>
-
-  <!-- Local lib references -->
-  <ItemGroup>
-    <!-- Core business logic DLLs from original Aurora install -->
+    <!-- Cross-platform: core business logic -->
     <Reference Include="Aurora.Documents">
       <HintPath>lib\Aurora.Documents.dll</HintPath>
     </Reference>
@@ -73,12 +55,58 @@
     <Reference Include="Builder.Data">
       <HintPath>lib\Builder.Data.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Interactivity">
+      <HintPath>lib\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
 
-    <!-- WPF-only UI libs with no NuGet equivalent, removed in Phase 2 -->
-    <Reference Include="FirstFloor.ModernUI" Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <!-- Cross-platform: expression evaluation -->
+    <Reference Include="DynamicExpresso.Core">
+      <HintPath>lib\DynamicExpresso.Core.dll</HintPath>
+    </Reference>
+
+    <!-- Cross-platform: PDF generation, replace with iText7 in Phase 2 -->
+    <Reference Include="itextsharp">
+      <HintPath>lib\itextsharp.dll</HintPath>
+    </Reference>
+
+    <!-- Cross-platform: telemetry -->
+    <Reference Include="Microsoft.AppCenter">
+      <HintPath>lib\Microsoft.AppCenter.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter.Analytics">
+      <HintPath>lib\Microsoft.AppCenter.Analytics.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter.Crashes">
+      <HintPath>lib\Microsoft.AppCenter.Crashes.dll</HintPath>
+    </Reference>
+
+    <!-- WPF-only UI: all replaced in Phase 2 -->
+    <!-- ControlzEx 3.0.2.4: get from nuget.org/packages/ControlzEx/3.0.2.4
+         download .nupkg, rename to .zip, extract lib\net45\ControlzEx.dll -->
+    <Reference Include="ControlzEx">
+      <HintPath>lib\ControlzEx.dll</HintPath>
+    </Reference>
+    <Reference Include="MahApps.Metro">
+      <HintPath>lib\MahApps.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="MahApps.Metro.IconPacks">
+      <HintPath>lib\MahApps.Metro.IconPacks.dll</HintPath>
+    </Reference>
+    <!-- Microsoft.Xaml.Behaviors: get from nuget.org/packages/Microsoft.Xaml.Behaviors.Wpf/1.1.3
+         download .nupkg, rename to .zip, extract lib\net45\Microsoft.Xaml.Behaviors.dll -->
+    <Reference Include="Microsoft.Xaml.Behaviors">
+      <HintPath>lib\Microsoft.Xaml.Behaviors.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlRenderer">
+      <HintPath>lib\HtmlRenderer.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlRenderer.WPF">
+      <HintPath>lib\HtmlRenderer.WPF.dll</HintPath>
+    </Reference>
+    <Reference Include="FirstFloor.ModernUI">
       <HintPath>lib\FirstFloor.ModernUI.dll</HintPath>
     </Reference>
-    <Reference Include="MoonPdfLib" Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <Reference Include="MoonPdfLib">
       <HintPath>lib\MoonPdfLib.dll</HintPath>
     </Reference>
   </ItemGroup>

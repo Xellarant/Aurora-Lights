@@ -283,7 +283,7 @@ public partial class ShellWindow :
     if (lower == null)
       return;
     // ISSUE: reference to a compiler-generated method
-    switch (\u003CPrivateImplementationDetails\u003E.ComputeStringHash(lower))
+    switch (<PrivateImplementationDetails>.ComputeStringHash(lower))
     {
       case 1269553309:
         if (!(lower == "background"))

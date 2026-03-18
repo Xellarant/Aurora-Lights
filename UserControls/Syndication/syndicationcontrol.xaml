@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Builder.Presentation.UserControls.Syndication"
              xmlns:controls="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:eventTriggers="clr-namespace:Aurora.Presentation.EventTriggers;assembly=Aurora.Presentation"
              xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
              MinWidth="350">
@@ -83,11 +83,11 @@
               ScrollViewer.VerticalScrollBarVisibility="Hidden"
               Visibility="{Binding HasPosts, Converter={StaticResource BooleanToVisibilityConverter}}"
               ItemsSource="{Binding Posts}" SelectedItem="{Binding SelectedPost}">
-      <Interaction.Triggers>
-        <EventTrigger EventName="MouseDoubleClick">
-          <InvokeCommandAction Command="{Binding ViewPostCommand}" CommandParameter="{Binding SelectedPost}"/>
-        </EventTrigger>
-      </Interaction.Triggers>
+      <i:Interaction.Triggers>
+        <i:EventTrigger EventName="MouseDoubleClick">
+          <i:InvokeCommandAction Command="{Binding ViewPostCommand}" CommandParameter="{Binding SelectedPost}"/>
+        </i:EventTrigger>
+      </i:Interaction.Triggers>
     </ListView>
     <TextBlock Grid.Row="2" Text="There are no new articles available." Margin="2,0" FontFamily="Segoe UI Light"
                LineHeight="20" Foreground="{DynamicResource Aurora.Brushes.Text.Secondary}" FontSize="13"

@@ -34,7 +34,7 @@
                              IsHitTestVisible="false" Background="Transparent" Padding="0" Margin="0">
                   <FlowDocument>
                     <Paragraph FontSize="11">
-                      <Run FontStyle="Italic" FontWeight="SemiBold" Text="{Binding Name, Mode=OneWay, StringFormat={0}.}"/>
+                      <Run FontStyle="Italic" FontWeight="SemiBold" Text="{Binding Name, Mode=OneWay, StringFormat={}{0}.}"/>
                       <Run Text="{Binding SheetDescription.Text, Mode=OneWay}"/>
                     </Paragraph>
                   </FlowDocument>

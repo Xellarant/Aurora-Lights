@@ -32,7 +32,7 @@
     </Grid.RowDefinitions>
     <TreeView Margin="0" ItemsSource="{Binding Items}" Style="{x:Null}">
       <FrameworkElement.Resources>
-        <HierarchicalDataTemplate x:Key="{DataTemplateKey {x:Type viewModels:ContentItem}}"
+        <HierarchicalDataTemplate 
                                   DataType="{x:Type viewModels:ContentItem}" ItemsSource="{Binding Path=Items}">
           <TreeViewItem Header="{Binding Path=DisplayName}"/>
         </HierarchicalDataTemplate>

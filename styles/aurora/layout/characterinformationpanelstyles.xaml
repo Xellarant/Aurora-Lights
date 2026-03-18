@@ -23,12 +23,12 @@
     <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
     <Setter Property="FrameworkElement.Height" Value="14"/>
     <Setter Property="FrameworkElement.Width" Value="14"/>
-    <Setter Property="PackIconBase`1.Kind" Value="SquareSolid"/>
+    <Setter Property="Kind" Value="SquareSolid"/>
     <Setter Property="Control.Foreground" Value="{DynamicResource AccentColorBrush4}"/>
   </Style>
   <Style x:Key="InformationPanelCheckedIconStyle" TargetType="{x:Type iconPacks:PackIconFontAwesome}"
          BasedOn="{StaticResource InformationPanelUncheckedIconStyle}">
-    <Setter Property="PackIconBase`1.Kind" Value="CheckSquareSolid"/>
+    <Setter Property="Kind" Value="CheckSquareSolid"/>
     <Setter Property="Control.Foreground" Value="{DynamicResource HighlightBrush}"/>
   </Style>
 </ResourceDictionary>

@@ -132,7 +132,7 @@
             <TextBlock Style="{StaticResource PopupScoreTextBlockStyle}" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2"
                        Text="{Binding Character.Initiative, Mode=OneWay, Converter={StaticResource BonusStringValueConverter}}"/>
             <TextBlock Style="{StaticResource PopupScoreTextBlockStyle}" Grid.Column="3" Grid.Row="1" Grid.ColumnSpan="2"
-                       Text="{Binding Character.Speed, StringFormat={0}ft.}"/>
+                       Text="{Binding Character.Speed, StringFormat={}{0}ft.}"/>
             <TextBlock Style="{StaticResource PopupScoreTextBlockStyle}" Grid.Column="5" Grid.Row="1"
                        Text="{Binding Character.MaxHp}"/>
           </Grid>

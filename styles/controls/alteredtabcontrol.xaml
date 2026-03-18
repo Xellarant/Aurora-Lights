@@ -119,7 +119,7 @@
               </StackPanel>
               <Grid>
                 <Rectangle x:Name="Underline" HorizontalAlignment="Stretch" Height="0" Margin="0,1,0,0"
-                           Visibility="{Binding Path=False, Converter={BooleanToVisibilityConverter}}"/>
+                           Visibility="{Binding Path=False, Converter={StaticResource BooleanToVisibilityConverter}}"/>
               </Grid>
               <Polygon x:Name="UnderlinePointerOverlay" Points="0,0 50,0 25,2 25,2" VerticalAlignment="Bottom"
                        Fill="{StaticResource HighlightBrush}" HorizontalAlignment="Center" Margin="0,0,0,0" Height="10"/>
@@ -210,7 +210,7 @@
                                     VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"/>
                   <Rectangle x:Name="Underline" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Height="1"
                              Margin="0,1,0,0"
-                             Visibility="{Binding Path=(controls:TabControlHelper.IsUnderlined), RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}, Converter={BooleanToVisibilityConverter}}"/>
+                             Visibility="{Binding Path=(controls:TabControlHelper.IsUnderlined), RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type TabControl}}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 </DockPanel>
               </Border>
               <ControlTemplate.Triggers>

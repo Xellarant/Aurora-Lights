@@ -175,7 +175,7 @@
                      Margin="0,0,4,0"/>
           <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}"
                      Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
-                     Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={0:#.##}}"/>
+                     Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={}{0:#.##}}"/>
           <TextBlock Text="lb" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
                      Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
                      Margin="0,0,0,0"/>
@@ -226,7 +226,7 @@
                      Margin="0,0,4,0"/>
           <TextBlock Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
                      Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
-                     Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={0:#.##}}"/>
+                     Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={}{0:#.##}}"/>
           <TextBlock Text="lb" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
                      Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
                      Margin="0,0,4,0"/>
@@ -496,7 +496,7 @@
                            Margin="0,0,4,0"/>
                 <TextBlock Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
                            Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
-                           Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={0:#.##}}"/>
+                           Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={}{0:#.##}}"/>
                 <TextBlock Text="lb" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
                            Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
                            Margin="0,0,4,0"/>
@@ -1174,7 +1174,7 @@
                      Margin="0,0,4,0"/>
           <TextBlock Foreground="{DynamicResource AuroraGoldColorBrush}"
                      Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
-                     Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={0:#.##}}"/>
+                     Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={}{0:#.##}}"/>
           <TextBlock Text="lb" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
                      Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
                      Margin="0,0,0,0"/>
@@ -1214,7 +1214,7 @@
                      Margin="0,0,4,0"/>
           <TextBlock Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
                      Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
-                     Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={0:#.##}}"/>
+                     Margin="0,0,2,0" Text="{Binding Inventory.EquipmentWeight, Mode=OneWay, StringFormat={}{0:#.##}}"/>
           <TextBlock Text="lb" Foreground="{DynamicResource Aurora.Brushes.Text.Primary}"
                      Style="{StaticResource SectionHeaderTextBlockStyle}" FontSize="11" VerticalAlignment="Center"
                      Margin="0,0,0,0"/>

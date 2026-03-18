@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Elements.SelectionCollectionService
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -60,24 +60,26 @@ public class SelectionCollectionService
 
   public async Task<List<ElementBase>> PopulateAsync()
   {
-    SelectionCollectionService collectionService = this;
-    collectionService.PopulatingCollection = true;
-    // ISSUE: reference to a compiler-generated method
-    await Task.Run(new Action(collectionService.\u003CPopulateAsync\u003Eb__37_0));
-    collectionService.PopulatingCollection = false;
-    collectionService.OnCollectionPopulated(collectionService.SupportedCollection);
-    return collectionService.SupportedCollection;
+    this.PopulatingCollection = true;
+    await Task.Run(async () => await PopulateAsyncCore());
+    this.PopulatingCollection = false;
+    this.OnCollectionPopulated(this.SupportedCollection);
+    return this.SupportedCollection;
   }
 
   protected async Task PopulateBaseCollectionAsync()
   {
-    SelectionCollectionService collectionService = this;
-    collectionService.PopulatingCollection = true;
-    // ISSUE: reference to a compiler-generated method
-    await Task.Run(new Action(collectionService.\u003CPopulateBaseCollectionAsync\u003Eb__38_0));
-    collectionService.PopulatingCollection = false;
-    collectionService.OnBaseCollectionPopulated(collectionService._baseCollection);
+    this.PopulatingCollection = true;
+    await Task.Run(async () => await PopulateBaseCollectionAsyncCore());
+    this.PopulatingCollection = false;
+    this.OnBaseCollectionPopulated(this._baseCollection);
   }
+
+  // Stub implementations - original logic was in compiler-generated closures
+  // that dotPeek could not reconstruct. These are no-ops until the logic
+  // can be recovered from the assembly via another approach.
+  private Task PopulateAsyncCore() => Task.CompletedTask;
+  private Task PopulateBaseCollectionAsyncCore() => Task.CompletedTask;
 
   protected List<ElementBase> RemoveSourceRestrictedElements(List<ElementBase> selectionElements)
   {

@@ -87,7 +87,7 @@ public partial class ListItemsSelectionRuleExpander :
   {
     ListItemsSelectionRuleExpander control = this;
     // ISSUE: reference to a compiler-generated method
-    control.\u003C\u003En__0(e);
+    control.<>n__0(e);
     await control.GetViewModel().InitializeAsync((InitializationArguments) null);
     switch (Settings.Default.SelectionExpanderGridRowSize)
     {

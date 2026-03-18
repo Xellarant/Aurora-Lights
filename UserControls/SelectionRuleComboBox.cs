@@ -68,7 +68,7 @@ public class SelectionRuleComboBox : UserControl, ISelectionRuleExpander, ICompo
   {
     SelectionRuleComboBox control = this;
     // ISSUE: reference to a compiler-generated method
-    control.\u003C\u003En__0(e);
+    control.<>n__0(e);
     // ISSUE: explicit non-virtual call
     control.DataContext = (object) new SelectionRuleComboBoxViewModel(__nonvirtual (control.SelectionRule))
     {

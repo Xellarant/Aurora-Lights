@@ -52,11 +52,11 @@
     <TextBlock Grid.Row="0" Style="{StaticResource VersionTextBlockStyle}"
                Foreground="{DynamicResource GrayBrush5}" FontSize="11" Margin="10" HorizontalAlignment="Right"
                VerticalAlignment="Bottom"
-               Text="{Binding Version, StringFormat={0}, FallbackValue='Fallback Version 1.0-BETA'}"/>
+               Text="{Binding Version, StringFormat={}{0}, FallbackValue='Fallback Version 1.0-BETA'}"/>
     <StackPanel Grid.Row="1">
       <StackPanel Grid.Row="3" Margin="10,13,10,6" Grid.ColumnSpan="2" Grid.Column="0">
         <TextBlock Style="{StaticResource DefaultInformationStyle}" FontSize="11" TextWrapping="Wrap"
-                   Text="{Binding ProgressMessage, StringFormat={0}, FallbackValue='Fallback StatusMessage'}"/>
+                   Text="{Binding ProgressMessage, StringFormat={}{0}, FallbackValue='Fallback StatusMessage'}"/>
         <mah:MetroProgressBar Margin="0,5,0,10" Foreground="{DynamicResource SuccessDarkColorBrush}" SnapsToDevicePixels="true"
                               Value="{Binding ProgressPercentage, FallbackValue=67}"/>
       </StackPanel>

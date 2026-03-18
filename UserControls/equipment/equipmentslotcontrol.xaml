@@ -16,7 +16,7 @@
       <ColumnDefinition Width="Auto"/>
     </Grid.ColumnDefinitions>
     <TextBlock Style="{StaticResource FieldHeaderTextBlockStyle}" Grid.Column="1" VerticalAlignment="Center"
-               Text="{Binding DisplayName, Converter={StaticResource UpperCaseConverter}, StringFormat={0}:}"/>
+               Text="{Binding DisplayName, Converter={StaticResource UpperCaseConverter}, StringFormat={}{0}:}"/>
     <ComboBox mah:TextBoxHelper.ClearTextButton="true" MinWidth="200" Grid.Column="1" Grid.Row="1"
               ItemsSource="{Binding EquippableItems}"
               SelectedItem="{Binding EquippedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

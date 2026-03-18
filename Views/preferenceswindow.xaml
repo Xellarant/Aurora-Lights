@@ -289,7 +289,7 @@
                   <StackPanel VerticalAlignment="Bottom">
                     <TextBlock Text="PREVIEW VERSION:" Style="{StaticResource FieldHeaderTextBlockStyle}" Margin="10,10,10,0"/>
                     <TextBlock Style="{StaticResource FlavorDescriptionTextBlockStyle}" Margin="10,0,10,20" FontSize="12"
-                               Text="{Binding Version, StringFormat={0}}"/>
+                               Text="{Binding Version, StringFormat={}{0}}"/>
                     <TextBlock Text="© 2017 Bas Driessen. All Rights Reserved."
                                Style="{StaticResource FlavorDescriptionTextBlockStyle}" Margin="10,0,10,0" FontSize="12"/>
                     <TextBlock Text="http://www.dndbuilder.net" Style="{StaticResource FlavorDescriptionTextBlockStyle}"

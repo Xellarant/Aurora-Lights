@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Models.CharacterFile
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -17,7 +17,6 @@ using Builder.Presentation.Models.Equipment;
 using Builder.Presentation.Models.Helpers;
 using Builder.Presentation.Models.NewFolder1;
 using Builder.Presentation.Models.Sources;
-using Builder.Presentation.Properties;
 using Builder.Presentation.Services;
 using Builder.Presentation.Services.Calculator;
 using Builder.Presentation.Services.Data;
@@ -34,7 +33,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -79,7 +77,7 @@ public class CharacterFile : ObservableObject
   public CharacterFile(string filepath)
   {
     this._filepath = filepath;
-    this._displayVersion = Resources.ApplicationVersion;
+    this._displayVersion = "1.0.166.7407";
   }
 
   public string FilePath
@@ -244,7 +242,7 @@ public class CharacterFile : ObservableObject
           if (name != null)
           {
             // ISSUE: reference to a compiler-generated method
-            switch (\u003CPrivateImplementationDetails\u003E.ComputeStringHash(name))
+            switch (<PrivateImplementationDetails>.ComputeStringHash(name))
             {
               case 806924506:
                 if (name == "portrait")
@@ -355,7 +353,7 @@ public class CharacterFile : ObservableObject
     {
       {
         "version",
-        Resources.ApplicationVersion
+        "1.0.166.7407"
       },
       {
         "preview",

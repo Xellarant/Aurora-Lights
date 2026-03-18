@@ -1,0 +1,111 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Ralla\\source\\repos\\Aurora-Lights\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{1452F300-6B85-46E2-9262-AC19BA5BBF9F}|Aurora Lights.csproj|c:\\users\\ralla\\source\\repos\\aurora-lights\\models\\characterfile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1452F300-6B85-46E2-9262-AC19BA5BBF9F}|Aurora Lights.csproj|solutionrelative:models\\characterfile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1452F300-6B85-46E2-9262-AC19BA5BBF9F}|Aurora Lights.csproj|c:\\users\\ralla\\source\\repos\\aurora-lights\\elements\\selectioncollectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1452F300-6B85-46E2-9262-AC19BA5BBF9F}|Aurora Lights.csproj|solutionrelative:elements\\selectioncollectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1452F300-6B85-46E2-9262-AC19BA5BBF9F}|Aurora Lights.csproj|c:\\users\\ralla\\source\\repos\\aurora-lights\\aurora lights.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{1452F300-6B85-46E2-9262-AC19BA5BBF9F}|Aurora Lights.csproj|solutionrelative:aurora lights.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1452F300-6B85-46E2-9262-AC19BA5BBF9F}|Aurora Lights.csproj|c:\\users\\ralla\\source\\repos\\aurora-lights\\contentgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1452F300-6B85-46E2-9262-AC19BA5BBF9F}|Aurora Lights.csproj|solutionrelative:contentgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:12:0:{2456bd12-ecf7-4988-a4a6-67d49173f565}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:11:0:{2456bd12-ecf7-4988-a4a6-67d49173f565}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{a975660a-81e4-4830-aa25-1b824c3bf732}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CharacterFile.cs",
+              "DocumentMoniker": "C:\\Users\\Ralla\\source\\repos\\Aurora-Lights\\Models\\CharacterFile.cs",
+              "RelativeDocumentMoniker": "Models\\CharacterFile.cs",
+              "ToolTip": "C:\\Users\\Ralla\\source\\repos\\Aurora-Lights\\Models\\CharacterFile.cs",
+              "RelativeToolTip": "Models\\CharacterFile.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAewLgHAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-18T02:32:05.047Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SelectionCollectionService.cs",
+              "DocumentMoniker": "C:\\Users\\Ralla\\source\\repos\\Aurora-Lights\\Elements\\SelectionCollectionService.cs",
+              "RelativeDocumentMoniker": "Elements\\SelectionCollectionService.cs",
+              "ToolTip": "C:\\Users\\Ralla\\source\\repos\\Aurora-Lights\\Elements\\SelectionCollectionService.cs",
+              "RelativeToolTip": "Elements\\SelectionCollectionService.cs",
+              "ViewState": "AgIAADcAAAAAAAAAAAAWwEgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-18T02:17:53.032Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Aurora Lights.csproj",
+              "DocumentMoniker": "C:\\Users\\Ralla\\source\\repos\\Aurora-Lights\\Aurora Lights.csproj",
+              "RelativeDocumentMoniker": "Aurora Lights.csproj",
+              "ToolTip": "C:\\Users\\Ralla\\source\\repos\\Aurora-Lights\\Aurora Lights.csproj",
+              "RelativeToolTip": "Aurora Lights.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-03-18T02:12:48.71Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ContentGenerator.cs",
+              "DocumentMoniker": "C:\\Users\\Ralla\\source\\repos\\Aurora-Lights\\ContentGenerator.cs",
+              "RelativeDocumentMoniker": "ContentGenerator.cs",
+              "ToolTip": "C:\\Users\\Ralla\\source\\repos\\Aurora-Lights\\ContentGenerator.cs",
+              "RelativeToolTip": "ContentGenerator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-18T00:02:07.222Z"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{56df62a4-05a3-4e5b-aa1a-99371ccfb997}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

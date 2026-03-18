@@ -7,7 +7,7 @@
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:helpers="clr-namespace:Builder.Presentation.Models.Helpers"
              xmlns:manage="clr-namespace:Builder.Presentation.ViewModels.Shell.Manage"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:controls="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation">
   <FrameworkElement.Resources>
     <DataTemplate x:Key="AttackTemplate">
@@ -108,11 +108,11 @@
               ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="0,0,0,0" Grid.Row="2"
               ItemsSource="{Binding Attacks.Items}"
               SelectedItem="{Binding SelectedAttackItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-      <Interaction.Triggers>
-        <EventTrigger EventName="MouseDoubleClick">
-          <InvokeCommandAction Command="{Binding EditAttackCommand}" CommandParameter="{Binding SelectedAttackItem}"/>
-        </EventTrigger>
-      </Interaction.Triggers>
+      <i:Interaction.Triggers>
+        <i:EventTrigger EventName="MouseDoubleClick">
+          <i:InvokeCommandAction Command="{Binding EditAttackCommand}" CommandParameter="{Binding SelectedAttackItem}"/>
+        </i:EventTrigger>
+      </i:Interaction.Triggers>
     </ListView>
     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,8">
       <controls:CommandButton CommandText="Add Attack" Style="{StaticResource CommandButtonDefaultStyle}"

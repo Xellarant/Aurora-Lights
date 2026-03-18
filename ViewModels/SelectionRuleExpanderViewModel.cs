@@ -231,16 +231,16 @@ public class SelectionRuleExpanderViewModel :
   {
     // ISSUE: object of a compiler-generated type is created
     // ISSUE: variable of a compiler-generated type
-    SelectionRuleExpanderViewModel.\u003C\u003Ec__DisplayClass56_0 cDisplayClass560 = new SelectionRuleExpanderViewModel.\u003C\u003Ec__DisplayClass56_0();
+    SelectionRuleExpanderViewModel.<>c__DisplayClass56_0 cDisplayClass560 = new SelectionRuleExpanderViewModel.<>c__DisplayClass56_0();
     // ISSUE: reference to a compiler-generated field
     cDisplayClass560.rule = rule;
     // ISSUE: reference to a compiler-generated field
     cDisplayClass560.collection = this._baseCollection;
     // ISSUE: reference to a compiler-generated method
-    await Task.Run(new Action(cDisplayClass560.\u003CGetSupported\u003Eb__0));
+    await Task.Run(new Action(cDisplayClass560.<GetSupported>b__0));
     // ISSUE: reference to a compiler-generated field
     ElementBaseCollection collection = cDisplayClass560.collection;
-    cDisplayClass560 = (SelectionRuleExpanderViewModel.\u003C\u003Ec__DisplayClass56_0) null;
+    cDisplayClass560 = (SelectionRuleExpanderViewModel.<>c__DisplayClass56_0) null;
     return collection;
   }
 
