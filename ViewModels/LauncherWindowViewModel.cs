@@ -1,4 +1,5 @@
-﻿// Decompiled with JetBrains decompiler
+using System.IO;
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.ViewModels.LauncherWindowViewModel
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -8,7 +9,7 @@ using Builder.Core.Events;
 using Builder.Core.Logging;
 using Builder.Data;
 using Builder.Presentation.Events.Data;
-using Builder.Presentation.Properties;
+
 using Builder.Presentation.Services;
 using Builder.Presentation.Services.Data;
 using Builder.Presentation.ViewModels.Base;
@@ -17,6 +18,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 #nullable disable
+using Builder.Presentation.Properties;
 namespace Builder.Presentation.ViewModels;
 
 public class LauncherWindowViewModel : ViewModelBase, ISubscriber<DataManagerProgressChanged>

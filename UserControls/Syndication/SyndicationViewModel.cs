@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.UserControls.Syndication.SyndicationViewModel
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -8,7 +8,7 @@ using Builder.Core;
 using Builder.Core.Events;
 using Builder.Core.Logging;
 using Builder.Presentation.Events.Application;
-using Builder.Presentation.Properties;
+
 using Builder.Presentation.Services.Data;
 using Builder.Presentation.Syndication;
 using Builder.Presentation.Syndication.Posts;
@@ -23,6 +23,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 
 #nullable disable
+using Builder.Presentation.Properties;
 namespace Builder.Presentation.UserControls.Syndication;
 
 public class SyndicationViewModel : ViewModelBase, ISubscriber<SettingsChangedEvent>

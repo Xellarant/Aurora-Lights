@@ -1,4 +1,5 @@
-﻿// Decompiled with JetBrains decompiler
+using System.IO;
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.App
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -19,8 +20,6 @@ namespace Builder.Presentation;
 
 public partial class App : Application
 {
-  private bool _contentLoaded;
-
   protected override void OnStartup(StartupEventArgs e)
   {
     base.OnStartup(e);
@@ -60,25 +59,5 @@ public partial class App : Application
     current.UpgradeConfigurationCheck();
     current.LoadThemes();
   }
-
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    this.StartupUri = new Uri("Views/Splash.xaml", UriKind.Relative);
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/app.xaml", UriKind.Relative));
-  }
-
-  [STAThread]
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public static void Main()
-  {
-    App app = new App();
-    app.InitializeComponent();
-    app.Run();
-  }
 }
+

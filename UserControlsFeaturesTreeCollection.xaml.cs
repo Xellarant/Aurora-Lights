@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.UserControls.FeaturesTreeCollection
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -22,12 +22,8 @@ namespace Builder.Presentation.UserControls;
 
 public partial class FeaturesTreeCollection : 
   UserControl,
-  ISubscriber<CharacterManagerElementRegistered>,
-  IComponentConnector
+  ISubscriber<CharacterManagerElementRegistered>
 {
-  internal TreeView FeaturesTree;
-  private bool _contentLoaded;
-
   public FeaturesTreeCollection()
   {
     this.InitializeComponent();
@@ -53,24 +49,7 @@ public partial class FeaturesTreeCollection :
     this.FeaturesTree.Items.Add((object) newItem1);
   }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/usercontrols/featurestreecollection.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    if (connectionId == 1)
-      this.FeaturesTree = (TreeView) target;
-    else
-      this._contentLoaded = true;
-  }
+
+
 }

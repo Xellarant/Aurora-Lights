@@ -5,12 +5,12 @@
 // Assembly location: C:\Program Files (x86)\Aurora\Aurora Character Builder\Aurora Builder.exe
 
 using Builder.Core.Events;
-using Builder.Presentation.Properties;
+using Builder.Presentation;
 
 #nullable disable
 namespace Builder.Presentation.Events.Application;
 
 internal class SettingsChangedEvent : EventBase
 {
-  public Settings Settings => Settings.Default;
+    public AppSettingsStore Settings => ApplicationManager.Current.Settings.Settings;
 }

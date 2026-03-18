@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Services.SelectionRuleNavigationService
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -9,7 +9,7 @@ using Builder.Core.Events;
 using Builder.Data.Rules;
 using Builder.Presentation.Events.Character;
 using Builder.Presentation.Events.Global;
-using Builder.Presentation.Properties;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -339,7 +339,7 @@ public class SelectionRuleNavigationService :
       navigationService.FirstRequiredSelectionRule = (SelectRule) null;
     navigationService._eventAggregator.Send<NavigationServiceEvaluationEvent>(new NavigationServiceEvaluationEvent(navigationService.SelectionsRemaining, navigationService.SelectionCount, navigationService.FirstRequiredSelectionRule));
     navigationService.OnPropertyChanged("DisplayNext");
-    if (!navigationService.IsNextAvailable || !Settings.Default.AutoNavigateNextSelectionWhenAvailable)
+    if (!navigationService.IsNextAvailable || !ApplicationManager.Current.Settings.Settings.AutoNavigateNextSelectionWhenAvailable)
       return;
     await Task.Delay(250);
     navigationService.NavigateNext();

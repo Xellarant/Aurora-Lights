@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Views.Sliders.ReleaseSlider
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -25,16 +25,8 @@ namespace Builder.Presentation.Views.Sliders;
 public partial class ReleaseSlider : 
   Flyout,
   ISubscriber<CharacterLoadingSliderStatusUpdateEvent>,
-  ISubscriber<CharacterLoadingSliderProgressEvent>,
-  IComponentConnector
+  ISubscriber<CharacterLoadingSliderProgressEvent>
 {
-  internal CircularProgressBar CircularProgressBar;
-  internal Button PortraitImage;
-  internal Image PortraitImageControl;
-  internal TextBlock BuildTextBlock;
-  internal TextBlock StatusMessage;
-  private bool _contentLoaded;
-
   public ReleaseSlider()
   {
     this.InitializeComponent();
@@ -100,48 +92,8 @@ public partial class ReleaseSlider :
     this.CircularProgressBar.Value = (double) args.ProgressPercentage;
   }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/views/sliders/releaseslider.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  internal Delegate _CreateDelegate(Type delegateType, string handler)
-  {
-    return Delegate.CreateDelegate(delegateType, (object) this, handler);
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    switch (connectionId)
-    {
-      case 1:
-        this.CircularProgressBar = (CircularProgressBar) target;
-        break;
-      case 2:
-        this.PortraitImage = (Button) target;
-        break;
-      case 3:
-        this.PortraitImageControl = (Image) target;
-        break;
-      case 4:
-        this.BuildTextBlock = (TextBlock) target;
-        break;
-      case 5:
-        this.StatusMessage = (TextBlock) target;
-        break;
-      default:
-        this._contentLoaded = true;
-        break;
-    }
-  }
+
+
 }

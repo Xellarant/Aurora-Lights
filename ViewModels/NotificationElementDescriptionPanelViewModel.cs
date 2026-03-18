@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.ViewModels.NotificationElementDescriptionPanelViewModel
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -7,11 +7,12 @@
 using Builder.Core.Events;
 using Builder.Core.Logging;
 using Builder.Presentation.Events.Application;
-using Builder.Presentation.Properties;
+
 using System;
 using System.Net.Http;
 
 #nullable disable
+using Builder.Presentation.Properties;
 namespace Builder.Presentation.ViewModels;
 
 public class NotificationElementDescriptionPanelViewModel : 
@@ -33,8 +34,7 @@ public class NotificationElementDescriptionPanelViewModel :
     {
       using (HttpClient client = new HttpClient())
       {
-        // ISSUE: reference to a compiler-generated method
-        this.<>n__0(new HtmlDisplayRequestEvent(await client.GetStringAsync(url)));
+        base.OnHandleEvent(new HtmlDisplayRequestEvent(await client.GetStringAsync(url)));
       }
     }
     catch (Exception ex)

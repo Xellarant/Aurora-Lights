@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Services.Sources.SourcesManager
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -9,7 +9,7 @@ using Builder.Data;
 using Builder.Data.Elements;
 using Builder.Presentation.Elements;
 using Builder.Presentation.Models.Sources;
-using Builder.Presentation.Properties;
+
 using Builder.Presentation.Services.Data;
 using System;
 using System.Collections.Generic;
@@ -242,7 +242,7 @@ public class SourcesManager : ISourceRestrictionsProvider
   {
     try
     {
-      string sourceRestrictions = Settings.Default.DefaultSourceRestrictions;
+      string sourceRestrictions = ApplicationManager.Current.Settings.Settings.DefaultSourceRestrictions;
       if (string.IsNullOrWhiteSpace(sourceRestrictions))
         return;
       this.Load((IEnumerable<string>) sourceRestrictions.Split(','));
@@ -286,7 +286,7 @@ public class SourcesManager : ISourceRestrictionsProvider
         }
       }
     }
-    Settings.Default.DefaultSourceRestrictions = string.Join(",", (IEnumerable<string>) values);
+    ApplicationManager.Current.Settings.Settings.DefaultSourceRestrictions = string.Join(",", (IEnumerable<string>) values);
     ApplicationManager.Current.SendStatusMessage("Your default source restrictions have been saved.");
   }
 

@@ -33,7 +33,7 @@ using System.Windows.Input;
 #nullable disable
 namespace Builder.Presentation.ViewModels;
 
-public class SelectionRuleExpanderViewModel : 
+public class SelectionRuleExpanderViewModel :
   ViewModelBase,
   ISubscriber<CharacterManagerElementRegistered>,
   ISubscriber<CharacterManagerElementUnregistered>,
@@ -74,7 +74,7 @@ public class SelectionRuleExpanderViewModel :
       this.Dispose();
       this._baseCollection.Clear();
       this._baseSupportsCollection.Clear();
-      this._interpreter = (ExpressionInterpreter) null;
+      this._interpreter = (ExpressionInterpreter)null;
     }
     this._disposed = true;
   }
@@ -82,7 +82,7 @@ public class SelectionRuleExpanderViewModel :
   public void Dispose()
   {
     this.Dispose(true);
-    GC.SuppressFinalize((object) this);
+    GC.SuppressFinalize((object)this);
   }
 
   public SelectionRuleExpanderViewModel()
@@ -103,19 +103,19 @@ public class SelectionRuleExpanderViewModel :
       this.Header += " (optional)";
     this.IsExpanded = true;
     this.IsEnabled = true;
-    Logger.Debug("Expander Created: [{0}]", (object) this._selectionRule.Attributes.Name);
+    Logger.Debug("Expander Created: [{0}]", (object)this._selectionRule.Attributes.Name);
   }
 
   public string Header
   {
     get => this._header;
-    set => this.SetProperty<string>(ref this._header, value, nameof (Header));
+    set => this.SetProperty<string>(ref this._header, value, nameof(Header));
   }
 
   public bool IsEnabled
   {
     get => this._isEnabled;
-    set => this.SetProperty<bool>(ref this._isEnabled, value, nameof (IsEnabled));
+    set => this.SetProperty<bool>(ref this._isEnabled, value, nameof(IsEnabled));
   }
 
   public bool IsExpanded
@@ -123,14 +123,14 @@ public class SelectionRuleExpanderViewModel :
     get => this._isExpanded;
     set
     {
-      this.SetProperty<bool>(ref this._isExpanded, value, nameof (IsExpanded));
+      this.SetProperty<bool>(ref this._isExpanded, value, nameof(IsExpanded));
       if (!this.IsExpanded)
         return;
       if (!this.ElementRegistered)
         return;
       try
       {
-        this.SelectedElement = this.SelectionElements.Single<ElementBase>((Func<ElementBase, bool>) (e => e.Id == this.RegisteredElementId));
+        this.SelectedElement = this.SelectionElements.Single<ElementBase>((Func<ElementBase, bool>)(e => e.Id == this.RegisteredElementId));
       }
       catch (Exception ex)
       {
@@ -144,7 +144,7 @@ public class SelectionRuleExpanderViewModel :
   public SelectRule SelectionRule
   {
     get => this._selectionRule;
-    set => this.SetProperty<SelectRule>(ref this._selectionRule, value, nameof (SelectionRule));
+    set => this.SetProperty<SelectRule>(ref this._selectionRule, value, nameof(SelectionRule));
   }
 
   public ElementBaseCollection SelectionElements
@@ -152,7 +152,7 @@ public class SelectionRuleExpanderViewModel :
     get => this._selectionElements;
     set
     {
-      this.SetProperty<ElementBaseCollection>(ref this._selectionElements, value, nameof (SelectionElements));
+      this.SetProperty<ElementBaseCollection>(ref this._selectionElements, value, nameof(SelectionElements));
     }
   }
 
@@ -161,7 +161,7 @@ public class SelectionRuleExpanderViewModel :
     get => this._selectedElement;
     set
     {
-      this.SetProperty<ElementBase>(ref this._selectedElement, value, nameof (SelectedElement));
+      this.SetProperty<ElementBase>(ref this._selectedElement, value, nameof(SelectedElement));
       this.EventAggregator.Send<ElementDescriptionDisplayRequestEvent>(new ElementDescriptionDisplayRequestEvent(this.SelectedElement));
       if (!this.RegisterOnSelection || this._selectedElement == null)
         return;
@@ -174,7 +174,7 @@ public class SelectionRuleExpanderViewModel :
     get => this._registeredElementId;
     set
     {
-      this.SetProperty<string>(ref this._registeredElementId, value, nameof (RegisteredElementId));
+      this.SetProperty<string>(ref this._registeredElementId, value, nameof(RegisteredElementId));
       this.OnPropertyChanged("ElementRegistered", "RegisteredElement");
     }
   }
@@ -185,7 +185,7 @@ public class SelectionRuleExpanderViewModel :
   {
     get
     {
-      return string.IsNullOrWhiteSpace(this._registeredElementId) ? (ElementBase) null : this.SelectionElements.FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (e => e.Id == this._registeredElementId));
+      return string.IsNullOrWhiteSpace(this._registeredElementId) ? (ElementBase)null : this.SelectionElements.FirstOrDefault<ElementBase>((Func<ElementBase, bool>)(e => e.Id == this._registeredElementId));
     }
   }
 
@@ -201,7 +201,7 @@ public class SelectionRuleExpanderViewModel :
     }
     catch (Exception ex)
     {
-      Logger.Exception(ex, nameof (InitializeAsync));
+      Logger.Exception(ex, nameof(InitializeAsync));
       MessageDialogService.ShowException(ex);
     }
     await base.InitializeAsync(args);
@@ -219,7 +219,7 @@ public class SelectionRuleExpanderViewModel :
 
   public ICommand ManageSourcesCommand
   {
-    get => (ICommand) new RelayCommand(new Action(this.ManageSources));
+    get => (ICommand)new RelayCommand(new Action(this.ManageSources));
   }
 
   private void ManageSources()
@@ -229,19 +229,13 @@ public class SelectionRuleExpanderViewModel :
 
   private async Task<ElementBaseCollection> GetSupported(SelectRule rule)
   {
-    // ISSUE: object of a compiler-generated type is created
-    // ISSUE: variable of a compiler-generated type
-    SelectionRuleExpanderViewModel.<>c__DisplayClass56_0 cDisplayClass560 = new SelectionRuleExpanderViewModel.<>c__DisplayClass56_0();
-    // ISSUE: reference to a compiler-generated field
-    cDisplayClass560.rule = rule;
-    // ISSUE: reference to a compiler-generated field
-    cDisplayClass560.collection = this._baseCollection;
-    // ISSUE: reference to a compiler-generated method
-    await Task.Run(new Action(cDisplayClass560.<GetSupported>b__0));
-    // ISSUE: reference to a compiler-generated field
-    ElementBaseCollection collection = cDisplayClass560.collection;
-    cDisplayClass560 = (SelectionRuleExpanderViewModel.<>c__DisplayClass56_0) null;
-    return collection;
+    await Task.Run(() =>
+    {
+      this._baseCollection = new ElementBaseCollection(
+        DataManager.Current.ElementsCollection.Where<ElementBase>(
+          element => element.Type.Equals(rule.Attributes.Type)));
+    });
+    return this._baseCollection;
   }
 
   private void SetSupportedElements(bool initial, SelectRule rule)
@@ -255,7 +249,7 @@ public class SelectionRuleExpanderViewModel :
       this._interpreter.InitializeWithSelectionRule(rule);
       if (initial)
       {
-        this._baseCollection = new ElementBaseCollection(DataManager.Current.ElementsCollection.Where<ElementBase>((Func<ElementBase, bool>) (element => element.Type.Equals(rule.Attributes.Type))));
+        this._baseCollection = new ElementBaseCollection(DataManager.Current.ElementsCollection.Where<ElementBase>((Func<ElementBase, bool>)(element => element.Type.Equals(rule.Attributes.Type))));
         this._initialLevel = rule.Attributes.RequiredLevel;
       }
       if (initial && rule.Attributes.ContainsSupports())
@@ -270,29 +264,29 @@ public class SelectionRuleExpanderViewModel :
               stringList.Add(index.ToString());
           }
           if (stringList.Any<string>())
-            expressionString = expressionString.Replace("$$SPELLSLOT", string.Join("||", (IEnumerable<string>) stringList));
+            expressionString = expressionString.Replace("$$SPELLSLOT", string.Join("||", (IEnumerable<string>)stringList));
         }
-        this._baseSupportsCollection = new ElementBaseCollection(this._interpreter.EvaluateSupportsExpression<ElementBase>(expressionString, (IEnumerable<ElementBase>) this._baseCollection, rule.Attributes.SupportsElementIdRange()));
+        this._baseSupportsCollection = new ElementBaseCollection(this._interpreter.EvaluateSupportsExpression<ElementBase>(expressionString, (IEnumerable<ElementBase>)this._baseCollection, rule.Attributes.SupportsElementIdRange()));
       }
       else if (initial)
-        this._baseSupportsCollection = new ElementBaseCollection((IEnumerable<ElementBase>) this._baseCollection);
+        this._baseSupportsCollection = new ElementBaseCollection((IEnumerable<ElementBase>)this._baseCollection);
     }
-    ElementBaseCollection elementBaseCollection1 = new ElementBaseCollection((IEnumerable<ElementBase>) this._baseSupportsCollection);
+    ElementBaseCollection elementBaseCollection1 = new ElementBaseCollection((IEnumerable<ElementBase>)this._baseSupportsCollection);
     SourcesManager sourcesManager = CharacterManager.Current.SourcesManager;
     List<string> list1 = sourcesManager.GetUndefinedRestrictedSourceNames().ToList<string>();
     List<string> list2 = sourcesManager.GetRestrictedElementIds().ToList<string>();
     ElementBaseCollection elementBaseCollection2 = new ElementBaseCollection();
-    foreach (ElementBase elementBase in (Collection<ElementBase>) elementBaseCollection1)
+    foreach (ElementBase elementBase in (Collection<ElementBase>)elementBaseCollection1)
     {
       if (list2.Contains(elementBase.Id))
         elementBaseCollection2.Add(elementBase);
       else if (list1.Contains(elementBase.Source))
         elementBaseCollection2.Add(elementBase);
     }
-    foreach (ElementBase elementBase in (Collection<ElementBase>) elementBaseCollection2)
+    foreach (ElementBase elementBase in (Collection<ElementBase>)elementBaseCollection2)
       elementBaseCollection1.Remove(elementBase);
     ElementBaseCollection elements = CharacterManager.Current.GetElements();
-    foreach (ElementBase elementBase in elements.Where<ElementBase>((Func<ElementBase, bool>) (e => e.Type.Equals(rule.Attributes.Type))))
+    foreach (ElementBase elementBase in elements.Where<ElementBase>((Func<ElementBase, bool>)(e => e.Type.Equals(rule.Attributes.Type))))
     {
       if (elementBaseCollection1.Contains(elementBase) && !elementBase.AllowDuplicate && !elementBase.Id.Equals(this.RegisteredElementId))
         elementBaseCollection1.RemoveElement(elementBase.Id);
@@ -301,39 +295,39 @@ public class SelectionRuleExpanderViewModel :
     switch (rule.Attributes.Type)
     {
       case "Spell":
-        elementBaseCollection3.AddRange((IEnumerable<ElementBase>) elementBaseCollection1.Cast<Spell>().OrderBy<Spell, int>((Func<Spell, int>) (x => x.Level)).ThenBy<Spell, string>((Func<Spell, string>) (x => x.Name)));
+        elementBaseCollection3.AddRange((IEnumerable<ElementBase>)elementBaseCollection1.Cast<Spell>().OrderBy<Spell, int>((Func<Spell, int>)(x => x.Level)).ThenBy<Spell, string>((Func<Spell, string>)(x => x.Name)));
         break;
       case "Alignment":
-        elementBaseCollection3.AddRange((IEnumerable<ElementBase>) elementBaseCollection1);
+        elementBaseCollection3.AddRange((IEnumerable<ElementBase>)elementBaseCollection1);
         break;
       default:
         if (!string.IsNullOrWhiteSpace(rule.Attributes.Name) && rule.Attributes.Name.Contains("Ability Score"))
         {
           if (rule.Attributes.Type == "Racial Trait" || rule.Attributes.Type == "Class Feature" || rule.Attributes.Type == "Ability Score Improvement")
           {
-            elementBaseCollection3.AddRange((IEnumerable<ElementBase>) elementBaseCollection1);
+            elementBaseCollection3.AddRange((IEnumerable<ElementBase>)elementBaseCollection1);
             break;
           }
-          elementBaseCollection3.AddRange((IEnumerable<ElementBase>) elementBaseCollection1.OrderBy<ElementBase, string>((Func<ElementBase, string>) (x => x.Name)));
+          elementBaseCollection3.AddRange((IEnumerable<ElementBase>)elementBaseCollection1.OrderBy<ElementBase, string>((Func<ElementBase, string>)(x => x.Name)));
           break;
         }
-        elementBaseCollection3.AddRange((IEnumerable<ElementBase>) elementBaseCollection1.OrderBy<ElementBase, string>((Func<ElementBase, string>) (x => x.Name)));
+        elementBaseCollection3.AddRange((IEnumerable<ElementBase>)elementBaseCollection1.OrderBy<ElementBase, string>((Func<ElementBase, string>)(x => x.Name)));
         break;
     }
     ElementBaseCollection elementBaseCollection4 = elementBaseCollection3;
     List<ElementBase> elementBaseList = new List<ElementBase>();
     if (this.EnableFilter)
-      elementBaseList = this.Filter.Filter((IEnumerable<ElementBase>) elementBaseCollection4.ToList<ElementBase>());
+      elementBaseList = this.Filter.Filter((IEnumerable<ElementBase>)elementBaseCollection4.ToList<ElementBase>());
     this.SelectionElementsCollection.Clear();
-    if (this._baseSupportsCollection.Any<ElementBase>((Func<ElementBase, bool>) (x => x.HasRequirements)))
+    if (this._baseSupportsCollection.Any<ElementBase>((Func<ElementBase, bool>)(x => x.HasRequirements)))
     {
       ElementBaseCollection elementBaseCollection5 = new ElementBaseCollection();
-      List<string> list3 = elements.Select<ElementBase, string>((Func<ElementBase, string>) (e => e.Id)).ToList<string>();
-      foreach (ElementBase element in (Collection<ElementBase>) elementBaseCollection4)
+      List<string> list3 = elements.Select<ElementBase, string>((Func<ElementBase, string>)(e => e.Id)).ToList<string>();
+      foreach (ElementBase element in (Collection<ElementBase>)elementBaseCollection4)
       {
         if (element.HasRequirements)
         {
-          if (this._interpreter.EvaluateElementRequirementsExpression(element.Requirements, (IEnumerable<string>) list3))
+          if (this._interpreter.EvaluateElementRequirementsExpression(element.Requirements, (IEnumerable<string>)list3))
           {
             elementBaseCollection5.Add(element);
             this.SelectionElementsCollection.Add(new SelectionElement(element)
@@ -357,7 +351,7 @@ public class SelectionRuleExpanderViewModel :
     }
     else
     {
-      foreach (ElementBase element in (Collection<ElementBase>) elementBaseCollection4)
+      foreach (ElementBase element in (Collection<ElementBase>)elementBaseCollection4)
         this.SelectionElementsCollection.Add(new SelectionElement(element)
         {
           IsHighlighted = elementBaseList.Contains(element) && this.EnableFilter
@@ -365,20 +359,20 @@ public class SelectionRuleExpanderViewModel :
     }
     if (this.IsComboBoxExpander)
     {
-      this._selectedSelectionElement = this.SelectionElementsCollection.FirstOrDefault<SelectionElement>((Func<SelectionElement, bool>) (x => x.Element == this._selectedElement));
+      this._selectedSelectionElement = this.SelectionElementsCollection.FirstOrDefault<SelectionElement>((Func<SelectionElement, bool>)(x => x.Element == this._selectedElement));
       this.OnPropertyChanged("SelectedSelectionElement");
     }
     if (!this.IsComboBoxExpander)
-      this.SelectedElement = (ElementBase) null;
+      this.SelectedElement = (ElementBase)null;
     this.SelectionElements.Clear();
-    this.SelectionElements.AddRange((IEnumerable<ElementBase>) elementBaseCollection4);
+    this.SelectionElements.AddRange((IEnumerable<ElementBase>)elementBaseCollection4);
     if (this._registeredElementId != null)
     {
-      ElementBase elementBase = this.SelectionElements.FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (element => element.Id == this._registeredElementId));
+      ElementBase elementBase = this.SelectionElements.FirstOrDefault<ElementBase>((Func<ElementBase, bool>)(element => element.Id == this._registeredElementId));
       if (elementBase != null)
       {
         this._selectedElement = elementBase;
-        SelectionElement selectionElement = this.SelectionElementsCollection.FirstOrDefault<SelectionElement>((Func<SelectionElement, bool>) (x => x.Element.Id.Equals(this._selectedElement.Id)));
+        SelectionElement selectionElement = this.SelectionElementsCollection.FirstOrDefault<SelectionElement>((Func<SelectionElement, bool>)(x => x.Element.Id.Equals(this._selectedElement.Id)));
         if (selectionElement != null)
           selectionElement.IsChosen = true;
       }
@@ -390,7 +384,7 @@ public class SelectionRuleExpanderViewModel :
       this.IsEnabled = true;
       if (initial && rule.Attributes.ContainsDefaultSelection())
       {
-        ElementBase elementBase = this.SelectionElements.SingleOrDefault<ElementBase>((Func<ElementBase, bool>) (x => x.Id == rule.Attributes.Default));
+        ElementBase elementBase = this.SelectionElements.SingleOrDefault<ElementBase>((Func<ElementBase, bool>)(x => x.Id == rule.Attributes.Default));
         if (elementBase != null)
         {
           this._selectedElement = elementBase;
@@ -411,7 +405,7 @@ public class SelectionRuleExpanderViewModel :
     catch (Exception ex)
     {
       Logger.Warning($"{ex.GetType()} while trying to set the [default:{rule.Attributes.Default}] element on {rule} ");
-      Logger.Exception(ex, nameof (SetSupportedElements));
+      Logger.Exception(ex, nameof(SetSupportedElements));
     }
     if (!this.IsExpanded && !this.ElementRegistered && rule.Attributes.Type != "Spell")
       this.IsExpanded = true;
@@ -421,7 +415,7 @@ public class SelectionRuleExpanderViewModel :
       this.IsEnabled = false;
       this.IsExpanded = false;
     }
-    foreach (SelectionElement selectionElements in (Collection<SelectionElement>) this.SelectionElementsCollection)
+    foreach (SelectionElement selectionElements in (Collection<SelectionElement>)this.SelectionElementsCollection)
     {
       if (selectionElements.Element.HasPrerequisites)
         selectionElements.DisplayShortDescription = selectionElements.Element.Prerequisite;
@@ -452,7 +446,7 @@ public class SelectionRuleExpanderViewModel :
       if (this._interpreter == null)
         this._interpreter = new ExpressionInterpreter();
       this._interpreter.InitializeWithSelectionRule(rule);
-      this._baseCollection = new ElementBaseCollection(DataManager.Current.ElementsCollection.Where<ElementBase>((Func<ElementBase, bool>) (element => element.Type.Equals(rule.Attributes.Type))));
+      this._baseCollection = new ElementBaseCollection(DataManager.Current.ElementsCollection.Where<ElementBase>((Func<ElementBase, bool>)(element => element.Type.Equals(rule.Attributes.Type))));
       this._aquisitionLevel = rule.Attributes.RequiredLevel;
       this._baseSupportsCollection = new ElementBaseCollection();
     }
@@ -461,14 +455,14 @@ public class SelectionRuleExpanderViewModel :
       this._baseSupportsCollection.Clear();
       List<string> source = new List<string>();
       string str1 = rule.Attributes.Supports;
-      SpellcastingInformation spellcastingInformation1 = this.Manager.GetSpellcastingInformations().FirstOrDefault<SpellcastingInformation>((Func<SpellcastingInformation, bool>) (x => x.Name.Equals(rule.Attributes.SpellcastingName) && !x.IsExtension));
+      SpellcastingInformation spellcastingInformation1 = this.Manager.GetSpellcastingInformations().FirstOrDefault<SpellcastingInformation>((Func<SpellcastingInformation, bool>)(x => x.Name.Equals(rule.Attributes.SpellcastingName) && !x.IsExtension));
       if (spellcastingInformation1 != null)
         this._information = spellcastingInformation1;
       if (spellcastingInformation1 == null)
         spellcastingInformation1 = this._information != null ? this._information : throw new Exception($"{rule} (in {rule.ElementHeader.Name}) does not have a spellcasting attribute with the name of the spellcasting class (e.g. Wizard or Arcane Trickster), this is required when using the dynamic support expressions");
       if (rule.Attributes.Supports.Contains("$(spellcasting:list)"))
       {
-        List<SpellcastingInformation> list = this.Manager.GetSpellcastingInformations().Where<SpellcastingInformation>((Func<SpellcastingInformation, bool>) (x => (x.Name.Equals(rule.Attributes.SpellcastingName) || x.AssignToAllSpellcastingClasses) && x.IsExtension)).ToList<SpellcastingInformation>();
+        List<SpellcastingInformation> list = this.Manager.GetSpellcastingInformations().Where<SpellcastingInformation>((Func<SpellcastingInformation, bool>)(x => (x.Name.Equals(rule.Attributes.SpellcastingName) || x.AssignToAllSpellcastingClasses) && x.IsExtension)).ToList<SpellcastingInformation>();
         if (list.Any<SpellcastingInformation>())
         {
           StringBuilder stringBuilder = new StringBuilder();
@@ -480,7 +474,7 @@ public class SelectionRuleExpanderViewModel :
               if (spellsExpression.IsId)
               {
                 if (spellsExpression.Supports.Contains(","))
-                  source.AddRange(((IEnumerable<string>) spellsExpression.Supports.Split(',')).Select<string, string>((Func<string, string>) (x => x.Trim())));
+                  source.AddRange(((IEnumerable<string>)spellsExpression.Supports.Split(',')).Select<string, string>((Func<string, string>)(x => x.Trim())));
                 else
                   source.Add(spellsExpression.Supports);
               }
@@ -514,7 +508,7 @@ public class SelectionRuleExpanderViewModel :
           foreach (string str2 in source)
           {
             string id = str2;
-            ElementBase elementBase = this._baseCollection.FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (x => x.Id.Equals(id) && activeSpellSlots.Contains(x.AsElement<Spell>().Level)));
+            ElementBase elementBase = this._baseCollection.FirstOrDefault<ElementBase>((Func<ElementBase, bool>)(x => x.Id.Equals(id) && activeSpellSlots.Contains(x.AsElement<Spell>().Level)));
             if (elementBase != null)
               this._baseSupportsCollection.Add(elementBase);
           }
@@ -522,7 +516,7 @@ public class SelectionRuleExpanderViewModel :
         }
         if (!rule.Attributes.Supports.Contains("$(spellcasting:slots)"))
         {
-          string str3 = string.Join<int>("||", (IEnumerable<int>) activeSpellSlots);
+          string str3 = string.Join<int>("||", (IEnumerable<int>)activeSpellSlots);
           for (int index = 1; index <= 9; ++index)
           {
             if (str1.Contains(index.ToString()))
@@ -532,17 +526,17 @@ public class SelectionRuleExpanderViewModel :
             }
           }
         }
-        str1 = str1.Replace("$(spellcasting:slots)", $"({string.Join<int>("||", (IEnumerable<int>) activeSpellSlots)})");
+        str1 = str1.Replace("$(spellcasting:slots)", $"({string.Join<int>("||", (IEnumerable<int>)activeSpellSlots)})");
       }
       else if (!str1.Contains("0") && source.Any<string>())
       {
         int num = -1;
         if (this._baseSupportsCollection.Any<ElementBase>())
-          num = this._baseSupportsCollection.Cast<Spell>().Select<Spell, int>((Func<Spell, int>) (x => x.Level)).Max();
+          num = this._baseSupportsCollection.Cast<Spell>().Select<Spell, int>((Func<Spell, int>)(x => x.Level)).Max();
         foreach (string str4 in source)
         {
           string id = str4;
-          ElementBase elementBase = this._baseCollection.FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (x => x.Id.Equals(id)));
+          ElementBase elementBase = this._baseCollection.FirstOrDefault<ElementBase>((Func<ElementBase, bool>)(x => x.Id.Equals(id)));
           if (elementBase != null && num > 0)
           {
             int level = (elementBase as Spell).Level;
@@ -551,15 +545,15 @@ public class SelectionRuleExpanderViewModel :
       }
       if (this.SupportContainsDynamicExpression(str1) && Debugger.IsAttached)
         Debugger.Break();
-      IEnumerable<ElementBase> supportsExpression = this._interpreter.EvaluateSupportsExpression<ElementBase>(str1, (IEnumerable<ElementBase>) this._baseCollection, rule.Attributes.SupportsElementIdRange());
+      IEnumerable<ElementBase> supportsExpression = this._interpreter.EvaluateSupportsExpression<ElementBase>(str1, (IEnumerable<ElementBase>)this._baseCollection, rule.Attributes.SupportsElementIdRange());
       if (str1.Contains("0"))
-        supportsExpression.Any<ElementBase>((Func<ElementBase, bool>) (x => x.AsElement<Spell>().Level > 0));
+        supportsExpression.Any<ElementBase>((Func<ElementBase, bool>)(x => x.AsElement<Spell>().Level > 0));
       if (this._baseSupportsCollection.Any<ElementBase>())
       {
         foreach (ElementBase elementBase1 in supportsExpression)
         {
           ElementBase elementBase = elementBase1;
-          if (this._baseSupportsCollection.FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (x => x.Id.Equals(elementBase.Id))) == null)
+          if (this._baseSupportsCollection.FirstOrDefault<ElementBase>((Func<ElementBase, bool>)(x => x.Id.Equals(elementBase.Id))) == null)
             this._baseSupportsCollection.Add(elementBase);
         }
       }
@@ -571,12 +565,12 @@ public class SelectionRuleExpanderViewModel :
         int num1 = 0;
         int num2 = -1;
         if (this._baseSupportsCollection.Any<ElementBase>())
-          num2 = this._baseSupportsCollection.Cast<Spell>().Select<Spell, int>((Func<Spell, int>) (x => x.Level)).Max();
-        List<string> list = this._baseSupportsCollection.Select<ElementBase, string>((Func<ElementBase, string>) (x => x.Id)).ToList<string>();
+          num2 = this._baseSupportsCollection.Cast<Spell>().Select<Spell, int>((Func<Spell, int>)(x => x.Level)).Max();
+        List<string> list = this._baseSupportsCollection.Select<ElementBase, string>((Func<ElementBase, string>)(x => x.Id)).ToList<string>();
         foreach (string str5 in source)
         {
           string id = str5;
-          ElementBase elementBase = this._baseCollection.FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (x => x.Id.Equals(id)));
+          ElementBase elementBase = this._baseCollection.FirstOrDefault<ElementBase>((Func<ElementBase, bool>)(x => x.Id.Equals(id)));
           if (elementBase != null && !list.Contains(elementBase.Id))
           {
             if (num2 > 0)
@@ -599,11 +593,11 @@ public class SelectionRuleExpanderViewModel :
     else if (rule.Attributes.ContainsSupports())
     {
       if (initial)
-        this._baseSupportsCollection = new ElementBaseCollection(this._interpreter.EvaluateSupportsExpression<ElementBase>(rule.Attributes.Supports, (IEnumerable<ElementBase>) this._baseCollection, rule.Attributes.SupportsElementIdRange()));
+        this._baseSupportsCollection = new ElementBaseCollection(this._interpreter.EvaluateSupportsExpression<ElementBase>(rule.Attributes.Supports, (IEnumerable<ElementBase>)this._baseCollection, rule.Attributes.SupportsElementIdRange()));
     }
     else if (initial)
-      this._baseSupportsCollection = new ElementBaseCollection((IEnumerable<ElementBase>) this._baseCollection);
-    this.ContainsCantrips = this._baseSupportsCollection.Any<ElementBase>((Func<ElementBase, bool>) (x => x.Type.Equals("Spell") && x.Supports.Contains("0")));
+      this._baseSupportsCollection = new ElementBaseCollection((IEnumerable<ElementBase>)this._baseCollection);
+    this.ContainsCantrips = this._baseSupportsCollection.Any<ElementBase>((Func<ElementBase, bool>)(x => x.Type.Equals("Spell") && x.Supports.Contains("0")));
   }
 
   public bool ContainsCantrips { get; set; }
@@ -640,7 +634,7 @@ public class SelectionRuleExpanderViewModel :
     if (this.ElementRegistered)
       this.UnregisterRegisteredElement(false);
     this.RegisteredElementId = this.SelectedElement.Id;
-    ElementBase element = this.SelectionElements.First<ElementBase>((Func<ElementBase, bool>) (e => e.Id == this.SelectedElement.Id));
+    ElementBase element = this.SelectionElements.First<ElementBase>((Func<ElementBase, bool>)(e => e.Id == this.SelectedElement.Id));
     element.Aquisition.SelectedBy(this.SelectionRule);
     this.RegisteredElementId = CharacterManager.Current.RegisterElement(element).Id;
     this.IsExpanded = !this.ElementRegistered;
@@ -652,10 +646,10 @@ public class SelectionRuleExpanderViewModel :
   {
     if (!this.ElementRegistered)
       throw new ArgumentException("unable to unregister when nothing has been registered");
-    ElementBase element = DataManager.Current.ElementsCollection.GetElement(this.RegisteredElementId) ?? DataManager.Current.ElementsCollection.FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (x => x.Id.Equals(this.RegisteredElementId)));
+    ElementBase element = DataManager.Current.ElementsCollection.GetElement(this.RegisteredElementId) ?? DataManager.Current.ElementsCollection.FirstOrDefault<ElementBase>((Func<ElementBase, bool>)(x => x.Id.Equals(this.RegisteredElementId)));
     if (fromReevaluation)
       this.EventAggregator.Send<MainWindowStatusUpdateEvent>(new MainWindowStatusUpdateEvent($"Your selection ({element.Name}) in {this.Header} was removed due to loss of requirement."));
-    this.RegisteredElementId = (string) null;
+    this.RegisteredElementId = (string)null;
     CharacterManager.Current.UnregisterElement(element);
     this.IsExpanded = !this.ElementRegistered;
   }
@@ -664,14 +658,14 @@ public class SelectionRuleExpanderViewModel :
   {
     try
     {
-      ElementBase elementBase = this.SelectionElements.FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (x => x.Id == id));
+      ElementBase elementBase = this.SelectionElements.FirstOrDefault<ElementBase>((Func<ElementBase, bool>)(x => x.Id == id));
       if (elementBase == null)
       {
         int count;
         for (count = 0; count < 25; ++count)
         {
           await Task.Delay(100);
-          elementBase = this.SelectionElements.FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (x => x.Id == id));
+          elementBase = this.SelectionElements.FirstOrDefault<ElementBase>((Func<ElementBase, bool>)(x => x.Id == id));
           if (elementBase != null)
             break;
         }
@@ -682,14 +676,14 @@ public class SelectionRuleExpanderViewModel :
     }
     catch (Exception ex)
     {
-      Logger.Exception(ex, nameof (SetSelectionAndRegister));
+      Logger.Exception(ex, nameof(SetSelectionAndRegister));
     }
   }
 
   public void OnHandleEvent(CharacterManagerElementRegistered args)
   {
     if (this.RegisteredElement != null && this.RegisteredElement == args.Element)
-      Logger.Debug("not populating the {0} expander after this selection", (object) this.SelectionRule);
+      Logger.Debug("not populating the {0} expander after this selection", (object)this.SelectionRule);
     else
       this.SetSupportedElements(false, this.SelectionRule);
   }
@@ -705,7 +699,7 @@ public class SelectionRuleExpanderViewModel :
   {
     if (this.SelectionRule == null)
     {
-      Logger.Warning("selection rule empty on '{0}' expander", (object) this.Header);
+      Logger.Warning("selection rule empty on '{0}' expander", (object)this.Header);
       if (Debugger.IsAttached)
         Debugger.Break();
       this.Header += " - RULE MISSING";
@@ -752,7 +746,7 @@ public class SelectionRuleExpanderViewModel :
     this._selectionElements = elementBaseCollection;
     this.SelectedElement = this._selectionElements[1];
     this.RegisteredElementId = this._selectedElement.Id;
-    foreach (ElementBase selectionElement in (Collection<ElementBase>) this._selectionElements)
+    foreach (ElementBase selectionElement in (Collection<ElementBase>)this._selectionElements)
       this.SelectionElementsCollection.Add(new SelectionElement(selectionElement));
     this.SelectedSelectionElement = this.SelectionElementsCollection.FirstOrDefault<SelectionElement>();
     this.SelectedSelectionElement.IsEnabled = true;
@@ -765,7 +759,7 @@ public class SelectionRuleExpanderViewModel :
       SelectRule selectionRule = this.SelectionRule;
       string supportString = this.SelectionRule.Attributes.Supports;
       this.SelectionRule.ElementHeader.Name.Contains("Expertise");
-      List<ElementBase> list = DataManager.Current.ElementsCollection.Where<ElementBase>((Func<ElementBase, bool>) (e => e.Type == this.SelectionRule.Attributes.Type)).OrderBy<ElementBase, string>((Func<ElementBase, string>) (x => x.Source)).ThenBy<ElementBase, string>((Func<ElementBase, string>) (x => x.Name)).ToList<ElementBase>();
+      List<ElementBase> list = DataManager.Current.ElementsCollection.Where<ElementBase>((Func<ElementBase, bool>)(e => e.Type == this.SelectionRule.Attributes.Type)).OrderBy<ElementBase, string>((Func<ElementBase, string>)(x => x.Source)).ThenBy<ElementBase, string>((Func<ElementBase, string>)(x => x.Name)).ToList<ElementBase>();
       ElementBaseCollection elementBaseCollection1 = new ElementBaseCollection();
       if (this.SelectionRule.Attributes.ContainsSupports())
       {
@@ -773,21 +767,21 @@ public class SelectionRuleExpanderViewModel :
           throw new NotSupportedException();
         if (supportString.Contains<char>(',') && !supportString.Contains<char>('|'))
         {
-          elementBaseCollection1.AddRange((IEnumerable<ElementBase>) list);
-          foreach (string str1 in ((IEnumerable<string>) supportString.Split(',')).Select<string, string>((Func<string, string>) (s => s.Trim())))
+          elementBaseCollection1.AddRange((IEnumerable<ElementBase>)list);
+          foreach (string str1 in ((IEnumerable<string>)supportString.Split(',')).Select<string, string>((Func<string, string>)(s => s.Trim())))
           {
             string str = str1;
-            elementBaseCollection1 = new ElementBaseCollection(elementBaseCollection1.Where<ElementBase>((Func<ElementBase, bool>) (e => e.Supports.Contains(str))));
+            elementBaseCollection1 = new ElementBaseCollection(elementBaseCollection1.Where<ElementBase>((Func<ElementBase, bool>)(e => e.Supports.Contains(str))));
           }
         }
         else if (!supportString.Contains<char>(',') && supportString.Contains<char>('|'))
         {
           string str2 = supportString;
-          char[] chArray = new char[1]{ '|' };
+          char[] chArray = new char[1] { '|' };
           foreach (string str3 in str2.Split(chArray))
           {
             string id = str3;
-            ElementBase elementBase = list.FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (e => e.Id == id.Trim()));
+            ElementBase elementBase = list.FirstOrDefault<ElementBase>((Func<ElementBase, bool>)(e => e.Id == id.Trim()));
             if (elementBase == null)
               Logger.Warning($"unable to find id:{id.Trim()} for populating {this.SelectionRule}, maybe a typo in the ID");
             else
@@ -795,10 +789,10 @@ public class SelectionRuleExpanderViewModel :
           }
         }
         else
-          elementBaseCollection1.AddRange(this.SelectionRule.Attributes.ContainsSupports() ? list.Where<ElementBase>((Func<ElementBase, bool>) (e => e.Supports.Contains(supportString))) : (IEnumerable<ElementBase>) list);
+          elementBaseCollection1.AddRange(this.SelectionRule.Attributes.ContainsSupports() ? list.Where<ElementBase>((Func<ElementBase, bool>)(e => e.Supports.Contains(supportString))) : (IEnumerable<ElementBase>)list);
       }
       else
-        elementBaseCollection1.AddRange(this.SelectionRule.Attributes.ContainsSupports() ? list.Where<ElementBase>((Func<ElementBase, bool>) (e => e.Supports.Contains(supportString))) : (IEnumerable<ElementBase>) list);
+        elementBaseCollection1.AddRange(this.SelectionRule.Attributes.ContainsSupports() ? list.Where<ElementBase>((Func<ElementBase, bool>)(e => e.Supports.Contains(supportString))) : (IEnumerable<ElementBase>)list);
       foreach (ElementBase elementBase in CharacterManager.Current.GetElements().ToList<ElementBase>())
       {
         if (elementBaseCollection1.Contains(elementBase) && !elementBase.AllowDuplicate && elementBase.Id != this._registeredElementId)
@@ -809,27 +803,27 @@ public class SelectionRuleExpanderViewModel :
         if (this.SelectedElement != null)
         {
           string registeredElementId = this._registeredElementId;
-          this.SelectedElement = (ElementBase) null;
+          this.SelectedElement = (ElementBase)null;
         }
-        foreach (string id in this.SelectionElements.Select<ElementBase, string>((Func<ElementBase, string>) (x => x.Id)).ToList<string>())
+        foreach (string id in this.SelectionElements.Select<ElementBase, string>((Func<ElementBase, string>)(x => x.Id)).ToList<string>())
           this.SelectionElements.RemoveElement(id);
-        this.SelectionElements.AddRange((IEnumerable<ElementBase>) elementBaseCollection1);
+        this.SelectionElements.AddRange((IEnumerable<ElementBase>)elementBaseCollection1);
         if (!string.IsNullOrWhiteSpace(this._registeredElementId))
-          this._selectedElement = this.SelectionElements.Single<ElementBase>((Func<ElementBase, bool>) (x => x.Id == this._registeredElementId));
+          this._selectedElement = this.SelectionElements.Single<ElementBase>((Func<ElementBase, bool>)(x => x.Id == this._registeredElementId));
       }
       catch (IndexOutOfRangeException ex)
       {
         ElementBaseCollection elementBaseCollection2 = new ElementBaseCollection();
-        foreach (ElementBase selectionElement in (Collection<ElementBase>) this.SelectionElements)
+        foreach (ElementBase selectionElement in (Collection<ElementBase>)this.SelectionElements)
         {
           if (!elementBaseCollection1.Contains(selectionElement))
             elementBaseCollection2.Add(selectionElement);
         }
-        Logger.Exception((Exception) ex, nameof (DepricatedPopulateSelectionElements));
+        Logger.Exception((Exception)ex, nameof(DepricatedPopulateSelectionElements));
       }
       if (!this._initialized && !string.IsNullOrWhiteSpace(this.SelectionRule.Attributes.Default))
       {
-        ElementBase elementBase = this.SelectionElements.FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (e => e.Id == this.SelectionRule.Attributes.Default));
+        ElementBase elementBase = this.SelectionElements.FirstOrDefault<ElementBase>((Func<ElementBase, bool>)(e => e.Id == this.SelectionRule.Attributes.Default));
         if (elementBase != null)
         {
           try
@@ -839,7 +833,7 @@ public class SelectionRuleExpanderViewModel :
           }
           catch (Exception ex)
           {
-            Logger.Exception(ex, nameof (DepricatedPopulateSelectionElements));
+            Logger.Exception(ex, nameof(DepricatedPopulateSelectionElements));
             MessageDialogService.ShowException(ex);
           }
         }
@@ -850,7 +844,7 @@ public class SelectionRuleExpanderViewModel :
     }
     catch (Exception ex)
     {
-      Logger.Exception(ex, nameof (DepricatedPopulateSelectionElements));
+      Logger.Exception(ex, nameof(DepricatedPopulateSelectionElements));
       MessageDialogService.ShowException(ex);
     }
   }
@@ -858,13 +852,13 @@ public class SelectionRuleExpanderViewModel :
   public int RetrainLevel
   {
     get => this._retrainLevel;
-    set => this.SetProperty<int>(ref this._retrainLevel, value, nameof (RetrainLevel));
+    set => this.SetProperty<int>(ref this._retrainLevel, value, nameof(RetrainLevel));
   }
 
   public bool IsOptional
   {
     get => this._isOptional;
-    set => this.SetProperty<bool>(ref this._isOptional, value, nameof (IsOptional));
+    set => this.SetProperty<bool>(ref this._isOptional, value, nameof(IsOptional));
   }
 
   public SelectionElementCollection SelectionElementsCollection { get; } = new SelectionElementCollection();
@@ -874,7 +868,7 @@ public class SelectionRuleExpanderViewModel :
     get => this._selectedSelectionElement;
     set
     {
-      this.SetProperty<SelectionElement>(ref this._selectedSelectionElement, value, nameof (SelectedSelectionElement));
+      this.SetProperty<SelectionElement>(ref this._selectedSelectionElement, value, nameof(SelectedSelectionElement));
       this.SelectedElement = this._selectedSelectionElement?.Element;
     }
   }

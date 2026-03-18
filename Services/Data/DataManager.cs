@@ -1,4 +1,4 @@
-ï»¿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Services.Data.DataManager
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -15,7 +15,7 @@ using Builder.Data.Strings;
 using Builder.Presentation.Events.Data;
 using Builder.Presentation.Logging;
 using Builder.Presentation.Models;
-using Builder.Presentation.Properties;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 using System.Xml;
 
 #nullable disable
+using Builder.Presentation.Properties;
 namespace Builder.Presentation.Services.Data;
 
 public sealed class DataManager
@@ -124,16 +125,16 @@ public sealed class DataManager
     try
     {
       this.UserDocumentsRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "5e Character Builder");
-      if (!string.IsNullOrWhiteSpace(Settings.Default.DocumentsRootDirectory))
+      if (!string.IsNullOrWhiteSpace(ApplicationManager.Current.Settings.Settings.DocumentsRootDirectory))
       {
-        if (Directory.Exists(Settings.Default.DocumentsRootDirectory))
+        if (Directory.Exists(ApplicationManager.Current.Settings.Settings.DocumentsRootDirectory))
         {
-          this.UserDocumentsRootDirectory = Settings.Default.DocumentsRootDirectory;
+          this.UserDocumentsRootDirectory = ApplicationManager.Current.Settings.Settings.DocumentsRootDirectory;
         }
         else
         {
-          MessageDialogService.Show($"The root {Settings.Default.DocumentsRootDirectory} does not exist. Falling back to the default directory.");
-          Settings.Default.DocumentsRootDirectory = "";
+          MessageDialogService.Show($"The root {ApplicationManager.Current.Settings.Settings.DocumentsRootDirectory} does not exist. Falling back to the default directory.");
+          ApplicationManager.Current.Settings.Settings.DocumentsRootDirectory = "";
         }
       }
       this.UserDocumentsCompanionGalleryDirectory = Path.Combine(this.UserDocumentsRootDirectory, "gallery\\companions");
@@ -146,8 +147,8 @@ public sealed class DataManager
       DataManager.CreateDirectory(this.UserDocumentsCompanionGalleryDirectory);
       DataManager.CreateDirectory(this.UserDocumentsSymbolsGalleryDirectory);
       DataManager.CreateDirectory(Path.Combine(this.UserDocumentsCustomElementsDirectory, "user"));
-      if (string.IsNullOrWhiteSpace(Settings.Default.DocumentsRootDirectory))
-        Settings.Default.DocumentsRootDirectory = this.UserDocumentsRootDirectory;
+      if (string.IsNullOrWhiteSpace(ApplicationManager.Current.Settings.Settings.DocumentsRootDirectory))
+        ApplicationManager.Current.Settings.Settings.DocumentsRootDirectory = this.UserDocumentsRootDirectory;
     }
     catch (Exception ex)
     {
@@ -359,7 +360,7 @@ public sealed class DataManager
       "]",
       ":",
       "'",
-      "â€™"
+      "’"
     };
     foreach (ElementBase elements in (Collection<ElementBase>) this.ElementsCollection)
     {
@@ -441,7 +442,7 @@ public sealed class DataManager
           string str1 = $"ID_INTERNAL_CLASS_FEATURE_ASI_{num}_{name.ToUpperInvariant()}";
           if (!ElementsHelper.ValidateID(str1))
             str1 = ElementsHelper.SanitizeID(str1);
-          elementBase3.ElementHeader = new ElementHeader($"Ability Score Improvement ({num})", "Class Feature", "Playerâ€™s Handbook", str1);
+          elementBase3.ElementHeader = new ElementHeader($"Ability Score Improvement ({num})", "Class Feature", "Player’s Handbook", str1);
           elementBase3.GetSelectRules().First<SelectRule>().Attributes.Name = $"Ability Score Increase ({name.ToUpperInvariant()} {num})";
           elementBase3.GetSelectRules().First<SelectRule>().Attributes.RequiredLevel = num;
           elementBase3.GetSelectRules().First<SelectRule>().RenewIdentifier();
@@ -456,7 +457,7 @@ public sealed class DataManager
           string str2 = $"ID_INTERNAL_CLASS_FEATURE_FEAT_{num}_{name.ToUpperInvariant()}";
           if (!ElementsHelper.ValidateID(str2))
             str2 = ElementsHelper.SanitizeID(str2);
-          elementBase4.ElementHeader = new ElementHeader($"Feat ({num})", "Class Feature", "Playerâ€™s Handbook", str2);
+          elementBase4.ElementHeader = new ElementHeader($"Feat ({num})", "Class Feature", "Player’s Handbook", str2);
           elementBase4.GetSelectRules().First<SelectRule>().Attributes.Name = $"Feat ({name.ToUpperInvariant()} {num})";
           elementBase4.GetSelectRules().First<SelectRule>().Attributes.RequiredLevel = num;
           elementBase4.GetSelectRules().First<SelectRule>().RenewIdentifier();
@@ -846,7 +847,7 @@ public sealed class DataManager
   private List<FileInfo> GetCustomFiles()
   {
     List<FileInfo> customFiles1 = this.GetCustomFiles(this.UserDocumentsCustomElementsDirectory);
-    string additionalCustomDirectory = Settings.Default.AdditionalCustomDirectory;
+    string additionalCustomDirectory = ApplicationManager.Current.Settings.Settings.AdditionalCustomDirectory;
     if (!string.IsNullOrWhiteSpace(additionalCustomDirectory) && Directory.Exists(additionalCustomDirectory))
     {
       List<FileInfo> customFiles2 = this.GetCustomFiles(additionalCustomDirectory);

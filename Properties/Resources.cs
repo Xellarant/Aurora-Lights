@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Properties.Resources
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -12,6 +12,7 @@ using System.Resources;
 using System.Runtime.CompilerServices;
 
 #nullable disable
+using Builder.Presentation.Properties;
 namespace Builder.Presentation.Properties;
 
 [GeneratedCode("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]

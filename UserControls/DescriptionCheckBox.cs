@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.UserControls.DescriptionCheckBox
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -15,14 +15,11 @@ using System.Windows.Markup;
 #nullable disable
 namespace Builder.Presentation.UserControls;
 
-public class DescriptionCheckBox : UserControl, IComponentConnector
+public partial class DescriptionCheckBox : UserControl
 {
   public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(nameof (Header), typeof (string), typeof (DescriptionCheckBox), new PropertyMetadata((object) nameof (Header)));
   public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(nameof (Description), typeof (string), typeof (DescriptionCheckBox), new PropertyMetadata((object) null));
   public static readonly DependencyProperty IsCheckedProperty = DependencyProperty.Register(nameof (IsChecked), typeof (bool), typeof (DescriptionCheckBox), new PropertyMetadata((object) false));
-  internal DescriptionCheckBox Main;
-  private bool _contentLoaded;
-
   public DescriptionCheckBox() => this.InitializeComponent();
 
   public string Header
@@ -43,24 +40,7 @@ public class DescriptionCheckBox : UserControl, IComponentConnector
     set => this.SetValue(DescriptionCheckBox.IsCheckedProperty, (object) value);
   }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/usercontrols/common/descriptioncheckbox.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    if (connectionId == 1)
-      this.Main = (DescriptionCheckBox) target;
-    else
-      this._contentLoaded = true;
-  }
+
+
 }

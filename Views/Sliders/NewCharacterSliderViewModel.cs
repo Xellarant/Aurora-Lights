@@ -220,7 +220,7 @@ public sealed class NewCharacterSliderViewModel : ViewModelBase
     characterSliderViewModel.EventAggregator.Send<CharacterLoadingSliderStatusUpdateEvent>(new CharacterLoadingSliderStatusUpdateEvent("Leveling Up"));
     while (CharacterManager.Current.Character.Level < characterSliderViewModel.Level)
       CharacterManager.Current.LevelUpMain();
-    characterSliderViewModel.EventAggregator.Send<CharacterLoadingSliderStatusUpdateEvent>(new CharacterLoadingSliderStatusUpdateEvent(WebUtility.HtmlDecode("&#xE10B;")));
+    characterSliderViewModel.EventAggregator.Send<CharacterLoadingSliderStatusUpdateEvent>(new CharacterLoadingSliderStatusUpdateEvent(WebUtility.HtmlDecode("E10B")));
     AbilitiesGenerationOption generationOption = (AbilitiesGenerationOption) characterSliderViewModel.SelectedAbilityGenerateOption.Value;
     switch (generationOption)
     {

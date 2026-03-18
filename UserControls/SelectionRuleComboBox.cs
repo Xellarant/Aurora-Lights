@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.UserControls.SelectionRuleComboBox
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -8,7 +8,7 @@ using Builder.Core.Logging;
 using Builder.Data.Rules;
 using Builder.Presentation.Extensions;
 using Builder.Presentation.Interfaces;
-using Builder.Presentation.Properties;
+
 using Builder.Presentation.ViewModels;
 using System;
 using System.CodeDom.Compiler;
@@ -23,12 +23,9 @@ using System.Windows.Markup;
 #nullable disable
 namespace Builder.Presentation.UserControls;
 
-public class SelectionRuleComboBox : UserControl, ISelectionRuleExpander, IComponentConnector
+public partial class SelectionRuleComboBox : UserControl, ISelectionRuleExpander
 {
   private bool _toggleHeaders;
-  internal TextBlock VisualFocusQue;
-  private bool _contentLoaded;
-
   public void FocusExpander()
   {
     this.VisualFocusQue.BringIntoView();
@@ -68,23 +65,23 @@ public class SelectionRuleComboBox : UserControl, ISelectionRuleExpander, ICompo
   {
     SelectionRuleComboBox control = this;
     // ISSUE: reference to a compiler-generated method
-    control.<>n__0(e);
+    base.OnInitialized(e);
     // ISSUE: explicit non-virtual call
-    control.DataContext = (object) new SelectionRuleComboBoxViewModel(__nonvirtual (control.SelectionRule))
+    control.DataContext = (object) new SelectionRuleComboBoxViewModel(control.SelectionRule)
     {
       RegisterOnSelection = true
     };
     await control.GetViewModel().InitializeAsync();
     try
     {
-      control._toggleHeaders = !Settings.Default.DisplaySelectionExpanderColumnHeaders;
+      control._toggleHeaders = !ApplicationManager.Current.Settings.Settings.DisplaySelectionExpanderColumnHeaders;
     }
     catch (Exception ex)
     {
       Logger.Exception(ex, nameof (OnInitialized));
     }
     // ISSUE: explicit non-virtual call
-    string type = __nonvirtual (control.SelectionRule).Attributes.Type;
+    string type = control.SelectionRule.Attributes.Type;
     switch (type)
     {
       case null:
@@ -158,29 +155,5 @@ public class SelectionRuleComboBox : UserControl, ISelectionRuleExpander, ICompo
   {
   }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/usercontrols/test/selectionrulecombobox.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    if (connectionId != 1)
-    {
-      if (connectionId == 2)
-        ((Selector) target).SelectionChanged += new SelectionChangedEventHandler(this.Selector_OnSelectionChanged);
-      else
-        this._contentLoaded = true;
-    }
-    else
-      this.VisualFocusQue = (TextBlock) target;
-  }
 }

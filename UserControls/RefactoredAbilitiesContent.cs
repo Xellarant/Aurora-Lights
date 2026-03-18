@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.UserControls.RefactoredAbilitiesContent
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -8,7 +8,7 @@ using Builder.Core.Logging;
 using Builder.Presentation.Events.Application;
 using Builder.Presentation.Events.Shell;
 using Builder.Presentation.Models;
-using Builder.Presentation.Properties;
+
 using Builder.Presentation.Views;
 using System;
 using System.CodeDom.Compiler;
@@ -23,13 +23,10 @@ using System.Windows.Markup;
 #nullable disable
 namespace Builder.Presentation.UserControls;
 
-public class RefactoredAbilitiesContent : UserControl, IComponentConnector
+public partial class RefactoredAbilitiesContent : UserControl
 {
   private bool _isDragging;
-  private bool _contentLoaded;
-
-  public RefactoredAbilitiesContent() => this.InitializeComponent();
-
+    public RefactoredAbilitiesContent() {}
   private void UIElement_OnMouseMove(object sender, MouseEventArgs e)
   {
     if (e.LeftButton == MouseButtonState.Pressed)
@@ -94,35 +91,12 @@ public class RefactoredAbilitiesContent : UserControl, IComponentConnector
 
   private void SwitchGenerateionButtonBase_OnClick(object sender, RoutedEventArgs e)
   {
-    Settings.Default.AbilitiesGenerationOption = 3;
+    ApplicationManager.Current.Settings.Settings.AbilitiesGenerationOption = 3;
     ApplicationManager.Current.EventAggregator.Send<SettingsChangedEvent>(new SettingsChangedEvent());
   }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    System.Windows.Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/usercontrols/content/refactoredabilitiescontent.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  internal Delegate _CreateDelegate(Type delegateType, string handler)
-  {
-    return Delegate.CreateDelegate(delegateType, (object) this, handler);
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    if (connectionId == 1)
-      ((ButtonBase) target).Click += new RoutedEventHandler(this.SwitchGenerateionButtonBase_OnClick);
-    else
-      this._contentLoaded = true;
-  }
+
+
 }

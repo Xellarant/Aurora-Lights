@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.UserControls.ExperienceProgressBar
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -16,7 +16,7 @@ using System.Windows.Markup;
 #nullable disable
 namespace Builder.Presentation.UserControls;
 
-public partial class ExperienceProgressBar : UserControl, IComponentConnector
+public partial class ExperienceProgressBar : UserControl
 {
   public static readonly DependencyProperty StartingExperienceProperty = DependencyProperty.Register(nameof (StartingExperience), typeof (int), typeof (ExperienceProgressBar), new PropertyMetadata((object) 0));
   public static readonly DependencyProperty CurrentExperienceProperty = DependencyProperty.Register(nameof (CurrentExperience), typeof (int), typeof (ExperienceProgressBar), new PropertyMetadata((object) 0));
@@ -24,9 +24,6 @@ public partial class ExperienceProgressBar : UserControl, IComponentConnector
   public static readonly DependencyProperty ProgressProperty = DependencyProperty.Register(nameof (Progress), typeof (int), typeof (ExperienceProgressBar), new PropertyMetadata((object) 0));
   public static readonly DependencyProperty TargetVisibilityProperty = DependencyProperty.Register(nameof (TargetVisibility), typeof (Visibility), typeof (ExperienceProgressBar), new PropertyMetadata((object) Visibility.Visible));
   public static readonly DependencyProperty CurrentVisibilityProperty = DependencyProperty.Register(nameof (CurrentVisibility), typeof (Visibility), typeof (ExperienceProgressBar), new PropertyMetadata((object) Visibility.Visible));
-  internal ExperienceProgressBar Root;
-  private bool _contentLoaded;
-
   public ExperienceProgressBar() => this.InitializeComponent();
 
   public int StartingExperience
@@ -82,24 +79,7 @@ public partial class ExperienceProgressBar : UserControl, IComponentConnector
     set => this.SetValue(ExperienceProgressBar.CurrentVisibilityProperty, (object) value);
   }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/usercontrols/experienceprogressbar.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    if (connectionId == 1)
-      this.Root = (ExperienceProgressBar) target;
-    else
-      this._contentLoaded = true;
-  }
+
+
 }

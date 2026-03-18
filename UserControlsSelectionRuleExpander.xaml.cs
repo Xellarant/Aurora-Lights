@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.UserControls.SelectionRuleExpander
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -12,7 +12,7 @@ using Builder.Presentation.Controls;
 using Builder.Presentation.Events.Application;
 using Builder.Presentation.Extensions;
 using Builder.Presentation.Interfaces;
-using Builder.Presentation.Properties;
+
 using Builder.Presentation.ViewModels;
 using System;
 using System.CodeDom.Compiler;
@@ -30,19 +30,9 @@ namespace Builder.Presentation.UserControls;
 public partial class SelectionRuleExpander : 
   UserControl,
   ISelectionRuleExpander,
-  ISubscriber<SettingsChangedEvent>,
-  IComponentConnector
+  ISubscriber<SettingsChangedEvent>
 {
   private bool _toggleHeaders;
-  internal Border VisualFocusQue;
-  internal AuroraExpander Expander;
-  internal DataGrid SelectionElementsDataGrid;
-  internal DataGridTextColumn NameColumn;
-  internal DataGridTextColumn ShortDescriptionColumn;
-  internal DataGridTextColumn PrerequisitesColumn;
-  internal DataGridTextColumn SourceColumn;
-  private bool _contentLoaded;
-
   public SelectionRuleExpanderViewModel ViewModel
   {
     get => this.GetViewModel<SelectionRuleExpanderViewModel>();
@@ -89,18 +79,18 @@ public partial class SelectionRuleExpander :
   {
     SelectionRuleExpander control = this;
     // ISSUE: reference to a compiler-generated method
-    control.<>n__0(e);
+    base.OnInitialized(e);
     // ISSUE: explicit non-virtual call
-    control.DataContext = (object) new SelectionRuleExpanderViewModel(__nonvirtual (control.SelectionRule));
+    control.DataContext = (object) new SelectionRuleExpanderViewModel(control.SelectionRule);
     // ISSUE: explicit non-virtual call
-    if (__nonvirtual (control.SelectionRule).Attributes.Type == "Spell")
+    if (control.SelectionRule.Attributes.Type == "Spell")
       control.Expander.IsExpanded = false;
     try
     {
       await control.GetViewModel().InitializeAsync();
-      control._toggleHeaders = !Settings.Default.DisplaySelectionExpanderColumnHeaders;
-      control.DisplayColumnHeaders(Settings.Default.DisplaySelectionExpanderColumnHeaders);
-      switch (Settings.Default.SelectionExpanderGridRowSize)
+      control._toggleHeaders = !ApplicationManager.Current.Settings.Settings.DisplaySelectionExpanderColumnHeaders;
+      control.DisplayColumnHeaders(ApplicationManager.Current.Settings.Settings.DisplaySelectionExpanderColumnHeaders);
+      switch (ApplicationManager.Current.Settings.Settings.SelectionExpanderGridRowSize)
       {
         case 1:
           control.SelectionElementsDataGrid.MinRowHeight = 17.0;
@@ -113,8 +103,8 @@ public partial class SelectionRuleExpander :
           break;
         default:
           control.SelectionElementsDataGrid.MinRowHeight = 21.0;
-          Settings.Default.SelectionExpanderGridRowSize = 2;
-          Settings.Default.Save();
+          ApplicationManager.Current.Settings.Settings.SelectionExpanderGridRowSize = 2;
+          ApplicationManager.Current.Settings.Settings.Save();
           break;
       }
     }
@@ -126,7 +116,7 @@ public partial class SelectionRuleExpander :
     bool display2 = false;
     bool display3 = true;
     // ISSUE: explicit non-virtual call
-    switch (__nonvirtual (control.SelectionRule).Attributes.Type)
+    switch (control.SelectionRule.Attributes.Type)
     {
       case "Alignment":
         display3 = false;
@@ -159,10 +149,10 @@ public partial class SelectionRuleExpander :
     control.Expander.ToolTip = (object) $"{control} -";
     AuroraExpander expander1 = control.Expander;
     // ISSUE: explicit non-virtual call
-    expander1.ToolTip = (object) $"{expander1.ToolTip?.ToString()} [supports:{__nonvirtual (control.SelectionRule).Attributes.Supports}]";
+    expander1.ToolTip = (object) $"{expander1.ToolTip?.ToString()} [supports:{control.SelectionRule.Attributes.Supports}]";
     AuroraExpander expander2 = control.Expander;
     // ISSUE: explicit non-virtual call
-    expander2.ToolTip = (object) $"{expander2.ToolTip?.ToString()} [requirements:{__nonvirtual (control.SelectionRule).Attributes.Requirements}]";
+    expander2.ToolTip = (object) $"{expander2.ToolTip?.ToString()} [requirements:{control.SelectionRule.Attributes.Requirements}]";
   }
 
   private void DisplayColumnHeaders(bool display = true)
@@ -235,8 +225,8 @@ public partial class SelectionRuleExpander :
         break;
       default:
         this.SelectionElementsDataGrid.MinRowHeight = 21.0;
-        Settings.Default.SelectionExpanderGridRowSize = 2;
-        Settings.Default.Save();
+        ApplicationManager.Current.Settings.Settings.SelectionExpanderGridRowSize = 2;
+        ApplicationManager.Current.Settings.Settings.Save();
         break;
     }
   }
@@ -262,59 +252,6 @@ public partial class SelectionRuleExpander :
       this.Visibility = Visibility.Visible;
   }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    System.Windows.Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/usercontrols/selectionruleexpander.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  internal Delegate _CreateDelegate(Type delegateType, string handler)
-  {
-    return Delegate.CreateDelegate(delegateType, (object) this, handler);
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    switch (connectionId)
-    {
-      case 1:
-        this.VisualFocusQue = (Border) target;
-        break;
-      case 2:
-        this.Expander = (AuroraExpander) target;
-        break;
-      case 3:
-        this.SelectionElementsDataGrid = (DataGrid) target;
-        this.SelectionElementsDataGrid.KeyDown += new KeyEventHandler(this.ElementsGridKeyDown);
-        this.SelectionElementsDataGrid.MouseDoubleClick += new MouseButtonEventHandler(this.ElementsGridMouseDoubleClick);
-        break;
-      case 4:
-        this.NameColumn = (DataGridTextColumn) target;
-        break;
-      case 5:
-        this.ShortDescriptionColumn = (DataGridTextColumn) target;
-        break;
-      case 6:
-        this.PrerequisitesColumn = (DataGridTextColumn) target;
-        break;
-      case 7:
-        this.SourceColumn = (DataGridTextColumn) target;
-        break;
-      case 8:
-        ((ButtonBase) target).Click += new RoutedEventHandler(this.UnregisterElement);
-        break;
-      default:
-        this._contentLoaded = true;
-        break;
-    }
-  }
 }

@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.UserControls.CharacterSheetPreviewPanel
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -27,12 +27,8 @@ public partial class CharacterSheetPreviewPanel :
   UserControl,
   ISubscriber<CharacterSheetPreviewEvent>,
   ISubscriber<CharacterSheetSavedEvent>,
-  ISubscriber<CharacterSheetToggleViewEvent>,
-  IComponentConnector
+  ISubscriber<CharacterSheetToggleViewEvent>
 {
-  internal MoonPdfPanel Viewer;
-  private bool _contentLoaded;
-
   public CharacterSheetPreviewPanel()
   {
     this.InitializeComponent();
@@ -81,24 +77,7 @@ public partial class CharacterSheetPreviewPanel :
 
   public void OnHandleEvent(CharacterSheetToggleViewEvent args) => this.Viewer.TogglePageDisplay();
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/usercontrols/charactersheetpreviewpanel.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    if (connectionId == 1)
-      this.Viewer = (MoonPdfPanel) target;
-    else
-      this._contentLoaded = true;
-  }
+
+
 }

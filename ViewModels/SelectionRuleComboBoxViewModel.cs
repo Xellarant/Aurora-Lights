@@ -205,19 +205,13 @@ public class SelectionRuleComboBoxViewModel :
 
   private async Task<ElementBaseCollection> GetSupported(SelectRule rule)
   {
-    // ISSUE: object of a compiler-generated type is created
-    // ISSUE: variable of a compiler-generated type
-    SelectionRuleComboBoxViewModel.<>c__DisplayClass52_0 cDisplayClass520 = new SelectionRuleComboBoxViewModel.<>c__DisplayClass52_0();
-    // ISSUE: reference to a compiler-generated field
-    cDisplayClass520.rule = rule;
-    // ISSUE: reference to a compiler-generated field
-    cDisplayClass520.collection = this._baseCollection;
-    // ISSUE: reference to a compiler-generated method
-    await Task.Run(new Action(cDisplayClass520.<GetSupported>b__0));
-    // ISSUE: reference to a compiler-generated field
-    ElementBaseCollection collection = cDisplayClass520.collection;
-    cDisplayClass520 = (SelectionRuleComboBoxViewModel.<>c__DisplayClass52_0) null;
-    return collection;
+    await Task.Run(() =>
+    {
+      this._baseCollection = new ElementBaseCollection(
+      DataManager.Current.ElementsCollection.Where<ElementBase>(
+        element => element.Type.Equals(rule.Attributes.Type)));
+    });
+    return this._baseCollection;
   }
 
   private void SetSupportedElements(bool initial, SelectRule rule)

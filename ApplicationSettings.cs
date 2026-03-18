@@ -36,7 +36,7 @@ public class ApplicationSettings : ObservableObject, ISubscriber<SettingsChanged
     this._eventAggregator.Subscribe((object) this);
   }
 
-  AppSettingsStore Settings { get; private set; }
+  internal AppSettingsStore Settings { get; private set; }
 
   public bool IsSaveSettingsOnChangeEnabled
   {

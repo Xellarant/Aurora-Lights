@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Services.Calculator.StatisticsHandler2
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -12,7 +12,7 @@ using Builder.Data.Rules.Parsers;
 using Builder.Data.Strings;
 using Builder.Presentation.Models;
 using Builder.Presentation.Models.Collections;
-using Builder.Presentation.Properties;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -251,7 +251,7 @@ public class StatisticsHandler2
       abilities2.Wisdom.OverrideScore = groups1.GetValue("companion:" + strings.WisdomSet);
       abilities2.Charisma.OverrideScore = groups1.GetValue("companion:" + strings.CharismaSet);
     }
-    if (Settings.Default.UseDefaultAbilityScoreMaximum)
+    if (ApplicationManager.Current.Settings.Settings.UseDefaultAbilityScoreMaximum)
     {
       abilities1.Strength.MaximumScore = groups1.GetValue(strings.StrengthMaximum);
       abilities1.Dexterity.MaximumScore = groups1.GetValue(strings.DexterityMaximum);

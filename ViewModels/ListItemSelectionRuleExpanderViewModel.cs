@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.ViewModels.ListItemSelectionRuleExpanderViewModel
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -128,8 +128,7 @@ public sealed class ListItemSelectionRuleExpanderViewModel :
       string title = expanderViewModel.ToString();
       MessageDialogService.ShowException(ex, title);
     }
-    // ISSUE: reference to a compiler-generated method
-    await expanderViewModel.<>n__0(args);
+    await base.InitializeAsync(args);
   }
 
   public string GetKey() => $"{this.SelectionRule.Attributes.Name}:{this._number}";

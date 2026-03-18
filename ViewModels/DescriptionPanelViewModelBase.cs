@@ -51,7 +51,7 @@ public class DescriptionPanelViewModelBase :
   {
     this.SupportedTypes = new List<string>();
     this.IncludeSource = true;
-    this.IsDarkStyle = this.Settings.Settings.Theme.Contains("Dark");
+    this.IsDarkStyle = ApplicationManager.Current.Settings.Settings.Theme.Contains("Dark");
     this._styleSheet = DataManager.Current.GetResourceWebDocument(this._isDarkStyle ? "stylesheet-dark.css" : "stylesheet.css");
     if (this.IsInDesignMode)
     {
@@ -720,7 +720,7 @@ public class DescriptionPanelViewModelBase :
 
   private void UpdateTheme()
   {
-    this.IsDarkStyle = Builder.Presentation.Properties.Settings.Default.Theme.Contains("Dark");
+    this.IsDarkStyle = ApplicationManager.Current.Settings.Settings.Theme.Contains("Dark");
     this.OnPropertyChanged("Description");
     this.Description += Environment.NewLine;
   }

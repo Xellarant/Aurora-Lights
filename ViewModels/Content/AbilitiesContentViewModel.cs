@@ -216,7 +216,7 @@ public class AbilitiesContentViewModel : ViewModelBase, ISubscriber<SettingsChan
   {
     try
     {
-      this._option = (AbilitiesGenerationOption) Builder.Presentation.Properties.Settings.Default.AbilitiesGenerationOption;
+      this._option = (AbilitiesGenerationOption) ApplicationManager.Current.Settings.Settings.AbilitiesGenerationOption;
     }
     catch (Exception ex)
     {

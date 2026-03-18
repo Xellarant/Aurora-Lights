@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.UserControls.Spellcasting.SpellcastingCollectionView
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -15,44 +15,11 @@ using System.Windows.Markup;
 #nullable disable
 namespace Builder.Presentation.UserControls.Spellcasting;
 
-public partial class SpellcastingCollectionView : UserControl, IComponentConnector
+public partial class SpellcastingCollectionView : UserControl
 {
-  internal DataGridTextColumn ItemNameColumn;
-  internal DataGridTextColumn ItemWeightColumn;
-  internal DataGridTextColumn ItemSourceColumn;
-  private bool _contentLoaded;
-
   public SpellcastingCollectionView() => this.InitializeComponent();
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/usercontrols/spellcasting/spellcastingcollectionview.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    switch (connectionId)
-    {
-      case 1:
-        this.ItemNameColumn = (DataGridTextColumn) target;
-        break;
-      case 2:
-        this.ItemWeightColumn = (DataGridTextColumn) target;
-        break;
-      case 3:
-        this.ItemSourceColumn = (DataGridTextColumn) target;
-        break;
-      default:
-        this._contentLoaded = true;
-        break;
-    }
-  }
+
+
 }

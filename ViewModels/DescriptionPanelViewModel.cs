@@ -82,7 +82,7 @@ public class DescriptionPanelViewModel :
         Logger.Warning($"the description of '{args.SelectedElement.Name}' contains <br> tags, please use <br/> since it's loaded into a xmldocument");
         args.SelectedElement.Description = args.SelectedElement.Description.Replace("<br>", "<br/>");
       }
-      this.InitializeStyleSheet(Builder.Presentation.Properties.Settings.Default.Accent);
+      this.InitializeStyleSheet(ApplicationManager.Current.Settings.Settings.Accent);
       StringBuilder documentBuilder = new StringBuilder($"<h2>{args.SelectedElement.Name.ToUpper()}</h2>");
       switch (args.SelectedElement.Type)
       {
@@ -115,7 +115,7 @@ public class DescriptionPanelViewModel :
       if (string.IsNullOrWhiteSpace(args.SelectedElement.SourceUrl))
       {
         args.SelectedElement.SourceUrl = DescriptionPanelViewModel.GetSourceUrl(args.SelectedElement);
-        if (string.IsNullOrWhiteSpace(args.SelectedElement.SourceUrl) && Builder.Presentation.Properties.Settings.Default.SearchMissingSourceOnline)
+        if (string.IsNullOrWhiteSpace(args.SelectedElement.SourceUrl) && ApplicationManager.Current.Settings.Settings.SearchMissingSourceOnline)
           args.SelectedElement.SourceUrl = $"https://www.google.com/search?q={WebUtility.UrlEncode(args.SelectedElement.Source)}+{WebUtility.UrlEncode(args.SelectedElement.Name)}";
       }
       StringBuilder stringBuilder = documentBuilder;
@@ -165,7 +165,7 @@ public class DescriptionPanelViewModel :
 
   public virtual void OnHandleEvent(ResourceDocumentDisplayRequestEvent args)
   {
-    this.InitializeStyleSheet(Builder.Presentation.Properties.Settings.Default.Accent);
+    this.InitializeStyleSheet(ApplicationManager.Current.Settings.Settings.Accent);
     string resourceWebDocument = DataManager.Current.GetResourceWebDocument(args.ResourceFilename);
     if (!resourceWebDocument.Contains("<body>"))
       Logger.Warning($"the contents of '{args.ResourceFilename}' needs to be in a <body> tag");

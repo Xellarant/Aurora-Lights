@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "Vclgit5U9JM=",
+  "dgSpecHash": "bCoIQKWZENQ=",
   "success": true,
   "projectFilePath": "C:\\Users\\Ralla\\source\\repos\\Aurora-Lights\\Aurora Lights.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Ralla\\.nuget\\packages\\microsoft.win32.systemevents\\8.0.0\\microsoft.win32.systemevents.8.0.0.nupkg.sha512",
+    "C:\\Users\\Ralla\\.nuget\\packages\\system.drawing.common\\8.0.0\\system.drawing.common.8.0.0.nupkg.sha512",
+    "C:\\Users\\Ralla\\.nuget\\packages\\system.servicemodel.syndication\\8.0.0\\system.servicemodel.syndication.8.0.0.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Models.CharacterSheet.CharacterSheetEx
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -35,6 +35,7 @@ using System.Linq;
 using System.Text;
 
 #nullable disable
+using Builder.Presentation.Properties;
 namespace Builder.Presentation.Models.CharacterSheet;
 
 public class CharacterSheetEx
@@ -3670,7 +3671,6 @@ label_47:
     int num1 = 0;
     foreach (CharacterSheetSpellcastingPageExportContent.SpellExportContent spell in export.Cantrips.Spells)
     {
-      $"_1.{num1}:{page}";
       stamper.AcroFields.SetField($"spell_prepared_1.{num1}:{page}", spell.IsPrepared || spell.AlwaysPrepared ? "Yes" : "No");
       stamper.AcroFields.SetField($"spell_name_1.{num1}:{page}", spell.Name);
       stamper.AcroFields.SetField($"spell_description_1.{num1}:{page}", spell.Description);

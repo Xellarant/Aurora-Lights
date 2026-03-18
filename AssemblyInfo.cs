@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Resources;
 
-[assembly: Extension]
 [assembly: AssemblyTitle("Aurora")]
 [assembly: AssemblyDescription("A character builder for dungeons and dragons 5th edition")]
 [assembly: AssemblyConfiguration("")]

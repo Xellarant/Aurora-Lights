@@ -1,3 +1,4 @@
+using System.IO;
 // Cross-platform replacement for Builder.Presentation.Properties.Settings
 // (System.Configuration / Properties.Settings.Default is .NET Framework only)
 //
@@ -77,6 +78,48 @@ public sealed class AppSettingsStore
     /// </summary>
     public int SelectionExpanderGridRowSize { get; set; } = 2;
 
+    public bool StartupCheckForUpdates { get; set; } = false;
+    public bool StartupLoadCustomFiles { get; set; } = false;
+    public string DocumentsRootDirectory { get; set; } = string.Empty;
+    public string AdditionalCustomDirectory { get; set; } = string.Empty;
+    public int CharactersCollectionSize { get; set; } = 150;
+    public bool CharacterPanelAbilityScoresExpanded { get; set; } = true;
+    public bool CharacterPanelStatisticsExpanded { get; set; } = false;
+    public bool CharacterPanelSavingThrowsExpanded { get; set; } = false;
+    public bool CharacterPanelSkillsExpanded { get; set; } = false;
+    public bool CharacterPanelQuickActionsExpanded { get; set; } = true;
+    public bool QuickSearchBarEnabled { get; set; } = false;
+    public bool DisplayRemoveLevelConfirmation { get; set; } = true;
+    public bool RequestAddAttackWhenEquippingWeapon { get; set; } = false;
+    public bool UseDefaultAbilityScoreMaximum { get; set; } = true;
+    public string DefaultFontSize { get; set; } = "8";
+    public bool SheetIncludeAttackCards { get; set; } = false;
+    public bool SheetIncludeFeatureCards { get; set; } = false;
+    public bool SheetIncludeFormatting { get; set; } = true;
+    public bool SheetFormattingActionSuffixBold { get; set; } = false;
+    public bool UseLegacyDetailsPage { get; set; } = false;
+    public bool UseLegactBackgroundPage { get; set; } = false;
+    public bool UseLegacySpellcastingPage { get; set; } = false;
+    public bool SheetStartItemCardsOnNewPage { get; set; } = false;
+    public bool SheetStartAttackCardsOnNewPage { get; set; } = false;
+    public bool SheetStartFeatureCardsOnNewPage { get; set; } = false;
+    public bool SheetDescriptionAbbreviateUsage { get; set; } = false;
+    public bool SheetIncludeNonPreparedSpells { get; set; } = false;
+    public bool SearchMissingSourceOnline { get; set; } = false;
+    public bool DisplaySelectionExpanderColumnHeaders { get; set; } = true;
+    public bool DisplaySelectionExpanderColumnHeadersComboBox { get; set; } = true;
+    public double ShellWindowTop { get; set; } = 0;
+    public double ShellWindowLeft { get; set; } = 0;
+    public double ShellWindowWidth { get; set; } = 1024;
+    public double ShellWindowHeight { get; set; } = 768;
+    public bool ShellWindowState { get; set; } = false;
+    public bool Bundle { get; set; } = false;
+    public bool CharacterSheetOpenOnSave { get; set; } = false;
+    public bool ApplyDefaultSourceRestrictionsOnNewCharacter { get; set; } = false;
+    public bool SheetStartSpellCardsOnNewPage { get; set; } = false;
+    public string DefaultSourceRestrictions { get; set; } = "";
+
+
     // ----------------------------------------------------------------
     // Load / Save / Reset
     // ----------------------------------------------------------------
@@ -128,48 +171,48 @@ public sealed class AppSettingsStore
 
     /// <summary>
     /// Reloads settings from disk, discarding any in-memory changes.
-    /// Matches the behaviour of Properties.Settings.Default.Reload().
+    /// Matches the behaviour of Properties.ApplicationManager.Current.Settings.Settings.Reload().
     /// </summary>
     public void Reload()
     {
         AppSettingsStore fresh = Load();
 
-        Accent                                   = fresh.Accent;
-        Theme                                    = fresh.Theme;
-        PlayerName                               = fresh.PlayerName;
-        AbilitiesGenerationOption                = fresh.AbilitiesGenerationOption;
-        AllowEditableSheet                       = fresh.AllowEditableSheet;
-        IncludeItemcards                         = fresh.IncludeItemcards;
-        IncludeSpellcards                        = fresh.IncludeSpellcards;
-        CharacterSheetAbilitiesFlipped           = fresh.CharacterSheetAbilitiesFlipped;
+        Accent = fresh.Accent;
+        Theme = fresh.Theme;
+        PlayerName = fresh.PlayerName;
+        AbilitiesGenerationOption = fresh.AbilitiesGenerationOption;
+        AllowEditableSheet = fresh.AllowEditableSheet;
+        IncludeItemcards = fresh.IncludeItemcards;
+        IncludeSpellcards = fresh.IncludeSpellcards;
+        CharacterSheetAbilitiesFlipped = fresh.CharacterSheetAbilitiesFlipped;
         GenerateSheetOnCharacterChangedRegistered = fresh.GenerateSheetOnCharacterChangedRegistered;
-        AutoNavigateNextSelectionWhenAvailable   = fresh.AutoNavigateNextSelectionWhenAvailable;
-        StartupCheckForContentUpdated            = fresh.StartupCheckForContentUpdated;
-        ConfigurationUpgradeRequired             = fresh.ConfigurationUpgradeRequired;
-        SelectionExpanderGridRowSize             = fresh.SelectionExpanderGridRowSize;
+        AutoNavigateNextSelectionWhenAvailable = fresh.AutoNavigateNextSelectionWhenAvailable;
+        StartupCheckForContentUpdated = fresh.StartupCheckForContentUpdated;
+        ConfigurationUpgradeRequired = fresh.ConfigurationUpgradeRequired;
+        SelectionExpanderGridRowSize = fresh.SelectionExpanderGridRowSize;
     }
 
     /// <summary>
     /// Resets all settings to their defaults and saves immediately.
-    /// Matches the behaviour of Properties.Settings.Default.Reset().
+    /// Matches the behaviour of Properties.ApplicationManager.Current.Settings.Settings.Reset().
     /// </summary>
     public void Reset()
     {
         AppSettingsStore defaults = new AppSettingsStore();
 
-        Accent                                   = defaults.Accent;
-        Theme                                    = defaults.Theme;
-        PlayerName                               = defaults.PlayerName;
-        AbilitiesGenerationOption                = defaults.AbilitiesGenerationOption;
-        AllowEditableSheet                       = defaults.AllowEditableSheet;
-        IncludeItemcards                         = defaults.IncludeItemcards;
-        IncludeSpellcards                        = defaults.IncludeSpellcards;
-        CharacterSheetAbilitiesFlipped           = defaults.CharacterSheetAbilitiesFlipped;
+        Accent = defaults.Accent;
+        Theme = defaults.Theme;
+        PlayerName = defaults.PlayerName;
+        AbilitiesGenerationOption = defaults.AbilitiesGenerationOption;
+        AllowEditableSheet = defaults.AllowEditableSheet;
+        IncludeItemcards = defaults.IncludeItemcards;
+        IncludeSpellcards = defaults.IncludeSpellcards;
+        CharacterSheetAbilitiesFlipped = defaults.CharacterSheetAbilitiesFlipped;
         GenerateSheetOnCharacterChangedRegistered = defaults.GenerateSheetOnCharacterChangedRegistered;
-        AutoNavigateNextSelectionWhenAvailable   = defaults.AutoNavigateNextSelectionWhenAvailable;
-        StartupCheckForContentUpdated            = defaults.StartupCheckForContentUpdated;
-        ConfigurationUpgradeRequired             = defaults.ConfigurationUpgradeRequired;
-        SelectionExpanderGridRowSize             = defaults.SelectionExpanderGridRowSize;
+        AutoNavigateNextSelectionWhenAvailable = defaults.AutoNavigateNextSelectionWhenAvailable;
+        StartupCheckForContentUpdated = defaults.StartupCheckForContentUpdated;
+        ConfigurationUpgradeRequired = defaults.ConfigurationUpgradeRequired;
+        SelectionExpanderGridRowSize = defaults.SelectionExpanderGridRowSize;
 
         Save();
     }

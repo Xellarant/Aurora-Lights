@@ -1,0 +1,328 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Aurora Builder/1.0.0": {
+        "dependencies": {
+          "System.Drawing.Common": "8.0.0",
+          "System.ServiceModel.Syndication": "8.0.0",
+          "Aurora.Documents": "1.0.94.7407",
+          "Aurora.Presentation": "1.0.82.7407",
+          "Builder.Core": "1.0.83.7407",
+          "Builder.Data": "1.0.110.7407",
+          "ControlzEx": "3.0.2.4",
+          "DynamicExpresso.Core": "1.3.1.0",
+          "FirstFloor.ModernUI": "1.0.9.0",
+          "HtmlRenderer": "1.5.1.0",
+          "HtmlRenderer.WPF": "1.5.1.0",
+          "itextsharp": "5.5.13.0",
+          "MahApps.Metro": "1.6.1.4",
+          "MahApps.Metro.IconPacks": "2.3.0.4",
+          "Microsoft.AppCenter.Analytics": "0.0.0.0",
+          "Microsoft.AppCenter.Crashes": "0.0.0.0",
+          "Microsoft.AppCenter": "0.0.0.0",
+          "Microsoft.Xaml.Behaviors": "1.1.0.0",
+          "MoonPdfLib": "0.3.0.0",
+          "System.Speech": "4.0.0.0",
+          "System.Windows.Interactivity": "4.5.0.0"
+        },
+        "runtime": {
+          "Aurora Builder.dll": {}
+        }
+      },
+      "Microsoft.Win32.SystemEvents/8.0.0": {},
+      "System.Drawing.Common/8.0.0": {
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "8.0.0"
+        }
+      },
+      "System.ServiceModel.Syndication/8.0.0": {
+        "runtime": {
+          "lib/net8.0/System.ServiceModel.Syndication.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.23.53103"
+          }
+        }
+      },
+      "Aurora.Documents/1.0.94.7407": {
+        "runtime": {
+          "Aurora.Documents.dll": {
+            "assemblyVersion": "1.0.94.7407",
+            "fileVersion": "1.0.94.7407"
+          }
+        }
+      },
+      "Aurora.Presentation/1.0.82.7407": {
+        "runtime": {
+          "Aurora.Presentation.dll": {
+            "assemblyVersion": "1.0.82.7407",
+            "fileVersion": "1.0.82.7407"
+          }
+        }
+      },
+      "Builder.Core/1.0.83.7407": {
+        "runtime": {
+          "Builder.Core.dll": {
+            "assemblyVersion": "1.0.83.7407",
+            "fileVersion": "1.0.83.7407"
+          }
+        }
+      },
+      "Builder.Data/1.0.110.7407": {
+        "runtime": {
+          "Builder.Data.dll": {
+            "assemblyVersion": "1.0.110.7407",
+            "fileVersion": "1.0.110.7407"
+          }
+        }
+      },
+      "ControlzEx/3.0.2.4": {
+        "runtime": {
+          "ControlzEx.dll": {
+            "assemblyVersion": "3.0.2.4",
+            "fileVersion": "3.0.2.4"
+          }
+        }
+      },
+      "DynamicExpresso.Core/1.3.1.0": {
+        "runtime": {
+          "DynamicExpresso.Core.dll": {
+            "assemblyVersion": "1.3.1.0",
+            "fileVersion": "1.3.1.0"
+          }
+        }
+      },
+      "FirstFloor.ModernUI/1.0.9.0": {
+        "runtime": {
+          "FirstFloor.ModernUI.dll": {
+            "assemblyVersion": "1.0.9.0",
+            "fileVersion": "1.0.9.0"
+          }
+        }
+      },
+      "HtmlRenderer/1.5.1.0": {
+        "runtime": {
+          "HtmlRenderer.dll": {
+            "assemblyVersion": "1.5.1.0",
+            "fileVersion": "1.5.1.0"
+          }
+        }
+      },
+      "HtmlRenderer.WPF/1.5.1.0": {
+        "runtime": {
+          "HtmlRenderer.WPF.dll": {
+            "assemblyVersion": "1.5.1.0",
+            "fileVersion": "1.5.1.0"
+          }
+        }
+      },
+      "itextsharp/5.5.13.0": {
+        "runtime": {
+          "itextsharp.dll": {
+            "assemblyVersion": "5.5.13.0",
+            "fileVersion": "5.5.13.0"
+          }
+        }
+      },
+      "MahApps.Metro/1.6.1.4": {
+        "runtime": {
+          "MahApps.Metro.dll": {
+            "assemblyVersion": "1.6.1.4",
+            "fileVersion": "1.6.1.0"
+          }
+        }
+      },
+      "MahApps.Metro.IconPacks/2.3.0.4": {
+        "runtime": {
+          "MahApps.Metro.IconPacks.dll": {
+            "assemblyVersion": "2.3.0.4",
+            "fileVersion": "2.3.0.0"
+          }
+        }
+      },
+      "Microsoft.AppCenter.Analytics/0.0.0.0": {
+        "runtime": {
+          "Microsoft.AppCenter.Analytics.dll": {
+            "assemblyVersion": "0.0.0.0",
+            "fileVersion": "2.6.2.0"
+          }
+        }
+      },
+      "Microsoft.AppCenter.Crashes/0.0.0.0": {
+        "runtime": {
+          "Microsoft.AppCenter.Crashes.dll": {
+            "assemblyVersion": "0.0.0.0",
+            "fileVersion": "2.6.2.0"
+          }
+        }
+      },
+      "Microsoft.AppCenter/0.0.0.0": {
+        "runtime": {
+          "Microsoft.AppCenter.dll": {
+            "assemblyVersion": "0.0.0.0",
+            "fileVersion": "2.6.2.0"
+          }
+        }
+      },
+      "Microsoft.Xaml.Behaviors/1.1.0.0": {
+        "runtime": {
+          "Microsoft.Xaml.Behaviors.dll": {
+            "assemblyVersion": "1.1.0.0",
+            "fileVersion": "1.1.3.43761"
+          }
+        }
+      },
+      "MoonPdfLib/0.3.0.0": {
+        "runtime": {
+          "MoonPdfLib.dll": {
+            "assemblyVersion": "0.3.0.0",
+            "fileVersion": "0.3.0.0"
+          }
+        }
+      },
+      "System.Speech/4.0.0.0": {
+        "runtime": {
+          "System.Speech.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.8.9221.0"
+          }
+        }
+      },
+      "System.Windows.Interactivity/4.5.0.0": {
+        "runtime": {
+          "System.Windows.Interactivity.dll": {
+            "assemblyVersion": "4.5.0.0",
+            "fileVersion": "3.0.40218.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Aurora Builder/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Win32.SystemEvents/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9opKRyOKMCi2xJ7Bj7kxtZ1r9vbzosMvRrdEhVhDz8j8MoBGgB+WmC94yH839NPH+BclAjtQ/pyagvi/8gDLkw==",
+      "path": "microsoft.win32.systemevents/8.0.0",
+      "hashPath": "microsoft.win32.systemevents.8.0.0.nupkg.sha512"
+    },
+    "System.Drawing.Common/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JkbHJjtI/dWc5dfmEdJlbe3VwgZqCkZRtfuWFh5GOv0f+gGCfBtzMpIVkmdkj2AObO9y+oiOi81UGwH3aBYuqA==",
+      "path": "system.drawing.common/8.0.0",
+      "hashPath": "system.drawing.common.8.0.0.nupkg.sha512"
+    },
+    "System.ServiceModel.Syndication/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-CJxIUwpBkMCPmIx46tFVOt0zpRrYurUHLW6tJBcmyj+MyWpKc6MMcS69B7IdlV/bgtgys073wMIHZX9QOQ1OFA==",
+      "path": "system.servicemodel.syndication/8.0.0",
+      "hashPath": "system.servicemodel.syndication.8.0.0.nupkg.sha512"
+    },
+    "Aurora.Documents/1.0.94.7407": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Aurora.Presentation/1.0.82.7407": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Builder.Core/1.0.83.7407": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Builder.Data/1.0.110.7407": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ControlzEx/3.0.2.4": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "DynamicExpresso.Core/1.3.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "FirstFloor.ModernUI/1.0.9.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "HtmlRenderer/1.5.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "HtmlRenderer.WPF/1.5.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "itextsharp/5.5.13.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "MahApps.Metro/1.6.1.4": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "MahApps.Metro.IconPacks/2.3.0.4": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.AppCenter.Analytics/0.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.AppCenter.Crashes/0.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.AppCenter/0.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Xaml.Behaviors/1.1.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "MoonPdfLib/0.3.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "System.Speech/4.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "System.Windows.Interactivity/4.5.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

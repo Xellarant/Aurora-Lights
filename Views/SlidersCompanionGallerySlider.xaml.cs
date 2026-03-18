@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Views.Sliders.CompanionGallerySlider
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -24,10 +24,8 @@ using System.Windows.Markup;
 #nullable disable
 namespace Builder.Presentation.Views.Sliders;
 
-public partial class CompanionGallerySlider : Flyout, IComponentConnector
+public partial class CompanionGallerySlider : Flyout
 {
-  private bool _contentLoaded;
-
   public CompanionGallerySlider()
   {
     this.InitializeComponent();
@@ -81,45 +79,8 @@ public partial class CompanionGallerySlider : Flyout, IComponentConnector
 
   private void CancelClick(object sender, RoutedEventArgs e) => this.IsOpen = false;
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/views/sliders/companiongalleryslider.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  internal Delegate _CreateDelegate(Type delegateType, string handler)
-  {
-    return Delegate.CreateDelegate(delegateType, (object) this, handler);
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    switch (connectionId)
-    {
-      case 1:
-        ((Control) target).MouseDoubleClick += new MouseButtonEventHandler(this.SelectPortraitClick);
-        break;
-      case 2:
-        ((ButtonBase) target).Click += new RoutedEventHandler(this.SelectPortraitClick);
-        break;
-      case 3:
-        ((ButtonBase) target).Click += new RoutedEventHandler(this.BrowseClick);
-        break;
-      case 4:
-        ((ButtonBase) target).Click += new RoutedEventHandler(this.CancelClick);
-        break;
-      default:
-        this._contentLoaded = true;
-        break;
-    }
-  }
+
+
 }

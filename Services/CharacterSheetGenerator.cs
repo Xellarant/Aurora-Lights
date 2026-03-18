@@ -1,4 +1,4 @@
-ï»¿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Services.CharacterSheetGenerator
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -21,7 +21,7 @@ using Builder.Presentation.Models.CharacterSheet.Content;
 using Builder.Presentation.Models.Equipment;
 using Builder.Presentation.Models.Helpers;
 using Builder.Presentation.Models.Sheet;
-using Builder.Presentation.Properties;
+
 using Builder.Presentation.Services.Calculator;
 using Builder.Presentation.Services.Data;
 using Builder.Presentation.Telemetry;
@@ -139,7 +139,7 @@ public class CharacterSheetGenerator
   public FileInfo GenerateNewSheet(string destinationPath, bool generateForPreview)
   {
     // ISSUE: variable of a compiler-generated type
-    Settings settings = ApplicationManager.Current.Settings.Settings;
+    AppSettingsStore settings = ApplicationManager.Current.Settings.Settings;
     List<SpellcastingInformation> list = CharacterManager.Current.GetSpellcastingInformations().Where<SpellcastingInformation>((Func<SpellcastingInformation, bool>) (x => !x.IsExtension)).ToList<SpellcastingInformation>();
     CharacterSheetEx characterSheetEx = new CharacterSheetEx()
     {
@@ -971,28 +971,28 @@ public class CharacterSheetGenerator
     List<ElementBase> list6 = manager.GetProficiencyList((IEnumerable<ElementBase>) organizer.GetArmorProficiencies(false)).ToList<ElementBase>();
     List<ElementBase> list7 = manager.GetProficiencyList((IEnumerable<ElementBase>) organizer.GetWeaponProficiencies(false)).ToList<ElementBase>();
     List<ElementBase> list8 = manager.GetProficiencyList((IEnumerable<ElementBase>) organizer.GetToolProficiencies(false)).ToList<ElementBase>();
-    export.Languages = list5.Count <= 0 ? "â€“" : string.Join(", ", list5.Select<Language, string>((Func<Language, string>) (x => x.Name)));
+    export.Languages = list5.Count <= 0 ? "–" : string.Join(", ", list5.Select<Language, string>((Func<Language, string>) (x => x.Name)));
     if (list6.Count > 0)
     {
       IEnumerable<string> values = list6.Select<ElementBase, string>((Func<ElementBase, string>) (x => x.Name.Replace("Armor Proficiency", "").Replace("(", "").Replace(")", "").Trim()));
       export.ArmorProficiencies = string.Join(", ", values);
     }
     else
-      export.ArmorProficiencies = "â€“";
+      export.ArmorProficiencies = "–";
     if (list7.Count > 0)
     {
       IEnumerable<string> values = list7.Select<ElementBase, string>((Func<ElementBase, string>) (x => x.Name.Replace("Weapon Proficiency", "").Replace("(", "").Replace(")", "").Trim()));
       export.WeaponProficiencies = string.Join(", ", values);
     }
     else
-      export.WeaponProficiencies = "â€“";
+      export.WeaponProficiencies = "–";
     if (list8.Count > 0)
     {
       IEnumerable<string> values = list8.Select<ElementBase, string>((Func<ElementBase, string>) (x => x.Name.Replace("Tool Proficiency", "").Replace("(", "").Replace(")", "").Trim()));
       export.ToolProficiencies = string.Join(", ", values);
     }
     else
-      export.ToolProficiencies = "â€“";
+      export.ToolProficiencies = "–";
     ContentField contentField = new ContentField();
     List<ElementBase> children = new List<ElementBase>();
     foreach (ElementBase excludingRacialTrait in organizer.GetSortedFeaturesExcludingRacialTraits(children))
@@ -1026,11 +1026,11 @@ public class CharacterSheetGenerator
           flag = contentField.Lines.Last<ContentLine>().Indent;
         string str24 = "";
         if (!string.IsNullOrWhiteSpace(str23))
-          str24 = $"({str23}{(!string.IsNullOrWhiteSpace(str22) ? "â€”" + str22 : "")})";
+          str24 = $"({str23}{(!string.IsNullOrWhiteSpace(str22) ? "—" + str22 : "")})";
         else if (!string.IsNullOrWhiteSpace(str22))
           str24 = $"({str22})";
         string str25 = element.GetAlternateName();
-        if (Settings.Default.SheetFormattingActionSuffixBold)
+        if (ApplicationManager.Current.Settings.Settings.SheetFormattingActionSuffixBold)
           str25 = string.IsNullOrWhiteSpace(str24) ? str25 : $"{str25} {str24}";
         else
           content = string.IsNullOrWhiteSpace(str24) ? content : $"{str24} {content}";
@@ -1130,11 +1130,11 @@ public class CharacterSheetGenerator
           flag = contentField.Lines.Last<ContentLine>().Indent;
         string str3 = "";
         if (!string.IsNullOrWhiteSpace(str2))
-          str3 = $"({str2}{(!string.IsNullOrWhiteSpace(str1) ? "â€”" + str1 : "")})";
+          str3 = $"({str2}{(!string.IsNullOrWhiteSpace(str1) ? "—" + str1 : "")})";
         else if (!string.IsNullOrWhiteSpace(str1))
           str3 = $"({str1})";
         string str4 = element.GetAlternateName();
-        if (Settings.Default.SheetFormattingActionSuffixBold)
+        if (ApplicationManager.Current.Settings.Settings.SheetFormattingActionSuffixBold)
           str4 = string.IsNullOrWhiteSpace(str3) ? str4 : $"{str4} {str3}";
         else
           content = string.IsNullOrWhiteSpace(str3) ? content : $"{str3} {content}";

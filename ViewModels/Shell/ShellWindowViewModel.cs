@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.ViewModels.Shell.ShellWindowViewModel
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -16,7 +16,6 @@ using Builder.Presentation.Events.Shell;
 using Builder.Presentation.Extensions;
 using Builder.Presentation.Models;
 using Builder.Presentation.Models.Collections;
-using Builder.Presentation.Properties;
 using Builder.Presentation.Services;
 using Builder.Presentation.Services.Calculator;
 using Builder.Presentation.Services.Data;
@@ -44,6 +43,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 
 #nullable disable
+using Builder.Presentation.Properties;
 namespace Builder.Presentation.ViewModels.Shell;
 
 public sealed class ShellWindowViewModel : 
@@ -111,7 +111,7 @@ public sealed class ShellWindowViewModel :
       fileSystemWatcher.EnableRaisingEvents = true;
       this.LoadedFilepath = "no character file loaded";
       this.IsCharacterInformationBlockVisible = true;
-      this.ListViewItemSize = Builder.Presentation.Properties.Settings.Default.CharactersCollectionSize;
+      this.ListViewItemSize = ApplicationManager.Current.Settings.Settings.CharactersCollectionSize;
       this.ApplyRestrictionsCommand = (ICommand) new Builder.Presentation.Commands.ApplyRestrictionsCommand(this.CharacterManager);
       this.ShowDonateButton = !this.Settings.Settings.Bundle;
       this.SubscribeWithEventAggregator();
@@ -427,7 +427,7 @@ public sealed class ShellWindowViewModel :
   private async void LoadCharacter()
   {
     ShellWindowViewModel shellWindowViewModel = this;
-    object obj = (object) null;
+    var obj = (Exception) null;
     int num = 0;
     try
     {
@@ -487,7 +487,7 @@ public sealed class ShellWindowViewModel :
 label_14:
       num = 1;
     }
-    catch (object ex)
+    catch (Exception ex)
     {
       obj = ex;
     }
@@ -499,7 +499,7 @@ label_16:
     shellWindowViewModel.EventAggregator.Send<CharacterLoadingSliderEventArgs>(new CharacterLoadingSliderEventArgs(false));
     await Task.Delay(1000);
     shellWindowViewModel.IsProgressVisible = false;
-    object obj1 = obj;
+    Exception obj1 = obj;
     if (obj1 != null)
     {
       if (!(obj1 is Exception source))
@@ -508,7 +508,7 @@ label_16:
     }
     if (num == 1)
       return;
-    obj = (object) null;
+    obj = (Exception) null;
   }
 
   public bool IsCharacterLoadedFully
@@ -591,7 +591,7 @@ label_16:
   private void JumpListSettings()
   {
     new PreferencesWindow().ShowDialog();
-    this.ListViewItemSize = Builder.Presentation.Properties.Settings.Default.CharactersCollectionSize;
+    this.ListViewItemSize = ApplicationManager.Current.Settings.Settings.CharactersCollectionSize;
   }
 
   private void LevelUp()
@@ -975,7 +975,7 @@ label_16:
     this.CharacterManager.File = this.Characters[0];
     this.SelectedCharacter = this.Characters[0];
     this.LoadedFilepath = portraitFilenames[0];
-    this.Character.Name = "Seiðr";
+    this.Character.Name = "Sei�r";
     this.Character.Level = 7;
     this.Character.Background = "Uthgardt Tribe Member";
     this.Character.Class = "Blood Hunter";

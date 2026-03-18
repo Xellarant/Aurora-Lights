@@ -173,8 +173,8 @@ public sealed class ApplicationManager
   {
     try
     {
-      string accent = Builder.Presentation.Properties.Settings.Default.Accent;
-      string theme = Builder.Presentation.Properties.Settings.Default.Theme;
+      string accent = ApplicationManager.Current.Settings.Settings.Accent;
+      string theme = ApplicationManager.Current.Settings.Settings.Theme;
       Accent newAccent = ThemeManager.GetAccent(accent) ?? ThemeManager.GetAccent("Aurora Default");
       AppTheme newTheme = ThemeManager.GetAppTheme(theme) ?? ThemeManager.GetAppTheme("Aurora Light");
       ThemeManager.ChangeAppStyle(window, newAccent, newTheme);
@@ -208,8 +208,8 @@ public sealed class ApplicationManager
   {
     try
     {
-      Builder.Presentation.Properties.Settings.Default.Reload();
-      string accent = Builder.Presentation.Properties.Settings.Default.Accent;
+      ApplicationManager.Current.Settings.Settings.Reload();
+      string accent = ApplicationManager.Current.Settings.Settings.Accent;
     }
     catch (ConfigurationException ex)
     {
@@ -292,12 +292,12 @@ public sealed class ApplicationManager
   [Obsolete("legacy - not used")]
   public Color GetHighlightColor()
   {
-    return (Color) ThemeManager.GetAccent(Builder.Presentation.Properties.Settings.Default.Accent).Resources[(object) "HighlightColor"];
+    return (Color) ThemeManager.GetAccent(ApplicationManager.Current.Settings.Settings.Accent).Resources[(object) "HighlightColor"];
   }
 
   [Obsolete("legacy - not used")]
   public Color GetAccentColor()
   {
-    return (Color) ThemeManager.GetAccent(Builder.Presentation.Properties.Settings.Default.Accent).Resources[(object) "AccentColor"];
+    return (Color) ThemeManager.GetAccent(ApplicationManager.Current.Settings.Settings.Accent).Resources[(object) "AccentColor"];
   }
 }

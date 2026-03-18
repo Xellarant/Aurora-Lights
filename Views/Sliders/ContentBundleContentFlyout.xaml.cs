@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Views.Sliders.Content.BundleContentFlyout
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -15,12 +15,11 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Markup;
 
 #nullable disable
+using Builder.Presentation.Properties;
 namespace Builder.Presentation.Views.Sliders.Content;
 
-public partial class BundleContentFlyout : Flyout, IComponentConnector
+public partial class BundleContentFlyout : Flyout
 {
-  private bool _contentLoaded;
-
   public BundleContentFlyout()
   {
     this.InitializeComponent();
@@ -48,36 +47,8 @@ public partial class BundleContentFlyout : Flyout, IComponentConnector
     ApplicationManager.Current.EventAggregator.Send<IndexDownloadRequestEvent>(new IndexDownloadRequestEvent(Builder.Presentation.Properties.Resources.AdditionalContentSupplementsUrl));
   }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/views/sliders/content/bundlecontentflyout.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  internal Delegate _CreateDelegate(Type delegateType, string handler)
-  {
-    return Delegate.CreateDelegate(delegateType, (object) this, handler);
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    if (connectionId != 1)
-    {
-      if (connectionId == 2)
-        ((ButtonBase) target).Click += new RoutedEventHandler(this.RequestSupplementsContentOnClick);
-      else
-        this._contentLoaded = true;
-    }
-    else
-      ((ButtonBase) target).Click += new RoutedEventHandler(this.RequestCoreContentOnClick);
-  }
+
+
 }

@@ -29,12 +29,25 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
-  
+
+  <PropertyGroup>
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+
   <!--
     All references are local /lib DLLs.
     Going fully local avoids NuGet transitive dependency conflicts
@@ -109,6 +122,14 @@
     <Reference Include="MoonPdfLib">
       <HintPath>lib\MoonPdfLib.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Speech">
+      <HintPath>lib\System.Speech.dll</HintPath>
+    </Reference>
+    <PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
   </ItemGroup>
 
   <!-- Embedded resources: XML data, HTML documents, gallery images -->

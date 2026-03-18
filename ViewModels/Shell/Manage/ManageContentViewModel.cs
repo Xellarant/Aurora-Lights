@@ -61,7 +61,7 @@ public sealed class ManageContentViewModel : ViewModelBase
     }
     else
     {
-      this.PlayerName = Builder.Presentation.Properties.Settings.Default.PlayerName;
+      this.PlayerName = ApplicationManager.Current.Settings.Settings.PlayerName;
       this.Trinkets.Add("A mummified goblin hand");
       this.Trinkets.Add("A piece of crystal that faintly glows in the moonlight");
       this.Trinkets.Add("A gold coin minted in a fallen civilization");

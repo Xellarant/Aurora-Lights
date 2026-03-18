@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.UserControls.FillableFieldTextBox
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -17,15 +17,12 @@ using System.Windows.Markup;
 #nullable disable
 namespace Builder.Presentation.UserControls;
 
-public partial class FillableFieldTextBox : UserControl, IComponentConnector
+public partial class FillableFieldTextBox : UserControl
 {
   public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(nameof (Header), typeof (string), typeof (FillableFieldTextBox), new PropertyMetadata((object) null));
   public static readonly DependencyProperty DisplayValidationProperty = DependencyProperty.Register(nameof (DisplayValidation), typeof (bool), typeof (FillableFieldTextBox), new PropertyMetadata((object) true));
   public static readonly DependencyProperty MinContentHeightProperty = DependencyProperty.Register(nameof (MinContentHeight), typeof (double), typeof (FillableFieldTextBox), new PropertyMetadata((object) 26.0));
   public static readonly DependencyProperty TooltipProperty = DependencyProperty.Register(nameof (Tooltip), typeof (string), typeof (FillableFieldTextBox), new PropertyMetadata((object) null));
-  internal FillableFieldTextBox Main;
-  private bool _contentLoaded;
-
   public FillableFieldTextBox() => this.InitializeComponent();
 
   [Category("Aurora")]
@@ -67,29 +64,7 @@ public partial class FillableFieldTextBox : UserControl, IComponentConnector
     dataContext.Content = "";
   }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/usercontrols/fillablefieldtextbox.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    if (connectionId != 1)
-    {
-      if (connectionId == 2)
-        ((Control) target).MouseDoubleClick += new MouseButtonEventHandler(this.Control_OnMouseDoubleClick);
-      else
-        this._contentLoaded = true;
-    }
-    else
-      this.Main = (FillableFieldTextBox) target;
-  }
+
+
 }

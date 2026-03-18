@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Views.Development.DeveloperToolsViewModel
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -9,12 +9,13 @@ using Builder.Core.Events;
 using Builder.Core.Logging;
 using Builder.Data.Files.Updater;
 using Builder.Presentation.Events.Developer;
-using Builder.Presentation.Properties;
+
 using Builder.Presentation.Services.Data;
 using Builder.Presentation.ViewModels.Base;
 using System;
 
 #nullable disable
+using Builder.Presentation.Properties;
 namespace Builder.Presentation.Views.Development;
 
 public class DeveloperToolsViewModel : ViewModelBase, ISubscriber<DeveloperWindowStatusUpdateEvent>

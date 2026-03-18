@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.UserControls.SpellcastingExpanderContent
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -23,24 +23,10 @@ using System.Windows.Markup;
 #nullable disable
 namespace Builder.Presentation.UserControls;
 
-public class SpellcastingExpanderContent : 
+public partial class SpellcastingExpanderContent : 
   UserControl,
-  ISubscriber<SettingsChangedEvent>,
-  IComponentConnector
+  ISubscriber<SettingsChangedEvent>
 {
-  internal Border VisualFocusQue;
-  internal DataGrid SelectionElementsDataGrid;
-  internal DataGridTextColumn registeredColumn;
-  internal DataGridTextColumn NameColumn;
-  internal DataGridTextColumn ShortDescriptionColumn;
-  internal DataGridTextColumn verbal;
-  internal DataGridTextColumn somatic;
-  internal DataGridTextColumn material;
-  internal DataGridTextColumn SourceColumn;
-  internal DataGrid SelectionPickerGrid;
-  internal DataGridTextColumn registeredColumn2;
-  private bool _contentLoaded;
-
   public SpellcastingExpanderContent()
   {
     this.InitializeComponent();
@@ -203,64 +189,7 @@ public class SpellcastingExpanderContent :
     this.ScrollSelectedExpanderIntoView();
   }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    System.Windows.Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/usercontrols/content/spellcastingexpandercontent.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    switch (connectionId)
-    {
-      case 1:
-        this.VisualFocusQue = (Border) target;
-        break;
-      case 2:
-        this.SelectionElementsDataGrid = (DataGrid) target;
-        this.SelectionElementsDataGrid.KeyDown += new KeyEventHandler(this.ElementsGridKeyDown);
-        this.SelectionElementsDataGrid.MouseDoubleClick += new MouseButtonEventHandler(this.ElementsGridMouseDoubleClick);
-        break;
-      case 3:
-        this.registeredColumn = (DataGridTextColumn) target;
-        break;
-      case 4:
-        this.NameColumn = (DataGridTextColumn) target;
-        break;
-      case 5:
-        this.ShortDescriptionColumn = (DataGridTextColumn) target;
-        break;
-      case 6:
-        this.verbal = (DataGridTextColumn) target;
-        break;
-      case 7:
-        this.somatic = (DataGridTextColumn) target;
-        break;
-      case 8:
-        this.material = (DataGridTextColumn) target;
-        break;
-      case 9:
-        this.SourceColumn = (DataGridTextColumn) target;
-        break;
-      case 10:
-        this.SelectionPickerGrid = (DataGrid) target;
-        this.SelectionPickerGrid.SelectionChanged += new SelectionChangedEventHandler(this.SelectionPickerGrid_OnSelectionChanged);
-        this.SelectionPickerGrid.KeyDown += new KeyEventHandler(this.SelectionsGridKeyDown);
-        this.SelectionPickerGrid.PreviewKeyDown += new KeyEventHandler(this.SelectionsGridPreviewKeyDown);
-        break;
-      case 11:
-        this.registeredColumn2 = (DataGridTextColumn) target;
-        break;
-      default:
-        this._contentLoaded = true;
-        break;
-    }
-  }
+
+
 }

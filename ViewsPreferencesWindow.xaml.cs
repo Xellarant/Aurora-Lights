@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.Views.PreferencesWindow
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -18,11 +18,9 @@ using System.Windows.Markup;
 #nullable disable
 namespace Builder.Presentation.Views;
 
-public partial class PreferencesWindow : MetroWindow, IComponentConnector
+public partial class PreferencesWindow : MetroWindow
 {
   private bool _userSaved;
-  private bool _contentLoaded;
-
   public PreferencesWindow()
   {
     this.InitializeComponent();
@@ -47,29 +45,7 @@ public partial class PreferencesWindow : MetroWindow, IComponentConnector
 
   private void OnCancelClicked(object sender, RoutedEventArgs e) => this.Close();
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  public void InitializeComponent()
-  {
-    if (this._contentLoaded)
-      return;
-    this._contentLoaded = true;
-    Application.LoadComponent((object) this, new Uri("/Aurora Builder;component/views/preferenceswindow.xaml", UriKind.Relative));
-  }
 
-  [DebuggerNonUserCode]
-  [GeneratedCode("PresentationBuildTasks", "4.0.0.0")]
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  void IComponentConnector.Connect(int connectionId, object target)
-  {
-    if (connectionId != 1)
-    {
-      if (connectionId == 2)
-        ((ButtonBase) target).Click += new RoutedEventHandler(this.OnCancelClicked);
-      else
-        this._contentLoaded = true;
-    }
-    else
-      ((ButtonBase) target).Click += new RoutedEventHandler(this.OnSaveClicked);
-  }
+
+
 }

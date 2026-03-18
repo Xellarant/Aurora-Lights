@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: Builder.Presentation.CharacterManager
 // Assembly: Aurora Builder, Version=1.0.166.7407, Culture=neutral, PublicKeyToken=null
 // MVID: 09D35420-8FA0-4A71-9A21-FF952C48F8A3
@@ -17,7 +17,7 @@ using Builder.Presentation.Events.Shell;
 using Builder.Presentation.Extensions;
 using Builder.Presentation.Models;
 using Builder.Presentation.Models.Collections;
-using Builder.Presentation.Properties;
+
 using Builder.Presentation.Services;
 using Builder.Presentation.Services.Calculator;
 using Builder.Presentation.Services.Data;
@@ -380,7 +380,7 @@ public sealed class CharacterManager
         break;
     }
     SelectionRuleExpanderHandler.Current.RemoveAllExpanders();
-    if (Settings.Default.ApplyDefaultSourceRestrictionsOnNewCharacter)
+    if (ApplicationManager.Current.Settings.Settings.ApplyDefaultSourceRestrictionsOnNewCharacter)
       this.SourcesManager.LoadDefaults();
     this.Character.ResetEntryFields();
     if (initializeFirstLevel)
@@ -629,7 +629,7 @@ public sealed class CharacterManager
       return;
     this._progressionManager.ProcessExistingElements();
     this.SetCharacterDetails();
-    if (!this.Status.IsLoaded || !Settings.Default.GenerateSheetOnCharacterChangedRegistered)
+    if (!this.Status.IsLoaded || !ApplicationManager.Current.Settings.Settings.GenerateSheetOnCharacterChangedRegistered)
       return;
     if (Debugger.IsAttached)
       return;
