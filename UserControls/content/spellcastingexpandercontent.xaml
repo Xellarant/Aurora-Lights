@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
-             xmlns:content="clr-namespace:Builder.Presentation.ViewModels.Content"
+             xmlns:content="clr-namespace:Builder.Presentation.ViewModels.Content;assembly=Aurora.Logic"
              xmlns:userControls="clr-namespace:Builder.Presentation.UserControls"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:system="clr-namespace:System;assembly=mscorlib"

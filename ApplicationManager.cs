@@ -7,6 +7,7 @@
 using Builder.Core.Events;
 using Builder.Core.Logging;
 using Builder.Presentation.Events.Shell;
+using Builder.Presentation.Interfaces;
 using Builder.Presentation.Services;
 using Builder.Presentation.Telemetry;
 using Builder.Presentation.Views.Development;
@@ -23,7 +24,7 @@ using System.Windows.Media;
 #nullable disable
 namespace Builder.Presentation;
 
-public sealed class ApplicationManager
+public sealed class ApplicationManager : IApplicationContext
 {
   private DiagnosticsWindow _diagnosticsWindow;
 
@@ -35,11 +36,20 @@ public sealed class ApplicationManager
     ThemeManager.IsThemeChanged += new EventHandler<OnThemeChangedEventArgs>(this.ThemeManagerIsThemeChanged);
     this.EventAggregator = (IEventAggregator) new Builder.Core.Events.EventAggregator();
     this.Settings = new ApplicationSettings(this.EventAggregator);
+    // Register this instance as the cross-platform context so Aurora.Logic can resolve it.
+    ApplicationContext.SetCurrent(this);
+    // Wire up dialog service so Aurora.Logic code can show dialogs.
+    MessageDialogContext.Current = new MessageDialogServiceAdapter();
   }
 
   public IEventAggregator EventAggregator { get; }
 
+  /// <summary>WPF-specific settings wrapper with ICommand properties.</summary>
   public ApplicationSettings Settings { get; }
+
+  // IApplicationContext explicit implementation — exposes the JSON store directly
+  // so Aurora.Logic ViewModels receive AppSettingsStore without a WPF dep.
+  AppSettingsStore IApplicationContext.Settings => this.Settings.Settings;
 
   public bool IsInDeveloperMode { get; set; }
 

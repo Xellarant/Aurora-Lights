@@ -15,6 +15,19 @@ using System.Windows;
 using Builder.Presentation.Properties;
 namespace Builder.Presentation.Services;
 
+/// <summary>
+/// Instance adapter that implements IMessageDialogService by delegating to the
+/// static MessageDialogService methods. Set as MessageDialogContext.Current on startup.
+/// </summary>
+public sealed class MessageDialogServiceAdapter : Builder.Presentation.Interfaces.IMessageDialogService
+{
+    public void Show(string message, string? caption = null) => MessageDialogService.Show(message, caption);
+    public void ShowException(Exception ex, string? message = null, string? caption = null) =>
+        MessageDialogService.ShowException(ex, caption ?? ex.GetType().ToString(), message);
+    public bool Confirm(string message, string? caption = null) =>
+        MessageBox.Show(message, caption ?? "Confirm", MessageBoxButton.YesNo) == MessageBoxResult.Yes;
+}
+
 public static class MessageDialogService
 {
   public static void Show(string message, string title = null)

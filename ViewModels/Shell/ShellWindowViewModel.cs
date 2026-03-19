@@ -111,9 +111,9 @@ public sealed class ShellWindowViewModel :
       fileSystemWatcher.EnableRaisingEvents = true;
       this.LoadedFilepath = "no character file loaded";
       this.IsCharacterInformationBlockVisible = true;
-      this.ListViewItemSize = ApplicationManager.Current.Settings.Settings.CharactersCollectionSize;
+      this.ListViewItemSize = ApplicationContext.Current.Settings.CharactersCollectionSize;
       this.ApplyRestrictionsCommand = (ICommand) new Builder.Presentation.Commands.ApplyRestrictionsCommand(this.CharacterManager);
-      this.ShowDonateButton = !this.Settings.Settings.Bundle;
+      this.ShowDonateButton = !this.Settings.Bundle;
       this.SubscribeWithEventAggregator();
       CharacterManager.Current.Status.StatusChanged += new EventHandler<CharacterStatusChangedEventArgs>(this.Status_StatusChanged);
     }
@@ -591,7 +591,7 @@ label_16:
   private void JumpListSettings()
   {
     new PreferencesWindow().ShowDialog();
-    this.ListViewItemSize = ApplicationManager.Current.Settings.Settings.CharactersCollectionSize;
+    this.ListViewItemSize = ApplicationContext.Current.Settings.CharactersCollectionSize;
   }
 
   private void LevelUp()
@@ -1066,7 +1066,7 @@ label_16:
   {
     this.IsQuickSearchBarEnabled = args.Settings.QuickSearchBarEnabled;
     this.ListViewItemSize = args.Settings.CharactersCollectionSize;
-    this.ShowDonateButton = !this.Settings.Settings.Bundle;
+    this.ShowDonateButton = !this.Settings.Bundle;
   }
 
   public ICommand SaveDocumentAsCommand
@@ -1094,7 +1094,7 @@ label_16:
       CharacterManager.Current.ReprocessCharacter();
       FileInfo newSheet = new CharacterSheetGenerator(CharacterManager.Current).GenerateNewSheet(fileName, false);
       this.EventAggregator.Send<CharacterSheetSavedEvent>(new CharacterSheetSavedEvent(fileName));
-      int num = this.Settings.Settings.CharacterSheetOpenOnSave ? 1 : 0;
+      int num = this.Settings.CharacterSheetOpenOnSave ? 1 : 0;
       Process.Start(newSheet.FullName);
     }
     catch (IOException ex)

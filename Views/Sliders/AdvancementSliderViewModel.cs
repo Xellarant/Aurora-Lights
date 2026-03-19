@@ -153,7 +153,7 @@ public class AdvancementSliderViewModel : ViewModelBase
       if (progressionManager.LevelElements.Contains((ElementBase) levelElement))
         elementBase = progressionManager.ClassElement;
     }
-    if (advancementSliderViewModel.Settings.Settings.DisplayRemoveLevelConfirmation)
+    if (advancementSliderViewModel.Settings.DisplayRemoveLevelConfirmation)
     {
       string messageBoxText = $"Are you sure you want to remove the last level from the {elementBase?.Name.ToLower()} class?";
       if (elementBase == null)

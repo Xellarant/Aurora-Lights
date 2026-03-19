@@ -4,7 +4,7 @@
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                       xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-                      xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
+                      xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels;assembly=Aurora.Logic"
                       xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                       xmlns:controls1="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
                       Closing="MetroWindow_Closing" Loaded="MetroWindow_Loaded" ResizeMode="NoResize" Width="650"

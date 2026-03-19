@@ -20,7 +20,8 @@ using System.Linq;
 #nullable disable
 namespace Builder.Presentation.Services;
 
-public class SelectionRuleExpanderHandler : 
+public class SelectionRuleExpanderHandler :
+  ISelectionRuleExpanderHandler,
   ISubscriber<CharacterManagerSelectionRuleCreated>,
   ISubscriber<CharacterManagerSelectionRuleDeleted>
 {
@@ -33,7 +34,8 @@ public class SelectionRuleExpanderHandler :
     Logger.Initializing((object) nameof (SelectionRuleExpanderHandler));
     this._supports = new List<ISupportExpanders>();
     this._expanders = new ObservableCollection<ISelectionRuleExpander>();
-    ApplicationManager.Current.EventAggregator.Subscribe((object) this);
+    ApplicationContext.Current.EventAggregator.Subscribe((object) this);
+    SelectionRuleExpanderContext.Current = this;
   }
 
   public static SelectionRuleExpanderHandler Current { get; } = new SelectionRuleExpanderHandler();
@@ -238,7 +240,7 @@ public class SelectionRuleExpanderHandler :
         location = NavigationLocation.MagicSpells;
         break;
     }
-    ApplicationManager.Current.EventAggregator.Send<SelectionRuleNavigationArgs>(new SelectionRuleNavigationArgs(location));
+    ApplicationContext.Current.EventAggregator.Send<SelectionRuleNavigationArgs>(new SelectionRuleNavigationArgs(location));
     selectionRuleExpander.FocusExpander();
     Logger.Info($"FocusExpander: {selectionRuleExpander}");
   }

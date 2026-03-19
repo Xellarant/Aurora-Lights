@@ -9,7 +9,7 @@
                  xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-                 xmlns:sources="clr-namespace:Builder.Presentation.Models.Sources"
+                 xmlns:sources="clr-namespace:Builder.Presentation.Models.Sources;assembly=Aurora.Logic"
                  Title="CharacterSourceManagerWindow" Height="450" Width="872.992">
   <FrameworkElement.Resources>
     <converters:CampaignSourceConverter x:Key="CampaignSourceConverter"/>

@@ -47,7 +47,7 @@ public sealed class NewCharacterSliderViewModel : ViewModelBase
     this.Name = "";
     this.Gender = "Male";
     this.Level = 1;
-    foreach (SelectionItem generationSelectionItem in (Collection<SelectionItem>) this.Settings.AbilitiesGenerationSelectionItems)
+    foreach (SelectionItem generationSelectionItem in (Collection<SelectionItem>) ApplicationManager.Current.Settings.AbilitiesGenerationSelectionItems)
       this.AbilitiesGenerationSelectionItems.Add(generationSelectionItem);
     this.Abilities.Strength.BaseScore = 15;
     this.Abilities.Dexterity.BaseScore = 14;
@@ -78,7 +78,7 @@ public sealed class NewCharacterSliderViewModel : ViewModelBase
     }
     else
     {
-      this.SelectedAbilityGenerateOption = this.AbilitiesGenerationSelectionItems.FirstOrDefault<SelectionItem>((Func<SelectionItem, bool>) (x => x.Value == this.Settings.Settings.AbilitiesGenerationOption));
+      this.SelectedAbilityGenerateOption = this.AbilitiesGenerationSelectionItems.FirstOrDefault<SelectionItem>((Func<SelectionItem, bool>) (x => x.Value == this.Settings.AbilitiesGenerationOption));
       this.LoadCharacterOptions();
       this.RandomizePortrait();
     }
@@ -189,7 +189,7 @@ public sealed class NewCharacterSliderViewModel : ViewModelBase
   private async void CreateNew()
   {
     NewCharacterSliderViewModel characterSliderViewModel = this;
-    characterSliderViewModel.Settings.Settings.AbilitiesGenerationOption = characterSliderViewModel.SelectedAbilityGenerateOption.Value;
+    characterSliderViewModel.Settings.AbilitiesGenerationOption = characterSliderViewModel.SelectedAbilityGenerateOption.Value;
     characterSliderViewModel.Settings.Save();
     if (string.IsNullOrWhiteSpace(characterSliderViewModel.Name))
       characterSliderViewModel.Name = "The Nameless One";

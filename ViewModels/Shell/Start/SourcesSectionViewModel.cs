@@ -72,9 +72,9 @@ public sealed class SourcesSectionViewModel :
       this.CleanCustomFilesCommand = new RelayCommand(new Action(this.CleanCustomFiles), new Func<bool>(this.CanCleanCustomFiles));
       this.LoadIndices();
       this._selectedIndex = this.Indices.FirstOrDefault<IndexFile>();
-      if (this.Settings.Settings.StartupCheckForContentUpdated)
+      if (this.Settings.StartupCheckForContentUpdated)
         this.PerformStartupContentUpdateCheck();
-      if (this.Settings.Settings.Bundle)
+      if (this.Settings.Bundle)
         this.BundlesEnabled = true;
       this.SubscribeWithEventAggregator();
     }
@@ -575,7 +575,7 @@ public sealed class SourcesSectionViewModel :
     }
     if (!this.BundlesEnabled)
       return;
-    this.Settings.Settings.Bundle = true;
+    this.Settings.Bundle = true;
     this.Settings.Save();
   }
 }

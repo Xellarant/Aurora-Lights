@@ -49,40 +49,46 @@
   </PropertyGroup>
 
   <!--
-    All references are local /lib DLLs.
-    Going fully local avoids NuGet transitive dependency conflicts
-    between the 2018-era MahApps stack and newer packages.
-    NuGet packages are reintroduced in Phase 2 with the Avalonia stack.
+    Phase 2: logic layer is now in Aurora.Logic (net8.0 class library).
+    This WPF project keeps only the UI layer:
+      - App.xaml / ApplicationManager (MahApps.Metro theme wiring)
+      - Views, UserControls, Converters, Controls, styles, themes, resources
+      - ~16 ViewModels and ~9 Commands that still reference System.Windows.*
+        (pending platform-abstraction in a future pass)
+
+    Cross-platform references (Builder.Core, Builder.Data, AppCenter, etc.)
+    are declared in Aurora.Logic.csproj and flow through transitively.
   -->
+
+  <!-- Exclude sub-project source files from WPF project's default glob -->
   <ItemGroup>
-    <!-- Cross-platform: core business logic -->
-    <Reference Include="Aurora.Documents">
-      <HintPath>lib\Aurora.Documents.dll</HintPath>
-    </Reference>
-    <Reference Include="Aurora.Presentation">
-      <HintPath>lib\Aurora.Presentation.dll</HintPath>
-    </Reference>
+    <Compile Remove="Aurora.Logic\**\*.cs" />
+    <Compile Remove="Aurora.App\**\*.cs" />
+    <EmbeddedResource Remove="Aurora.Logic\**" />
+    <EmbeddedResource Remove="Aurora.App\**" />
+    <None Remove="Aurora.Logic\**" />
+    <None Remove="Aurora.App\**" />
+  </ItemGroup>
+
+  <!-- Aurora.Logic: all platform-independent logic -->
+  <ItemGroup>
+    <ProjectReference Include="Aurora.Logic\Aurora.Logic.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Core logic DLLs also referenced directly so the XAML temp project can find them -->
     <Reference Include="Builder.Core">
       <HintPath>lib\Builder.Core.dll</HintPath>
     </Reference>
     <Reference Include="Builder.Data">
       <HintPath>lib\Builder.Data.dll</HintPath>
     </Reference>
-    <Reference Include="System.Windows.Interactivity">
-      <HintPath>lib\System.Windows.Interactivity.dll</HintPath>
+    <Reference Include="Aurora.Documents">
+      <HintPath>lib\Aurora.Documents.dll</HintPath>
     </Reference>
-
-    <!-- Cross-platform: expression evaluation -->
-    <Reference Include="DynamicExpresso.Core">
-      <HintPath>lib\DynamicExpresso.Core.dll</HintPath>
-    </Reference>
-
-    <!-- Cross-platform: PDF generation, replace with iText7 in Phase 2 -->
     <Reference Include="itextsharp">
       <HintPath>lib\itextsharp.dll</HintPath>
     </Reference>
-
-    <!-- Cross-platform: telemetry -->
     <Reference Include="Microsoft.AppCenter">
       <HintPath>lib\Microsoft.AppCenter.dll</HintPath>
     </Reference>
@@ -92,10 +98,14 @@
     <Reference Include="Microsoft.AppCenter.Crashes">
       <HintPath>lib\Microsoft.AppCenter.Crashes.dll</HintPath>
     </Reference>
-
-    <!-- WPF-only UI: all replaced in Phase 2 -->
-    <!-- ControlzEx 3.0.2.4: get from nuget.org/packages/ControlzEx/3.0.2.4
-         download .nupkg, rename to .zip, extract lib\net45\ControlzEx.dll -->
+    <!-- WPF-only UI stack (all replaced in Phase 3 / Aurora.App) -->
+    <Reference Include="Aurora.Presentation">
+      <HintPath>lib\Aurora.Presentation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Interactivity">
+      <HintPath>lib\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
+    <!-- ControlzEx 3.0.2.4 -->
     <Reference Include="ControlzEx">
       <HintPath>lib\ControlzEx.dll</HintPath>
     </Reference>
@@ -105,8 +115,7 @@
     <Reference Include="MahApps.Metro.IconPacks">
       <HintPath>lib\MahApps.Metro.IconPacks.dll</HintPath>
     </Reference>
-    <!-- Microsoft.Xaml.Behaviors: get from nuget.org/packages/Microsoft.Xaml.Behaviors.Wpf/1.1.3
-         download .nupkg, rename to .zip, extract lib\net45\Microsoft.Xaml.Behaviors.dll -->
+    <!-- Microsoft.Xaml.Behaviors.Wpf 1.1.3 -->
     <Reference Include="Microsoft.Xaml.Behaviors">
       <HintPath>lib\Microsoft.Xaml.Behaviors.dll</HintPath>
     </Reference>
@@ -122,24 +131,9 @@
     <Reference Include="MoonPdfLib">
       <HintPath>lib\MoonPdfLib.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="System.Speech">
       <HintPath>lib\System.Speech.dll</HintPath>
     </Reference>
-    <PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
-  </ItemGroup>
-
-  <!-- Embedded resources: XML data, HTML documents, gallery images -->
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Data\**\*.xml" />
-    <EmbeddedResource Include="Resources\Documents\**\*.html" />
-    <EmbeddedResource Include="Resources\Documents\**\*.css" />
-    <EmbeddedResource Include="Resources\Gallery\**\*.jpg" />
-    <EmbeddedResource Include="Resources\Gallery\**\*.png" />
-    <EmbeddedResource Include="Resources\card-bg.jpg" />
   </ItemGroup>
 
   <!-- Application resources: images, fonts, icons -->

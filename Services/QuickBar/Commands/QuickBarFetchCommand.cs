@@ -11,6 +11,7 @@ using Builder.Data.Files.Updater;
 using Builder.Presentation.Events.Shell;
 
 using Builder.Presentation.Services.Data;
+using Builder.Presentation.Properties;
 using Builder.Presentation.Services.QuickBar.Commands.Base;
 using System;
 using System.Diagnostics;
@@ -19,7 +20,6 @@ using System.Threading.Tasks;
 using System.Windows;
 
 #nullable disable
-using Builder.Presentation.Properties;
 namespace Builder.Presentation.Services.QuickBar.Commands;
 
 public class QuickBarFetchCommand : QuickBarCommand
@@ -30,7 +30,7 @@ public class QuickBarFetchCommand : QuickBarCommand
   public QuickBarFetchCommand()
     : base("fetch")
   {
-    this._eventAggregator = ApplicationManager.Current.EventAggregator;
+    this._eventAggregator = ApplicationContext.Current.EventAggregator;
     this._updater = new IndicesUpdateService(new Version(Resources.AppVersionCheck));
     this._updater.StatusChanged += new EventHandler<IndicesUpdateStatusChangedEventArgs>(this._updater_StatusChanged);
   }
@@ -47,7 +47,7 @@ public class QuickBarFetchCommand : QuickBarCommand
   {
     if (parameter == "?" || parameter == "help" || !parameter.StartsWith("http") || !parameter.EndsWith(".index"))
     {
-      MessageDialogService.Show($"@{this.CommandName} accepts a valid (starting with http:// or https://) url for an index file.", "@" + this.CommandName);
+      MessageDialogContext.Current?.Show($"@{this.CommandName} accepts a valid (starting with http:// or https://) url for an index file.", "@" + this.CommandName);
     }
     else
     {
@@ -88,7 +88,7 @@ public class QuickBarFetchCommand : QuickBarCommand
       {
         IsDanger = true
       });
-      MessageDialogService.ShowException(ex);
+      MessageDialogContext.Current?.ShowException(ex);
     }
   }
 }

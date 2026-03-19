@@ -8,6 +8,7 @@ using Builder.Core.Logging;
 using Builder.Data.Elements;
 using Builder.Data.Extensions;
 using Builder.Presentation.Extensions;
+using Builder.Presentation.Interfaces;
 using Builder.Presentation.UserControls.Spellcasting;
 using Builder.Presentation.ViewModels;
 using System;
@@ -17,7 +18,7 @@ using System.Linq;
 #nullable disable
 namespace Builder.Presentation.Services;
 
-public class SpellcastingSectionHandler
+public class SpellcastingSectionHandler : ISpellcastingSectionHandler
 {
   private static SpellcastingSectionHandler _instance;
   private readonly ObservableCollection<SpellcasterSelectionControl> _spellcastingSections;
@@ -26,6 +27,8 @@ public class SpellcastingSectionHandler
   {
     Logger.Initializing((object) nameof (SpellcastingSectionHandler));
     this._spellcastingSections = new ObservableCollection<SpellcasterSelectionControl>();
+    // Register with the Aurora.Logic seam so cross-platform code can reach us.
+    SpellcastingSectionContext.Current = this;
   }
 
   public static SpellcastingSectionHandler Current

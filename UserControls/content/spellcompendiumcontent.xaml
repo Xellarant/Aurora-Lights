@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:Builder.Presentation.UserControls"
              xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
-             xmlns:content="clr-namespace:Builder.Presentation.ViewModels.Content"
+             xmlns:content="clr-namespace:Builder.Presentation.ViewModels.Content;assembly=Aurora.Logic"
              Background="White">
   <FrameworkElement.DataContext>
     <content:SpellCompendiumContentViewModel/>

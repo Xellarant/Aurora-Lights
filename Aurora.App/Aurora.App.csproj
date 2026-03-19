@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Aurora.App – Phase 2
+    MAUI Blazor Hybrid: cross-platform UI shell targeting
+    Windows, macOS, iOS, and Android.
+
+    TODO (Phase 2 setup):
+      1. Change Sdk to "Microsoft.NET.Sdk.Maui" once MAUI workload is installed
+         and the Blazor Hybrid component scaffolding is in place.
+      2. Add TargetFrameworks for all target platforms, e.g.:
+           net8.0-windows10.0.19041.0;net8.0-maccatalyst;
+           net8.0-ios;net8.0-android
+      3. Add <ProjectReference Include="..\Aurora.Logic\Aurora.Logic.csproj" />
+      4. Scaffold MainLayout, NavMenu, App.razor, MauiProgram.cs, etc.
+
+    For now this is a placeholder that anchors the project in the solution
+    and makes the intent visible to the build system.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Aurora.App</AssemblyName>
+    <RootNamespace>Aurora.App</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <!-- Suppress until MAUI workload + Blazor scaffolding is wired up -->
+    <NoWarn>$(NoWarn);CS8618</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Aurora.Logic\Aurora.Logic.csproj" />
+  </ItemGroup>
+
+</Project>

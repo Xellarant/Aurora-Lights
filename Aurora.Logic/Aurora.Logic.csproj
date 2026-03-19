@@ -1,0 +1,91 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Aurora.Logic – Phase 2
+    Cross-platform logic layer: ViewModels, Services, Models, Commands,
+    Events, Utilities, Telemetry, Syndication, Logging, AppSettingsStore,
+    ApplicationManager, CharacterManager, and supporting infrastructure.
+
+    Target: net8.0 (no -windows) so this library can be consumed by
+    Aurora.App (MAUI Blazor Hybrid) on Windows, macOS, iOS, and Android.
+
+    Note: ~16 ViewModels and ~9 Commands still reference System.Windows.*
+    (beyond ICommand) and remain in the WPF project pending platform
+    abstraction — they will be migrated here in subsequent passes.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Aurora.Logic</AssemblyName>
+    <RootNamespace>Builder.Presentation</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <NoWarn>$(NoWarn);CS8618;CS0618;CS0612</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Core business logic (local /lib DLLs, shared with WPF project) -->
+    <Reference Include="Builder.Core">
+      <HintPath>..\lib\Builder.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Builder.Data">
+      <HintPath>..\lib\Builder.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Aurora.Documents">
+      <HintPath>..\lib\Aurora.Documents.dll</HintPath>
+    </Reference>
+    <Reference Include="Aurora.Presentation">
+      <HintPath>..\lib\Aurora.Presentation.dll</HintPath>
+    </Reference>
+
+    <!-- Expression evaluation -->
+    <Reference Include="DynamicExpresso.Core">
+      <HintPath>..\lib\DynamicExpresso.Core.dll</HintPath>
+    </Reference>
+
+    <!-- PDF generation (replace with iText7 later) -->
+    <Reference Include="itextsharp">
+      <HintPath>..\lib\itextsharp.dll</HintPath>
+    </Reference>
+
+    <!-- Telemetry -->
+    <Reference Include="Microsoft.AppCenter">
+      <HintPath>..\lib\Microsoft.AppCenter.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter.Analytics">
+      <HintPath>..\lib\Microsoft.AppCenter.Analytics.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter.Crashes">
+      <HintPath>..\lib\Microsoft.AppCenter.Crashes.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+  </ItemGroup>
+
+  <!-- Embedded resources: XML data, HTML documents, gallery images -->
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Data\**\*.xml" />
+    <EmbeddedResource Include="Resources\Documents\**\*.html" />
+    <EmbeddedResource Include="Resources\Documents\**\*.css" />
+    <EmbeddedResource Include="Resources\Gallery\**\*.jpg" />
+    <EmbeddedResource Include="Resources\Gallery\**\*.png" />
+    <EmbeddedResource Include="Resources\card-bg.jpg" />
+  </ItemGroup>
+
+</Project>

@@ -11,7 +11,7 @@
              xmlns:eventTriggers="clr-namespace:Aurora.Presentation.EventTriggers;assembly=Aurora.Presentation"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:controls1="clr-namespace:Aurora.Presentation.Controls;assembly=Aurora.Presentation"
-             xmlns:sources="clr-namespace:Builder.Presentation.Models.Sources">
+             xmlns:sources="clr-namespace:Builder.Presentation.Models.Sources;assembly=Aurora.Logic">
   <FrameworkElement.Resources>
     <converters:CampaignSourceConverter x:Key="CampaignSourceConverter"/>
     <converters:NullableInvertedBooleanToVisibilityConverter x:Key="NullableInvertedBooleanToVisibilityConverter"/>

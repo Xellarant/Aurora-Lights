@@ -86,7 +86,7 @@ public sealed class SettingsWindowViewModel : ViewModelBase
     {
         this.Version = "1.0.166.7407";
         this.AssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        this.StyleSheet = ApplicationManager.Current.Settings.Settings.Theme.Contains("Dark") ? DataManager.Current.GetResourceWebDocument("stylesheet-dark.css") : DataManager.Current.GetResourceWebDocument("stylesheet.css");
+        this.StyleSheet = ApplicationContext.Current.Settings.Theme.Contains("Dark") ? DataManager.Current.GetResourceWebDocument("stylesheet-dark.css") : DataManager.Current.GetResourceWebDocument("stylesheet.css");
         this.OpenGamingLicence = DataManager.Current.GetResourceWebDocument("description-ogl.html");
         int[] numArray = new int[5] { 6, 7, 8, 9, 10 };
         foreach (int num in numArray)
@@ -524,9 +524,9 @@ public sealed class SettingsWindowViewModel : ViewModelBase
 
     private void SetDefaultSettings()
     {
-        ApplicationManager.Current.Settings.Settings.Reset();
-        ApplicationManager.Current.Settings.Settings.ConfigurationUpgradeRequired = false;
-        ApplicationManager.Current.Settings.Settings.Save();
+        ApplicationContext.Current.Settings.Reset();
+        ApplicationContext.Current.Settings.ConfigurationUpgradeRequired = false;
+        ApplicationContext.Current.Settings.Save();
         this.ResetSettings();
     }
 
@@ -592,7 +592,7 @@ public sealed class SettingsWindowViewModel : ViewModelBase
 
     private void ResetSettings()
     {
-        ApplicationManager.Current.Settings.Settings.Reload();
+        ApplicationContext.Current.Settings.Reload();
         this.PopulateProperties();
     }
 

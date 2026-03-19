@@ -11,6 +11,7 @@ using Builder.Data.Files.Updater;
 using Builder.Presentation.Events.Shell;
 
 using Builder.Presentation.Services.Data;
+using Builder.Presentation.Properties;
 using Builder.Presentation.Services.QuickBar.Commands.Base;
 using Builder.Presentation.ViewModels.Shell.Start;
 using System;
@@ -20,7 +21,6 @@ using System.Threading.Tasks;
 using System.Windows;
 
 #nullable disable
-using Builder.Presentation.Properties;
 namespace Builder.Presentation.Services.QuickBar.Commands;
 
 public class QuickBarBundleCommand : QuickBarCommand
@@ -32,7 +32,7 @@ public class QuickBarBundleCommand : QuickBarCommand
   public QuickBarBundleCommand()
     : base("bundle")
   {
-    this._eventAggregator = ApplicationManager.Current.EventAggregator;
+    this._eventAggregator = ApplicationContext.Current.EventAggregator;
     this._updater = new IndicesUpdateService(new Version(Resources.AppVersionCheck));
     this._updater.StatusChanged += new EventHandler<IndicesUpdateStatusChangedEventArgs>(this._updater_StatusChanged);
     this._parameters = new string[6]
@@ -59,7 +59,7 @@ public class QuickBarBundleCommand : QuickBarCommand
   {
     if (parameter == "?" || parameter == "help")
     {
-      MessageDialogService.Show($"@{this.CommandName} parameters are: {string.Join(", ", this._parameters)}", "@" + this.CommandName);
+      MessageDialogContext.Current?.Show($"@{this.CommandName} parameters are: {string.Join(", ", this._parameters)}", "@" + this.CommandName);
     }
     else
     {
@@ -72,7 +72,7 @@ public class QuickBarBundleCommand : QuickBarCommand
           string message = $"@{this.CommandName}parameters are:{Environment.NewLine}";
           foreach (string parameter1 in this._parameters)
             message = message + parameter1 + Environment.NewLine;
-          MessageDialogService.Show(message, "@" + this.CommandName);
+          MessageDialogContext.Current?.Show(message, "@" + this.CommandName);
           return;
         case "clear":
           if (MessageBox.Show("This will remove all content from folders created by index files. Proceed?", "Clear Bundles", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
@@ -114,7 +114,7 @@ public class QuickBarBundleCommand : QuickBarCommand
         default:
           args.StatusMessage = $"Invalid @bundle command ({parameter})";
           args.IsDanger = true;
-          MessageDialogService.Show(args.StatusMessage);
+          MessageDialogContext.Current?.Show(args.StatusMessage);
           break;
       }
       this._eventAggregator.Send<MainWindowStatusUpdateEvent>(args);
@@ -144,7 +144,7 @@ public class QuickBarBundleCommand : QuickBarCommand
       {
         IsDanger = true
       });
-      MessageDialogService.ShowException(ex);
+      MessageDialogContext.Current?.ShowException(ex);
     }
   }
 

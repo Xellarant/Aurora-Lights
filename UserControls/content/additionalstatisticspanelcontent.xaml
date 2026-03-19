@@ -7,7 +7,7 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:mui="http://firstfloorsoftware.com/ModernUI"
              xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
-             xmlns:content="clr-namespace:Builder.Presentation.ViewModels.Content"
+             xmlns:content="clr-namespace:Builder.Presentation.ViewModels.Content;assembly=Aurora.Logic"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
   <Grid>
     <FrameworkElement.DataContext>
