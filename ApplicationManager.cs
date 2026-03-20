@@ -40,6 +40,10 @@ public sealed class ApplicationManager : IApplicationContext
     ApplicationContext.SetCurrent(this);
     // Wire up dialog service so Aurora.Logic code can show dialogs.
     MessageDialogContext.Current = new MessageDialogServiceAdapter();
+    // Force SelectionRuleExpanderHandler to initialise now so that
+    // SelectionRuleExpanderContext.Current is non-null before any
+    // SupportExpanderViewModel subclass is constructed during ShellWindow init.
+    _ = Services.SelectionRuleExpanderHandler.Current;
   }
 
   public IEventAggregator EventAggregator { get; }
@@ -66,7 +70,9 @@ public sealed class ApplicationManager : IApplicationContext
 
   public void RestartApplication(bool killCurrentProcess = true)
   {
-    Process.Start(Application.ResourceAssembly.Location);
+    string exe = Environment.ProcessPath
+      ?? Application.ResourceAssembly.Location;
+    Process.Start(exe);
     if (!killCurrentProcess)
       return;
     Process.GetCurrentProcess().Kill();

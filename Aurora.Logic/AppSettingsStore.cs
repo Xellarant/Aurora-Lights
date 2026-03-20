@@ -49,7 +49,7 @@ public sealed class AppSettingsStore
     // ----------------------------------------------------------------
 
     public string Accent { get; set; } = "Aurora Default";
-    public string Theme { get; set; } = "Aurora Light";
+    public string Theme { get; set; } = "Aurora Dark";
     public string PlayerName { get; set; } = string.Empty;
 
     /// <summary>

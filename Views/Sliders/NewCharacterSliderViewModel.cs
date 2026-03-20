@@ -133,6 +133,10 @@ public sealed class NewCharacterSliderViewModel : ViewModelBase
     }
   }
 
+  public ICommand CancelCommand => (ICommand) new RelayCommand(new Action(this.Cancel));
+
+  private void Cancel() { }
+
   public ICommand CreateNewCommand => (ICommand) new RelayCommand(new Action(this.CreateNew));
 
   public ICommand RandomizeNameCommand

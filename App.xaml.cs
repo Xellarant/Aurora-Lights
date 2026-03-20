@@ -58,6 +58,7 @@ public partial class App : Application
     current.ValidateConfiguration(true);
     current.UpgradeConfigurationCheck();
     current.LoadThemes();
+    new Builder.Presentation.Views.Splash().Show();
   }
 }
 

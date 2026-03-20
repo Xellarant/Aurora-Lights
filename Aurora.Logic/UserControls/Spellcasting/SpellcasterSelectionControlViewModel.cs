@@ -19,6 +19,7 @@ using Builder.Presentation.Services.Data;
 using Builder.Presentation.Services.Sources;
 using Builder.Presentation.Telemetry;
 using Builder.Presentation.ViewModels;
+using Builder.Presentation.UserControls;
 using Builder.Presentation.ViewModels.Base;
 using System;
 using System.Collections.Generic;
@@ -479,5 +480,21 @@ public sealed class SpellcasterSelectionControlViewModel :
     {
       this.SetProperty<int>(ref this._currentPreparedCount, value, nameof (CurrentPreparedCount));
     }
+  }
+
+  public SelectionNotification FilterNotification { get; } = new SelectionNotification("Filter", "Notification Message");
+
+  private int _filteredElementsCount;
+  public int FilteredElementsCount
+  {
+    get => this._filteredElementsCount;
+    set => this.SetProperty<int>(ref this._filteredElementsCount, value, nameof (FilteredElementsCount));
+  }
+
+  private int _selectionElementsCount;
+  public int SelectionElementsCount
+  {
+    get => this._selectionElementsCount;
+    set => this.SetProperty<int>(ref this._selectionElementsCount, value, nameof (SelectionElementsCount));
   }
 }

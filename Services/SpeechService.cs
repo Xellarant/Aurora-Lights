@@ -15,12 +15,9 @@ public sealed class SpeechService
 {
   private static SpeechService _instance;
   private SpeechSynthesizer _speech;
+  private bool _unavailable;
 
-  private SpeechService()
-  {
-    this._speech = new SpeechSynthesizer();
-    this._speech.SpeakCompleted += new EventHandler<SpeakCompletedEventArgs>(this._speech_SpeakCompleted);
-  }
+  private SpeechService() { }
 
   private void _speech_SpeakCompleted(object sender, SpeakCompletedEventArgs e)
   {
@@ -41,12 +38,32 @@ public sealed class SpeechService
     }
   }
 
+  private SpeechSynthesizer GetSynthesizer()
+  {
+    if (_unavailable) return null;
+    if (_speech != null) return _speech;
+    try
+    {
+      _speech = new SpeechSynthesizer();
+      _speech.SpeakCompleted += new EventHandler<SpeakCompletedEventArgs>(this._speech_SpeakCompleted);
+      return _speech;
+    }
+    catch (Exception ex)
+    {
+      Logger.Exception(ex, nameof(SpeechService));
+      _unavailable = true;
+      return null;
+    }
+  }
+
   public void StartSpeech(string input)
   {
+    var synth = GetSynthesizer();
+    if (synth == null) return;
     try
     {
       this.StopSpeech();
-      this._speech.SpeakAsync(input);
+      synth.SpeakAsync(input);
       this.OnSpeechStarted();
     }
     catch (Exception ex)
@@ -58,7 +75,8 @@ public sealed class SpeechService
 
   public void StopSpeech()
   {
-    this._speech.SpeakAsyncCancelAll();
+    if (_speech == null) return;
+    _speech.SpeakAsyncCancelAll();
     this.OnSpeechStopped();
   }
 

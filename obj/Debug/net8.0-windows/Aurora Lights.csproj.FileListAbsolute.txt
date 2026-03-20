@@ -259,7 +259,6 @@ C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\System.Window
 C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\styles\aurora\controls\expander.baml
 C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\Aurora Builder.g.resources
 C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\Builder.Presentation.Properties.Resources.resources
-C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\Builder.Presentation.strings.resources
 C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\Aurora Lights.csproj.GenerateResource.cache
 C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\Aurora Lights.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\Aurora Lights.csproj.CoreCompileInputs.cache
@@ -267,3 +266,36 @@ C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\Aurora Lights
 C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\Aurora L.0F457F58.Up2Date
 C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\Aurora Lights.genruntimeconfig.cache
 C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\ref\Aurora Builder.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\Aurora.Logic.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\Aurora.Logic.pdb
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\System.CodeDom.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\System.Management.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.Management.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\Newtonsoft.Json.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\SQLitePCLRaw.batteries_v2.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\SQLitePCLRaw.core.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\SQLitePCLRaw.provider.e_sqlite3.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\browser-wasm\nativeassets\net8.0\e_sqlite3.a
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-arm\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-arm64\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-armel\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-mips64\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-musl-arm\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-musl-arm64\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-musl-s390x\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-musl-x64\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-ppc64le\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-s390x\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-x64\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\linux-x86\native\libe_sqlite3.so
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\maccatalyst-arm64\native\libe_sqlite3.dylib
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\maccatalyst-x64\native\libe_sqlite3.dylib
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\osx-arm64\native\libe_sqlite3.dylib
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\osx-x64\native\libe_sqlite3.dylib
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\win-arm\native\e_sqlite3.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\win-arm64\native\e_sqlite3.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\win-x64\native\e_sqlite3.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\runtimes\win-x86\native\e_sqlite3.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\MouseKeyboardActivityMonitor.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\bin\Debug\net8.0-windows\lib\libmupdf.dll
+C:\Users\Ralla\source\repos\Aurora-Lights\obj\Debug\net8.0-windows\Aurora Builder_Content.g.cs

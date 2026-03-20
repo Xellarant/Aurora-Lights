@@ -160,8 +160,7 @@ public sealed class SourcesSectionViewModel :
   {
     if (MessageBox.Show("Your content files have been updated, do you want to restart the application to reload the content?", "Aurora", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
       return;
-    Process.Start(System.Windows.Application.ResourceAssembly.Location);
-    System.Windows.Application.Current.Shutdown();
+    ApplicationManager.Current.RestartApplication();
   }
 
   private void Clear()

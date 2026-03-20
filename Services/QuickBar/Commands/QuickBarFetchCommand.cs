@@ -75,8 +75,7 @@ public class QuickBarFetchCommand : QuickBarCommand
       await Task.Delay(1000);
       if (await this._updater.UpdateIndexFiles(DataManager.Current.UserDocumentsCustomElementsDirectory, file.FileInfo.FullName) && MessageBox.Show(Application.Current.MainWindow, "Your custom files have been updated, do you want to restart the applicaton to reload the content?", Resources.ApplicationName, MessageBoxButton.YesNo) == MessageBoxResult.Yes)
       {
-        Process.Start(Application.ResourceAssembly.Location);
-        Application.Current.Shutdown();
+        ApplicationManager.Current.RestartApplication();
       }
       this._eventAggregator.Send<MainWindowStatusUpdateEvent>(new MainWindowStatusUpdateEvent($"The '{file.Info.DisplayName}' bundle has been added."));
       file = (IndexFile) null;

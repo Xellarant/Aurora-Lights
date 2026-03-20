@@ -21,6 +21,7 @@ using Builder.Presentation.Services.Calculator;
 using Builder.Presentation.Services.Data;
 using Builder.Presentation.Telemetry;
 using Builder.Presentation.ViewModels.Base;
+using Builder.Presentation.ViewModels.Shell.Items;
 using Builder.Presentation.ViewModels.Shell.Manage;
 using Builder.Presentation.Views;
 using Builder.Presentation.Views.Dialogs;
@@ -89,6 +90,17 @@ public sealed class ShellWindowViewModel :
 
   public SpellContentViewModel SpellContentViewModel { get; set; } = new SpellContentViewModel();
 
+  /// <summary>Shadows ViewModelBase.Settings to expose ApplicationSettings (with ICommand properties) to XAML bindings.</summary>
+  public new ApplicationSettings Settings => ApplicationManager.Current.Settings;
+
+  public bool HasExpanders => true;
+
+  public RefactoredEquipmentSectionViewModel RefactoredEquipmentSectionViewModel { get; } = new RefactoredEquipmentSectionViewModel();
+
+  public ICommand QuickSearchCommand => (ICommand) new RelayCommand(new Action(this.QuickSearch));
+
+  private void QuickSearch() { }
+
   public ShellWindowViewModel()
   {
     this.SelectionRuleNavigationService = new SelectionRuleNavigationService(this.EventAggregator);
@@ -113,7 +125,7 @@ public sealed class ShellWindowViewModel :
       this.IsCharacterInformationBlockVisible = true;
       this.ListViewItemSize = ApplicationContext.Current.Settings.CharactersCollectionSize;
       this.ApplyRestrictionsCommand = (ICommand) new Builder.Presentation.Commands.ApplyRestrictionsCommand(this.CharacterManager);
-      this.ShowDonateButton = !this.Settings.Bundle;
+      this.ShowDonateButton = !this.Settings.Settings.Bundle;
       this.SubscribeWithEventAggregator();
       CharacterManager.Current.Status.StatusChanged += new EventHandler<CharacterStatusChangedEventArgs>(this.Status_StatusChanged);
     }
@@ -975,7 +987,7 @@ label_16:
     this.CharacterManager.File = this.Characters[0];
     this.SelectedCharacter = this.Characters[0];
     this.LoadedFilepath = portraitFilenames[0];
-    this.Character.Name = "Seiðr";
+    this.Character.Name = "Seiï¿½r";
     this.Character.Level = 7;
     this.Character.Background = "Uthgardt Tribe Member";
     this.Character.Class = "Blood Hunter";
@@ -1066,7 +1078,7 @@ label_16:
   {
     this.IsQuickSearchBarEnabled = args.Settings.QuickSearchBarEnabled;
     this.ListViewItemSize = args.Settings.CharactersCollectionSize;
-    this.ShowDonateButton = !this.Settings.Bundle;
+    this.ShowDonateButton = !this.Settings.Settings.Bundle;
   }
 
   public ICommand SaveDocumentAsCommand
@@ -1094,7 +1106,7 @@ label_16:
       CharacterManager.Current.ReprocessCharacter();
       FileInfo newSheet = new CharacterSheetGenerator(CharacterManager.Current).GenerateNewSheet(fileName, false);
       this.EventAggregator.Send<CharacterSheetSavedEvent>(new CharacterSheetSavedEvent(fileName));
-      int num = this.Settings.CharacterSheetOpenOnSave ? 1 : 0;
+      int num = this.Settings.Settings.CharacterSheetOpenOnSave ? 1 : 0;
       Process.Start(newSheet.FullName);
     }
     catch (IOException ex)
@@ -1137,8 +1149,7 @@ label_16:
   {
     if (MessageBox.Show("Your content files have been updated, do you want to restart the application to reload the content?", "Aurora Builder", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
       return;
-    Process.Start(System.Windows.Application.ResourceAssembly.Location);
-    System.Windows.Application.Current.Shutdown();
+    ApplicationManager.Current.RestartApplication();
   }
 
   private List<string> GetGroups()
