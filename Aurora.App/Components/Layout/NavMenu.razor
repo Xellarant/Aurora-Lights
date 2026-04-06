@@ -1,0 +1,42 @@
+@implements IDisposable
+@inject CharacterTabService Tabs
+
+<MudNavMenu>
+    @* ── Global ── *@
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.People">
+        Characters
+    </MudNavLink>
+    <MudNavLink Href="/preferences" Icon="@Icons.Material.Filled.Tune">
+        Preferences
+    </MudNavLink>
+
+    @* ── Per-character (only shown when a character is open) ── *@
+    @if (Tabs.ActiveTab != null)
+    {
+        <MudDivider Class="my-2" />
+        <MudNavLink Href="/character" Icon="@Icons.Material.Filled.Person">
+            Overview
+        </MudNavLink>
+        <MudNavLink Href="/build" Icon="@Icons.Material.Filled.Build">
+            Build
+        </MudNavLink>
+        <MudNavLink Href="/equipment" Icon="@Icons.Material.Filled.Shield">
+            Equipment
+        </MudNavLink>
+        <MudNavLink Href="/magic" Icon="@Icons.Material.Filled.AutoAwesome">
+            Magic
+        </MudNavLink>
+        <MudNavLink Href="/manage" Icon="@Icons.Material.Filled.ManageAccounts">
+            Manage
+        </MudNavLink>
+        <MudNavLink Href="/sheet" Icon="@Icons.Material.Filled.Article">
+            Sheet
+        </MudNavLink>
+    }
+</MudNavMenu>
+
+@code {
+    protected override void OnInitialized() => Tabs.TabsChanged += OnTabsChanged;
+    private void OnTabsChanged() => InvokeAsync(StateHasChanged);
+    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+}

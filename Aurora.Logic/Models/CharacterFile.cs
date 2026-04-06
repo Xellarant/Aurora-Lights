@@ -20,6 +20,7 @@ using Builder.Presentation.Models.Helpers;
 using Builder.Presentation.Models.NewFolder1;
 using Builder.Presentation.Models.Sources;
 using Builder.Presentation.Services;
+using Builder.Presentation.Interfaces;
 using Builder.Presentation.Services.Calculator;
 using Builder.Presentation.Services.Data;
 using Builder.Presentation.Telemetry;
@@ -706,16 +707,16 @@ public class CharacterFile : ObservableObject
         return new CharacterFile.LoadResult(true, "E10B");
     }
 
-    private async Task SendCharacterLoadingScreenStatusUpdate(string message, bool success = true)
+    private Task SendCharacterLoadingScreenStatusUpdate(string message, bool success = true)
     {
         ApplicationContext.Current.EventAggregator.Send<CharacterLoadingSliderStatusUpdateEvent>(new CharacterLoadingSliderStatusUpdateEvent(message, success));
-        await Task.Delay(50);
+        return Task.CompletedTask;
     }
 
-    private async Task SendCharacterLoadingScreenProgressUpdate(int progress)
+    private Task SendCharacterLoadingScreenProgressUpdate(int progress)
     {
         ApplicationContext.Current.EventAggregator.Send<CharacterLoadingSliderProgressEvent>(new CharacterLoadingSliderProgressEvent(progress));
-        await Task.Delay(50);
+        return Task.CompletedTask;
     }
 
     private void LoadSpellOverride(ObservableSpell spellslot, XmlNode node)
@@ -1375,6 +1376,50 @@ public class CharacterFile : ObservableObject
         return node1;
     }
 
+    /// <summary>
+    /// Builds a <see cref="SelectionElement"/> list for spells that belong to a given
+    /// spellcasting class when no WPF SpellcasterSelectionControlViewModel is available.
+    /// Matches spells from <paramref name="allSpells"/> to the class by grant-rule setter
+    /// ("spellcasting" == className) or select-rule spellcasting name attribute.
+    /// Prepared state is read from the ISpellcastingSectionHandler (MauiSpellcastingSectionHandler).
+    /// </summary>
+    private static IEnumerable<SelectionElement> BuildMauiKnownSpells(
+        IEnumerable<ElementBase> allSpells,
+        SpellcastingInformation info,
+        ISpellcastingSectionHandler handler)
+    {
+        var spells = allSpells.Cast<Spell>().ToList();
+
+        // Spells granted via a grant rule whose "spellcasting" setter matches this class.
+        var granted = spells.Where(s =>
+            s.Aquisition.WasGranted &&
+            s.Aquisition.GrantRule.Setters.ContainsSetter("spellcasting") &&
+            s.Aquisition.GrantRule.Setters.GetSetter("spellcasting").Value
+                .Equals(info.Name, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        // Spells selected via a select rule whose SpellcastingName matches this class.
+        var selected = spells.Where(s =>
+            s.Aquisition.WasSelected &&
+            s.Aquisition.SelectRule.Attributes.ContainsSpellcastingName() &&
+            s.Aquisition.SelectRule.Attributes.SpellcastingName
+                .Equals(info.Name, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        // Prepared IDs (non-always-prepared spells the user marked). Supplied via interface
+        // so no dependency on the concrete MAUI handler type.
+        IReadOnlyCollection<string> preparedIds = handler?.GetPreparedIds(info.Name)
+            ?? Array.Empty<string>();
+
+        foreach (var s in granted.Concat(selected).GroupBy(x => x.Id).Select(g => g.First()))
+        {
+            bool isChosen = s.Aquisition.WasGranted
+                ? s.Aquisition.GrantRule.IsAlwaysPrepared()
+                : s.Aquisition.SelectRule.IsAlwaysPrepared();
+            if (!isChosen && info.Prepare)
+                isChosen = preparedIds.Contains(s.Id);
+            yield return new SelectionElement((ElementBase)s) { IsChosen = isChosen };
+        }
+    }
+
     private XmlNode CreateMagicNode()
     {
         CharacterManager current1 = CharacterManager.Current;
@@ -1403,36 +1448,44 @@ public class CharacterFile : ObservableObject
                 XmlNode parentNode1 = element1.AppendChild((XmlNode)this._document.CreateElement("spellcasting"));
                 parentNode1.AppendAttribute("name", spellcastingInformation.Name);
                 parentNode1.AppendAttribute("ability", spellcastingInformation.AbilityName);
-                num = viewModel.InformationHeader.SpellAttackModifier;
+                // When viewModel is null (non-WPF host), compute stats directly from StatisticsCalculator.
+                var sv = current1.StatisticsCalculator.StatisticValues;
+                num = viewModel?.InformationHeader.SpellAttackModifier ?? sv.GetValue(spellcastingInformation.GetSpellcasterSpellAttackStatisticName());
                 parentNode1.AppendAttribute("attack", num.ToString());
-                num = viewModel.InformationHeader.SpellSaveDc;
+                num = viewModel?.InformationHeader.SpellSaveDc ?? sv.GetValue(spellcastingInformation.GetSpellcasterSpellSaveStatisticName());
                 parentNode1.AppendAttribute("dc", num.ToString());
                 parentNode1.AppendAttribute("source", spellcastingInformation.ElementHeader.Id);
                 XmlNode parentNode2 = parentNode1.AppendChild((XmlNode)this._document.CreateElement("slots"));
                 Dictionary<string, string> dictionary = new Dictionary<string, string>();
-                num = viewModel.InformationHeader.Slot1;
+                num = viewModel?.InformationHeader.Slot1 ?? sv.GetValue(spellcastingInformation.GetSlotStatisticName(1));
                 dictionary.Add("s1", num.ToString());
-                num = viewModel.InformationHeader.Slot2;
+                num = viewModel?.InformationHeader.Slot2 ?? sv.GetValue(spellcastingInformation.GetSlotStatisticName(2));
                 dictionary.Add("s2", num.ToString());
-                num = viewModel.InformationHeader.Slot3;
+                num = viewModel?.InformationHeader.Slot3 ?? sv.GetValue(spellcastingInformation.GetSlotStatisticName(3));
                 dictionary.Add("s3", num.ToString());
-                num = viewModel.InformationHeader.Slot4;
+                num = viewModel?.InformationHeader.Slot4 ?? sv.GetValue(spellcastingInformation.GetSlotStatisticName(4));
                 dictionary.Add("s4", num.ToString());
-                num = viewModel.InformationHeader.Slot5;
+                num = viewModel?.InformationHeader.Slot5 ?? sv.GetValue(spellcastingInformation.GetSlotStatisticName(5));
                 dictionary.Add("s5", num.ToString());
-                num = viewModel.InformationHeader.Slot6;
+                num = viewModel?.InformationHeader.Slot6 ?? sv.GetValue(spellcastingInformation.GetSlotStatisticName(6));
                 dictionary.Add("s6", num.ToString());
-                num = viewModel.InformationHeader.Slot7;
+                num = viewModel?.InformationHeader.Slot7 ?? sv.GetValue(spellcastingInformation.GetSlotStatisticName(7));
                 dictionary.Add("s7", num.ToString());
-                num = viewModel.InformationHeader.Slot8;
+                num = viewModel?.InformationHeader.Slot8 ?? sv.GetValue(spellcastingInformation.GetSlotStatisticName(8));
                 dictionary.Add("s8", num.ToString());
-                num = viewModel.InformationHeader.Slot9;
+                num = viewModel?.InformationHeader.Slot9 ?? sv.GetValue(spellcastingInformation.GetSlotStatisticName(9));
                 dictionary.Add("s9", num.ToString());
                 Dictionary<string, string> attributesDictionary = dictionary;
                 parentNode2.AppendAttributes(attributesDictionary);
                 XmlNode xmlNode1 = parentNode1.AppendChild((XmlNode)this._document.CreateElement("cantrips"));
                 XmlNode xmlNode2 = parentNode1.AppendChild((XmlNode)this._document.CreateElement("spells"));
-                foreach (SelectionElement selectionElement in (IEnumerable<SelectionElement>)viewModel.KnownSpells.OrderByDescending<SelectionElement, bool>((Func<SelectionElement, bool>)(x => x.IsChosen)).ThenBy<SelectionElement, int>((Func<SelectionElement, int>)(x => x.Element.AsElement<Spell>().Level)).ThenBy<SelectionElement, string>((Func<SelectionElement, string>)(x => x.Element.Name)))
+                IEnumerable<SelectionElement> knownSpells = viewModel != null
+                    ? (IEnumerable<SelectionElement>)viewModel.KnownSpells
+                    : BuildMauiKnownSpells(list, spellcastingInformation, current2);
+                foreach (SelectionElement selectionElement in knownSpells
+                    .OrderByDescending<SelectionElement, bool>((Func<SelectionElement, bool>)(x => x.IsChosen))
+                    .ThenBy<SelectionElement, int>((Func<SelectionElement, int>)(x => x.Element.AsElement<Spell>().Level))
+                    .ThenBy<SelectionElement, string>((Func<SelectionElement, string>)(x => x.Element.Name)))
                 {
                     bool flag1 = list.Remove(selectionElement.Element);
                     Spell spell = selectionElement.Element.AsElement<Spell>();
@@ -1449,9 +1502,12 @@ public class CharacterFile : ObservableObject
                     }
                     else
                     {
-                        if (viewModel.IsPrepareSpellsRequired)
+                        bool isPrepareRequired = viewModel?.IsPrepareSpellsRequired ?? spellcastingInformation.Prepare;
+                        if (isPrepareRequired)
                         {
-                            bool flag2 = ((IEnumerable<ElementBase>)viewModel.PreparedSpells).Contains<ElementBase>(selectionElement.Element);
+                            bool flag2 = viewModel != null
+                                ? ((IEnumerable<ElementBase>)viewModel.PreparedSpells).Contains<ElementBase>(selectionElement.Element)
+                                : selectionElement.IsChosen;
                             if (!selectionElement.IsChosen)
                                 selectionElement.IsChosen = flag2;
                             if (selectionElement.IsChosen)

@@ -10,7 +10,7 @@
   -->
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <OutputType>WinExe</OutputType>
     <AssemblyName>Aurora Builder</AssemblyName>
@@ -32,6 +32,7 @@
 
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -61,10 +62,16 @@
   <ItemGroup>
     <Compile Remove="Aurora.Logic\**\*.cs" />
     <Compile Remove="Aurora.App\**\*.cs" />
+    <Compile Remove="tools\**\*.cs" />
     <EmbeddedResource Remove="Aurora.Logic\**" />
     <EmbeddedResource Remove="Aurora.App\**" />
     <None Remove="Aurora.Logic\**" />
     <None Remove="Aurora.App\**" />
+    <!-- Exclude MAUI XAML files from WPF XAML compiler -->
+    <Page Remove="Aurora.App\**\*.xaml" />
+    <ApplicationDefinition Remove="Aurora.App\**\*.xaml" />
+    <Content Remove="Aurora.App\**" />
+    <MauiXaml Remove="Aurora.App\**\*.xaml" />
   </ItemGroup>
 
   <!-- Aurora.Logic: all platform-independent logic -->

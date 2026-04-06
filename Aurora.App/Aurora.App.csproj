@@ -1,36 +1,69 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <!--
-    Aurora.App – Phase 2
-    MAUI Blazor Hybrid: cross-platform UI shell targeting
-    Windows, macOS, iOS, and Android.
-
-    TODO (Phase 2 setup):
-      1. Change Sdk to "Microsoft.NET.Sdk.Maui" once MAUI workload is installed
-         and the Blazor Hybrid component scaffolding is in place.
-      2. Add TargetFrameworks for all target platforms, e.g.:
-           net8.0-windows10.0.19041.0;net8.0-maccatalyst;
-           net8.0-ios;net8.0-android
-      3. Add <ProjectReference Include="..\Aurora.Logic\Aurora.Logic.csproj" />
-      4. Scaffold MainLayout, NavMenu, App.razor, MauiProgram.cs, etc.
-
-    For now this is a placeholder that anchors the project in the solution
-    and makes the intent visible to the build system.
+    Aurora.App – Phase 3
+    MAUI Blazor Hybrid: cross-platform UI shell powered by MudBlazor.
+    Windows desktop is the primary target for Phase 3.
+    macOS / iOS / Android targets can be added later by appending to TargetFrameworks.
   -->
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <AssemblyName>Aurora.App</AssemblyName>
+    <TargetFrameworks>net10.0-windows10.0.19041.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Aurora.App</RootNamespace>
+    <AssemblyName>Aurora.App</AssemblyName>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ApplicationTitle>Aurora: Reflections</ApplicationTitle>
+    <ApplicationId>com.auroralights.app</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <!-- Suppress until MAUI workload + Blazor scaffolding is wired up -->
+    <EnableDefaultCssItems>false</EnableDefaultCssItems>
+    <!-- Run as unpackaged Win32 exe — no MSIX packaging required -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
     <NoWarn>$(NoWarn);CS8618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- App Icon -->
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+
+    <!-- Splash Screen -->
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#1e1e2e" BaseSize="128,128" />
+
+    <!-- Custom Fonts -->
+    <MauiFont Include="Resources\Fonts\*" />
+
+    <!-- Raw Assets -->
+    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
+    <PackageReference Include="MudBlazor" Version="7.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Aurora.Logic\Aurora.Logic.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Builder.Core">
+      <HintPath>..\lib\Builder.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Builder.Data">
+      <HintPath>..\lib\Builder.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Aurora.Documents">
+      <HintPath>..\lib\Aurora.Documents.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

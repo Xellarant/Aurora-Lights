@@ -1,0 +1,378 @@
+@page "/magic"
+@implements IDisposable
+@inject CharacterTabService Tabs
+@inject IDialogService DialogService
+@inject CharacterService Characters
+@inject ISnackbar Snackbar
+@inject UserPreferencesService Prefs
+
+@if (_snap is null)
+{
+    <div style="margin-top: 24px;">
+        <MudText Color="Color.Secondary">No character loaded. Open a character from the <MudLink Href="/">Characters</MudLink> page.</MudText>
+    </div>
+    return;
+}
+
+@if (!_snap.HasSpellcasting)
+{
+    <div style="margin-top: 24px;">
+        <MudText Color="Color.Secondary">This character has no spellcasting.</MudText>
+    </div>
+    return;
+}
+
+@if (!Prefs.AutoSaveBuildChanges)
+{
+    <div class="page-save-bar">
+        <MudText Typo="Typo.caption" Style="color: #a6adc8;">Auto-save off</MudText>
+        <MudButton StartIcon="@Icons.Material.Filled.Save"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Size="Size.Small"
+                   Disabled="@(_saving || !(Tabs.ActiveTab?.IsDirty == true))"
+                   OnClick="ManualSaveAsync">
+            Save
+        </MudButton>
+    </div>
+}
+@if (_saving)
+{
+    <div class="build-saving-bar">
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" Style="height: 2px;" />
+    </div>
+}
+@if (_saveError != null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-3" ShowCloseIcon="true"
+              CloseIconClicked="() => _saveError = null">
+        <div><b>Failed to save</b></div>
+        <div style="font-size:0.8em; word-break:break-all; white-space:pre-wrap;">@_saveError</div>
+    </MudAlert>
+}
+
+@* ── Spellcasting stats ── *@
+<div class="combat-strip" style="margin-bottom: 20px;">
+    <div class="combat-stat">
+        <div class="combat-stat-value" style="font-size: 14px; font-weight: 600;">@_snap.SpellcastingClass</div>
+        <div class="combat-stat-label">Class</div>
+    </div>
+    <div class="combat-sep"></div>
+    <div class="combat-stat">
+        <div class="combat-stat-value" style="font-size: 14px; font-weight: 600;">@_snap.SpellcastingAbility</div>
+        <div class="combat-stat-label">Ability</div>
+    </div>
+    <div class="combat-sep"></div>
+    <div class="combat-stat">
+        <div class="combat-stat-value">@_snap.SpellcastingDC</div>
+        <div class="combat-stat-label">Spell DC</div>
+    </div>
+    <div class="combat-sep"></div>
+    <div class="combat-stat">
+        <div class="combat-stat-value">@_snap.SpellcastingAttack</div>
+        <div class="combat-stat-label">Spell Attack</div>
+    </div>
+    @if (_snap.IsSpellcasterPrepared && _snap.MaxPrepared > 0)
+    {
+        <div class="combat-sep"></div>
+        <div class="combat-stat">
+            <div class="combat-stat-value @(_snap.PreparedCount >= _snap.MaxPrepared ? "prepared-count-full" : "")">
+                @_snap.PreparedCount / @_snap.MaxPrepared
+            </div>
+            <div class="combat-stat-label">Prepared</div>
+        </div>
+    }
+</div>
+
+@* ── Known spell selection (for known casters) ── *@
+@foreach (var group in _spellRuleGroups)
+{
+    <div class="build-section">
+        <div class="section-label">@group.Label — Known Spells</div>
+        <div class="build-rule-list">
+            @foreach (var entry in group.Rules)
+            {
+                <div class="build-rule-row">
+                    <div class="build-rule-label">@entry.Label</div>
+                    <div class="build-rule-value @(entry.CurrentName == null ? "build-rule-empty" : "")">
+                        @(entry.CurrentName ?? "—")
+                    </div>
+                    <button class="build-rule-btn" @onclick="() => OpenSpellPickerAsync(entry)">Change</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@* ── Two-panel spell layout ── *@
+<div class="magic-layout">
+
+    @* ── Left: spell list ── *@
+    <div class="magic-list">
+
+        @* Cantrips *@
+        @if (_snap.Cantrips.Count > 0)
+        {
+            <div class="magic-level-header">
+                <span class="section-label" style="margin: 0;">Cantrips</span>
+            </div>
+            @foreach (var name in _snap.Cantrips)
+            {
+                var cantripId = _cantripEntries.FirstOrDefault(c => c.Name == name).Id ?? name;
+                <div class="spell-overview-row @(_selectedId == cantripId ? "spell-overview-selected" : "")"
+                     @onclick="() => SelectSpell(cantripId)">
+                    <span class="spell-dot spell-dot-cantrip"></span>
+                    <span class="spell-name">@name</span>
+                </div>
+            }
+        }
+
+        @* Leveled spells *@
+        @foreach (var lvl in _snap.SpellLevels)
+        {
+            <div class="magic-level-header">
+                <span class="section-label" style="margin: 0;">@Ordinal(lvl.Level) Level</span>
+                @if (lvl.TotalSlots > 0)
+                {
+                    <div class="magic-slot-track">
+                        @for (int i = 0; i < lvl.TotalSlots; i++)
+                        {
+                            var slotIndex = i;
+                            var used = slotIndex < lvl.UsedSlots;
+                            <button class="slot-bubble @(used ? "slot-bubble-used" : "slot-bubble-free")"
+                                    title="@(used ? "Recover slot" : "Expend slot")"
+                                    @onclick="() => ToggleSlot(lvl, slotIndex)">
+                            </button>
+                        }
+                        <span class="slot-count">@(lvl.TotalSlots - lvl.UsedSlots)/@lvl.TotalSlots</span>
+                    </div>
+                }
+            </div>
+            @foreach (var spell in lvl.Spells)
+            {
+                <div class="spell-overview-row @(_selectedId == spell.Id ? "spell-overview-selected" : "")"
+                     @onclick="() => SelectSpell(spell.Id)">
+                    <MudCheckBox Value="spell.IsPrepared"
+                                 ValueChanged="@((bool v) => OnPreparedChanged(spell, v))"
+                                 Size="Size.Small"
+                                 Color="Color.Primary"
+                                 Disabled="@(spell.IsAlwaysPrepared || (!spell.IsPrepared && _snap.IsSpellcasterPrepared && _snap.PreparedCount >= _snap.MaxPrepared))"
+                                 Style="margin: 0; padding: 0;" />
+                    <span class="spell-name @(spell.IsPrepared ? "spell-name-prepared" : "")">@spell.Name</span>
+                </div>
+            }
+        }
+    </div>
+
+    @* ── Right: spell detail ── *@
+    <div class="magic-detail">
+        @if (_spellDetail != null)
+        {
+            <div class="spell-detail-name">@_spellDetail.Name</div>
+            <div class="spell-detail-meta">
+                @if (!string.IsNullOrEmpty(_spellDetail.Subtitle))
+                {
+                    <span class="spell-detail-subtitle">@_spellDetail.Subtitle</span>
+                }
+                @if (!string.IsNullOrEmpty(_spellDetail.Source))
+                {
+                    <span class="spell-detail-source">@_spellDetail.Source</span>
+                }
+            </div>
+            @if (!string.IsNullOrEmpty(_spellDetail.CastingTime) ||
+                 !string.IsNullOrEmpty(_spellDetail.Range) ||
+                 !string.IsNullOrEmpty(_spellDetail.Components) ||
+                 !string.IsNullOrEmpty(_spellDetail.Duration))
+            {
+                <div class="spell-detail-props">
+                    @SpellPropRow("Casting Time", _spellDetail.CastingTime)
+                    @SpellPropRow("Range",        _spellDetail.Range)
+                    @SpellPropRow("Components",   _spellDetail.Components)
+                    @SpellPropRow("Duration",     _spellDetail.Duration)
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(_spellDetail.Description))
+            {
+                <div class="spell-detail-desc">@_spellDetail.Description</div>
+            }
+        }
+        else
+        {
+            <div class="spell-detail-empty">Select a spell to see details.</div>
+        }
+    </div>
+</div>
+
+@code {
+    private CharacterSnapshot?                _snap;
+    private IReadOnlyList<SelectionRuleGroup> _spellRuleGroups = [];
+    private bool                              _saving;
+    private string?                           _saveError;
+    private string?                           _selectedId;
+    private SpellDetail?                      _spellDetail;
+    private IReadOnlyList<(string Id, string Name)> _cantripEntries = [];
+
+    protected override void OnInitialized()
+    {
+        Tabs.TabsChanged += OnTabsChanged;
+        LoadFromActiveTab();
+    }
+
+    private void LoadFromActiveTab()
+    {
+        _snap            = Tabs.ActiveTab?.Snapshot;
+        _spellRuleGroups = _snap != null ? BuildService.GetSpellRuleGroups() : [];
+        _selectedId      = null;
+        _spellDetail     = null;
+
+        if (_snap != null)
+        {
+            _cantripEntries = _snap.Cantrips
+                .Select(name =>
+                {
+                    var found = Builder.Presentation.Services.Data.DataManager.Current
+                        .ElementsCollection
+                        .FirstOrDefault(e => e.Type == "Spell" &&
+                                             string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase));
+                    return (Id: found?.Id ?? name, Name: name);
+                })
+                .ToList();
+        }
+        else
+        {
+            _cantripEntries = [];
+        }
+    }
+
+    private void OnTabsChanged() => InvokeAsync(() =>
+    {
+        LoadFromActiveTab();
+        StateHasChanged();
+    });
+
+    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+
+    private void SelectSpell(string id)
+    {
+        _selectedId  = id;
+        _spellDetail = BuildService.GetSpellDetail(id);
+    }
+
+    private RenderFragment SpellPropRow(string label, string value) => builder =>
+    {
+        if (string.IsNullOrWhiteSpace(value)) return;
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "spell-prop-row");
+        builder.OpenElement(2, "span");
+        builder.AddAttribute(3, "class", "spell-prop-label");
+        builder.AddContent(4, label);
+        builder.CloseElement();
+        builder.OpenElement(5, "span");
+        builder.AddAttribute(6, "class", "spell-prop-value");
+        builder.AddContent(7, value);
+        builder.CloseElement();
+        builder.CloseElement();
+    };
+
+    private async Task ManualSaveAsync()
+    {
+        var tab = Tabs.ActiveTab;
+        if (tab == null) return;
+        _saving = true;
+        StateHasChanged();
+        var error = await BuildService.SaveTabAsync(tab);
+        _saving = false;
+        if (error == null)
+        {
+            Tabs.MarkClean(tab);
+            Snackbar.Add("Saved.", Severity.Success, cfg => { cfg.VisibleStateDuration = 2000; });
+        }
+        else
+        {
+            _saveError = error;
+        }
+        StateHasChanged();
+    }
+
+    // ── Spell selection (known casters) ──────────────────────────────────────────
+
+    private async Task OpenSpellPickerAsync(SelectionRuleEntry entry)
+    {
+        var tab  = Tabs.ActiveTab;
+        var file = Characters.CurrentCharacterFile;
+        if (tab == null || file == null) return;
+
+        var options = await Task.Run(() => BuildService.GetOptions(entry.Rule));
+
+        var parameters = new DialogParameters
+        {
+            [nameof(SelectionPickerDialog.Entry)]   = entry,
+            [nameof(SelectionPickerDialog.Options)] = options,
+        };
+        var dialogOptions = new DialogOptions
+        {
+            MaxWidth         = MaxWidth.Large,
+            FullWidth        = true,
+            CloseOnEscapeKey = true,
+        };
+
+        var dialog = await DialogService.ShowAsync<SelectionPickerDialog>(entry.Label, parameters, dialogOptions);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: string selectedId })
+        {
+            _saving    = true;
+            _saveError = null;
+            StateHasChanged();
+
+            bool autoSave = Prefs.AutoSaveBuildChanges;
+            var removed = await BuildService.ApplySelectionAndSaveAsync(
+                entry.Rule, selectedId, entry.Number, tab, file, saveToFile: autoSave);
+
+            _saving = false;
+
+            var errors = removed.Where(s => s.StartsWith("[Error:")).ToList();
+
+            if (errors.Count > 0)
+                _saveError = string.Join("; ", errors.Select(e => e.TrimStart('[').TrimEnd(']').Replace("Error: ", "")));
+            else if (autoSave)
+            {
+                Tabs.MarkClean(tab);
+                Snackbar.Add("Changes saved.", Severity.Success, cfg => { cfg.VisibleStateDuration = 2000; });
+            }
+            else
+            {
+                Tabs.MarkDirty(tab);
+                Snackbar.Add("Changes applied. Save when ready.", Severity.Info, cfg => { cfg.VisibleStateDuration = 2500; });
+            }
+
+            LoadFromActiveTab();
+            StateHasChanged();
+        }
+    }
+
+    // ── Prepare toggles ──────────────────────────────────────────────────────────
+
+    private void OnPreparedChanged(SpellEntry spell, bool value)
+    {
+        spell.IsPrepared = value;
+        if (Tabs.ActiveTab is { } tab)
+            Tabs.MarkDirty(tab);
+    }
+
+    private void ToggleSlot(SpellLevelEntry lvl, int slotIndex)
+    {
+        if (slotIndex < lvl.UsedSlots)
+            lvl.UsedSlots = slotIndex;
+        else
+            lvl.UsedSlots = slotIndex + 1;
+    }
+
+    private static string Ordinal(int n) => n switch
+    {
+        1 => "1st",
+        2 => "2nd",
+        3 => "3rd",
+        _ => $"{n}th",
+    };
+}

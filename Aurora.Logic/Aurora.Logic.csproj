@@ -6,7 +6,7 @@
     Events, Utilities, Telemetry, Syndication, Logging, AppSettingsStore,
     ApplicationManager, CharacterManager, and supporting infrastructure.
 
-    Target: net8.0 (no -windows) so this library can be consumed by
+    Target: net10.0 (no -windows) so this library can be consumed by
     Aurora.App (MAUI Blazor Hybrid) on Windows, macOS, iOS, and Android.
 
     Note: ~16 ViewModels and ~9 Commands still reference System.Windows.*
@@ -15,7 +15,7 @@
   -->
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Aurora.Logic</AssemblyName>
     <RootNamespace>Builder.Presentation</RootNamespace>
     <Nullable>enable</Nullable>
@@ -67,8 +67,8 @@
     <PackageReference Include="Microsoft.AppCenter" Version="5.0.7" />
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="5.0.7" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.7" />
-    <PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+    <PackageReference Include="System.ServiceModel.Syndication" Version="10.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
   </ItemGroup>
 
   <!-- Embedded resources: XML data, HTML documents, gallery images -->

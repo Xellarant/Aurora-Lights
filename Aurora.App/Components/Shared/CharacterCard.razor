@@ -1,0 +1,59 @@
+@using Builder.Presentation.Models
+
+<div class="char-card" @onclick="OnClick">
+
+    <div class="char-card-portrait">
+        @if (!string.IsNullOrEmpty(PortraitSrc))
+        {
+            <img src="@PortraitSrc" alt="@Character.DisplayName" class="char-card-img" />
+        }
+        else
+        {
+            <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size: 56px; color: #585b70;" />
+        }
+    </div>
+
+    <div class="char-card-body">
+        <div class="char-card-name-row">
+            @if (Character.IsFavorite)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Star" Style="font-size: 14px; color: #f9e2af; flex-shrink: 0;" />
+            }
+            <span class="char-card-name">@Character.DisplayName</span>
+        </div>
+        <div class="char-card-sub">Level @Character.DisplayLevel &middot; @Character.DisplayRace</div>
+        <div class="char-card-sub">@Character.DisplayClass</div>
+    </div>
+
+</div>
+
+@code {
+    [Parameter, EditorRequired] public CharacterFile Character { get; set; } = null!;
+    [Parameter] public EventCallback<CharacterFile> OnSelected { get; set; }
+
+    private string? PortraitSrc
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(Character.DisplayPortraitBase64))
+                return $"data:image/png;base64,{Character.DisplayPortraitBase64}";
+
+            if (!string.IsNullOrEmpty(Character.DisplayPortraitFilePath))
+            {
+                try
+                {
+                    if (File.Exists(Character.DisplayPortraitFilePath))
+                    {
+                        var bytes = File.ReadAllBytes(Character.DisplayPortraitFilePath);
+                        return $"data:image/png;base64,{Convert.ToBase64String(bytes)}";
+                    }
+                }
+                catch { }
+            }
+
+            return null;
+        }
+    }
+
+    private async Task OnClick() => await OnSelected.InvokeAsync(Character);
+}

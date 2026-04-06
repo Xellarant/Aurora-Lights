@@ -39,27 +39,19 @@ public class DiceService
 
   public async Task<int> D100(int amount = 1) => await this.RollAsync(100, amount);
 
-  private async Task<int> RollAsync(int sides, int amount = 1)
+  private Task<int> RollAsync(int sides, int amount = 1)
   {
     int result = 0;
     for (int i = 0; i < amount; ++i)
-    {
-      await Task.Delay(50);
       result += this._rnd.Next(sides) + 1;
-    }
-    return result;
+    return Task.FromResult(result);
   }
 
-  public async Task<int> RandomizeAbilityScore()
+  public Task<int> RandomizeAbilityScore()
   {
-    List<int> results = new List<int>();
+    var results = new List<int>();
     for (int i = 0; i < 4; ++i)
-    {
-      await Task.Delay(50);
       results.Add(this._rnd.Next(6) + 1);
-    }
-    int num = results.Sum() - results.Min();
-    results = (List<int>) null;
-    return num;
+    return Task.FromResult(results.Sum() - results.Min());
   }
 }

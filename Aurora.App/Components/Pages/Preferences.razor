@@ -1,0 +1,22 @@
+@page "/preferences"
+@inject UserPreferencesService Prefs
+
+<MudText Typo="Typo.h5" Class="mb-6">Preferences</MudText>
+
+<div class="pref-section">
+    <div class="section-label">Build &amp; Magic</div>
+
+    <div class="pref-row">
+        <div class="pref-row-text">
+            <div class="pref-row-title">Auto-save on selection change</div>
+            <div class="pref-row-desc">
+                When enabled, choosing a new option on the Build or Magic page immediately
+                writes the character file to disk. Disable this if you want to experiment
+                with different build choices and save only when satisfied.
+            </div>
+        </div>
+        <MudSwitch Value="Prefs.AutoSaveBuildChanges"
+                   ValueChanged="@((bool v) => Prefs.AutoSaveBuildChanges = v)"
+                   Color="Color.Primary" />
+    </div>
+</div>

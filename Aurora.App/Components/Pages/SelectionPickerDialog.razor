@@ -1,0 +1,117 @@
+@using Aurora.App.Services
+
+<MudDialog Style="max-height: 90vh;">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Style="font-size: 15px; font-weight: 600;">@Entry.Label</MudText>
+    </TitleContent>
+    <DialogContent>
+        <div class="picker-layout">
+            @* ── Left: search + list ── *@
+            <div class="picker-left">
+                <MudTextField @bind-Value="_search"
+                              Placeholder="Search…"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Clearable="true"
+                              Immediate="true"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+
+                @if (_filtered.Count == 0)
+                {
+                    <MudText Color="Color.Secondary" Style="padding: 12px 0; font-size: 13px;">
+                        No options found.
+                    </MudText>
+                }
+                else
+                {
+                    <div class="picker-list">
+                        @foreach (var opt in _filtered)
+                        {
+                            var isSelected = opt.Id == _selectedId;
+                            <div class="picker-item @(isSelected ? "picker-item-selected" : "")"
+                                 @onclick="() => SelectItem(opt)">
+                                <div class="picker-item-name">@opt.Name</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            @* ── Right: detail panel ── *@
+            <div class="picker-detail">
+                @if (_selectedOpt != null)
+                {
+                    <div class="picker-detail-name">@_selectedOpt.Name</div>
+                    @if (!string.IsNullOrEmpty(_selectedOpt.Source))
+                    {
+                        <div class="picker-detail-source">@_selectedOpt.Source</div>
+                    }
+                    @if (!string.IsNullOrEmpty(_selectedOpt.Requirements))
+                    {
+                        <div class="picker-detail-req">Requires: @_selectedOpt.Requirements</div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(_selectedOpt.Description))
+                    {
+                        <div class="picker-detail-desc">@_selectedOpt.Description</div>
+                    }
+                    else
+                    {
+                        <div class="picker-detail-empty">No description available.</div>
+                    }
+                }
+                else
+                {
+                    <div class="picker-detail-empty">Select an option to see details.</div>
+                }
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Confirm"
+                   Disabled="@(_selectedId == null)">
+            Select
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public SelectionRuleEntry Entry    { get; set; } = null!;
+    [Parameter] public IReadOnlyList<ElementOption> Options { get; set; } = [];
+
+    private string       _search     = "";
+    private string?      _selectedId;
+    private ElementOption? _selectedOpt;
+
+    private List<ElementOption> _filtered => string.IsNullOrWhiteSpace(_search)
+        ? Options.ToList()
+        : Options.Where(o =>
+            o.Name.Contains(_search, StringComparison.OrdinalIgnoreCase) ||
+            o.Description.Contains(_search, StringComparison.OrdinalIgnoreCase))
+          .ToList();
+
+    protected override void OnParametersSet()
+    {
+        if (Entry.CurrentName != null)
+        {
+            var current = Options.FirstOrDefault(o =>
+                string.Equals(o.Name, Entry.CurrentName, StringComparison.OrdinalIgnoreCase));
+            if (current != null)
+                SelectItem(current);
+        }
+    }
+
+    private void SelectItem(ElementOption opt)
+    {
+        _selectedId  = opt.Id;
+        _selectedOpt = opt;
+    }
+
+    private void Cancel()  => MudDialog.Cancel();
+    private void Confirm() { if (_selectedId != null) MudDialog.Close(_selectedId); }
+}

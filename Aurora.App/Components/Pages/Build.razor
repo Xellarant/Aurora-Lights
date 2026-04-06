@@ -1,0 +1,221 @@
+@page "/build"
+@implements IDisposable
+@inject CharacterTabService Tabs
+@inject IDialogService DialogService
+@inject CharacterService Characters
+@inject ISnackbar Snackbar
+@inject UserPreferencesService Prefs
+
+@if (_snap is null)
+{
+    <div style="margin-top: 24px;">
+        <MudText Color="Color.Secondary">No character loaded. Open a character from the <MudLink Href="/">Characters</MudLink> page.</MudText>
+    </div>
+    return;
+}
+
+@if (!Prefs.AutoSaveBuildChanges)
+{
+    <div class="page-save-bar">
+        <MudText Typo="Typo.caption" Style="color: #a6adc8;">Auto-save off</MudText>
+        <MudButton StartIcon="@Icons.Material.Filled.Save"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Size="Size.Small"
+                   Disabled="@(_saving || !(Tabs.ActiveTab?.IsDirty == true))"
+                   OnClick="ManualSaveAsync">
+            Save
+        </MudButton>
+    </div>
+}
+@if (_saving)
+{
+    <div class="build-saving-bar">
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" Style="height: 2px;" />
+    </div>
+}
+@if (_saveError != null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-3" ShowCloseIcon="true"
+              CloseIconClicked="() => _saveError = null">
+        <div><b>Failed to save</b></div>
+        <div style="font-size:0.8em; word-break:break-all; white-space:pre-wrap;">@_saveError</div>
+    </MudAlert>
+}
+@if (_invalidated.Count > 0)
+{
+    <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3" ShowCloseIcon="true"
+              CloseIconClicked="() => _invalidated.Clear()">
+        The following selections were removed because they are no longer valid:
+        <b>@string.Join(", ", _invalidated)</b>
+    </MudAlert>
+}
+
+@* ── Selections ── *@
+@foreach (var group in _ruleGroups)
+{
+    <div class="build-section">
+        <div class="section-label">@group.Label</div>
+        <div class="build-rule-list">
+            @foreach (var entry in group.Rules)
+            {
+                <div class="build-rule-row">
+                    <div class="build-rule-label">@entry.Label</div>
+                    <div class="build-rule-value @(entry.CurrentName == null ? "build-rule-empty" : "")">
+                        @(entry.CurrentName ?? "—")
+                    </div>
+                    <button class="build-rule-btn" @onclick="() => OpenPickerAsync(entry)">Change</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@* ── Class features overview ── *@
+@if (_progressions is { Count: > 0 })
+{
+    foreach (var cls in _progressions)
+    {
+        <div class="build-section">
+            <div class="build-class-header">
+                <div class="build-primary-text">@cls.ClassName</div>
+                <div class="build-badges">
+                    <span class="build-badge">Level @cls.Level</span>
+                    @if (!string.IsNullOrEmpty(cls.HitDie))
+                    {
+                        <span class="build-badge">@cls.HitDie</span>
+                    }
+                    @if (!cls.IsMainClass)
+                    {
+                        <span class="build-badge build-badge-multi">Multiclass</span>
+                    }
+                </div>
+            </div>
+            @if (cls.Features.Count > 0)
+            {
+                <div class="section-label" style="margin-top: 14px;">Features</div>
+                <div class="build-feature-list">
+                    @foreach (var f in cls.Features)
+                    {
+                        <div class="build-feature-item">@f.Name</div>
+                    }
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    private CharacterSnapshot?                        _snap;
+    private IReadOnlyList<ClassProgressionSnapshot>?  _progressions;
+    private IReadOnlyList<SelectionRuleGroup>         _ruleGroups  = [];
+    private List<string>                              _invalidated = [];
+    private string?                                   _saveError;
+    private bool                                      _saving;
+
+    protected override void OnInitialized()
+    {
+        Tabs.TabsChanged += OnTabsChanged;
+        LoadFromActiveTab();
+    }
+
+    private void LoadFromActiveTab()
+    {
+        _snap         = Tabs.ActiveTab?.Snapshot;
+        _progressions = Tabs.ActiveTab?.ProgressionSnapshots;
+        _ruleGroups   = _snap != null ? BuildService.GetRuleGroups() : [];
+    }
+
+    private void OnTabsChanged() => InvokeAsync(() =>
+    {
+        LoadFromActiveTab();
+        StateHasChanged();
+    });
+
+    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+
+    private async Task ManualSaveAsync()
+    {
+        var tab = Tabs.ActiveTab;
+        if (tab == null) return;
+        _saving = true;
+        StateHasChanged();
+        var error = await BuildService.SaveTabAsync(tab);
+        _saving = false;
+        if (error == null)
+        {
+            Tabs.MarkClean(tab);
+            Snackbar.Add("Saved.", Severity.Success, cfg => { cfg.VisibleStateDuration = 2000; });
+        }
+        else
+        {
+            _saveError = error;
+        }
+        StateHasChanged();
+    }
+
+    private async Task OpenPickerAsync(SelectionRuleEntry entry)
+    {
+        var tab  = Tabs.ActiveTab;
+        var file = Characters.CurrentCharacterFile;
+        if (tab == null || file == null) return;
+
+        // Load options on a background thread — may scan thousands of elements.
+        var options = await Task.Run(() => BuildService.GetOptions(entry.Rule));
+
+        var parameters = new DialogParameters
+        {
+            [nameof(SelectionPickerDialog.Entry)]   = entry,
+            [nameof(SelectionPickerDialog.Options)] = options,
+        };
+        var dialogOptions = new DialogOptions
+        {
+            MaxWidth         = MaxWidth.Large,
+            FullWidth        = true,
+            CloseOnEscapeKey = true,
+        };
+
+        var dialog = await DialogService.ShowAsync<SelectionPickerDialog>(entry.Label, parameters, dialogOptions);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: string selectedId })
+        {
+            _saving = true;
+            _invalidated.Clear();
+            _saveError = null;
+            StateHasChanged();
+
+            bool autoSave = Prefs.AutoSaveBuildChanges;
+            var removed = await BuildService.ApplySelectionAndSaveAsync(
+                entry.Rule, selectedId, entry.Number, tab, file, saveToFile: autoSave);
+
+            _saving = false;
+            _saveError = null;
+
+            var errors = removed.Where(s => s.StartsWith("[Error:")).ToList();
+            var normal = removed.Where(s => !s.StartsWith("[Error:")).ToList();
+
+            if (errors.Count > 0)
+                _saveError = string.Join("; ", errors.Select(e => e.TrimStart('[').TrimEnd(']').Replace("Error: ", "")));
+
+            _invalidated.AddRange(normal);
+
+            if (_saveError == null)
+            {
+                if (autoSave)
+                {
+                    Tabs.MarkClean(tab);
+                    Snackbar.Add("Changes saved.", Severity.Success, cfg => { cfg.VisibleStateDuration = 2000; });
+                }
+                else
+                {
+                    Tabs.MarkDirty(tab);
+                    Snackbar.Add("Changes applied. Save when ready.", Severity.Info, cfg => { cfg.VisibleStateDuration = 2500; });
+                }
+            }
+
+            LoadFromActiveTab();
+            StateHasChanged();
+        }
+    }
+}

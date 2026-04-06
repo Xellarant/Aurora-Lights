@@ -1,0 +1,155 @@
+@page "/manage"
+@implements IDisposable
+@inject CharacterTabService Tabs
+
+@if (_snap is null)
+{
+    <div style="margin-top: 24px;">
+        <MudText Color="Color.Secondary">No character loaded. Open a character from the <MudLink Href="/">Characters</MudLink> page.</MudText>
+    </div>
+    return;
+}
+
+@* ── Player Info ── *@
+<div class="build-section">
+    <div class="section-label">Player</div>
+    <div class="edit-grid">
+        <div class="edit-row">
+            <span class="edit-label">Character</span>
+            <MudTextField @bind-Value="_snap.Name" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+        <div class="edit-row">
+            <span class="edit-label">Player</span>
+            <MudTextField @bind-Value="_snap.PlayerName" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+        <div class="edit-row">
+            <span class="edit-label">XP</span>
+            <MudNumericField @bind-Value="_snap.Experience" @bind-Value:after="MarkDirty"
+                             Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" Class="edit-field" />
+        </div>
+        <div class="edit-row">
+            <span class="edit-label">Deity</span>
+            <MudTextField Value="_snap.Deity" ReadOnly="true"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+        <div class="edit-row">
+            <span class="edit-label">Alignment</span>
+            <MudTextField Value="_snap.Alignment" ReadOnly="true"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+    </div>
+</div>
+
+@* ── Appearance ── *@
+<div class="build-section">
+    <div class="section-label">Appearance</div>
+    <div class="edit-grid edit-grid-2col">
+        <div class="edit-row">
+            <span class="edit-label">Age</span>
+            <MudTextField @bind-Value="_snap.Age" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+        <div class="edit-row">
+            <span class="edit-label">Gender</span>
+            <MudTextField @bind-Value="_snap.Gender" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+        <div class="edit-row">
+            <span class="edit-label">Height</span>
+            <MudTextField @bind-Value="_snap.Height" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+        <div class="edit-row">
+            <span class="edit-label">Weight</span>
+            <MudTextField @bind-Value="_snap.Weight" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+        <div class="edit-row">
+            <span class="edit-label">Eyes</span>
+            <MudTextField @bind-Value="_snap.Eyes" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+        <div class="edit-row">
+            <span class="edit-label">Hair</span>
+            <MudTextField @bind-Value="_snap.Hair" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+        <div class="edit-row">
+            <span class="edit-label">Skin</span>
+            <MudTextField @bind-Value="_snap.Skin" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+    </div>
+</div>
+
+@* ── Backstory ── *@
+<div class="build-section">
+    <div class="section-label">Backstory</div>
+    <MudTextField @bind-Value="_snap.Backstory" @bind-Value:after="MarkDirty"
+                  Variant="Variant.Outlined" Lines="6" AutoGrow="true"
+                  Style="width: 100%; font-size: 13px;" />
+</div>
+
+@* ── Affiliations ── *@
+<div class="build-section">
+    <div class="section-label">Affiliations</div>
+    <div class="edit-grid">
+        <div class="edit-row">
+            <span class="edit-label">Organisation</span>
+            <MudTextField @bind-Value="_snap.Organisation" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+        <div class="edit-row">
+            <span class="edit-label">Allies</span>
+            <MudTextField @bind-Value="_snap.Allies" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        </div>
+    </div>
+</div>
+
+@* ── Trinket ── *@
+<div class="build-section">
+    <div class="section-label">Trinket</div>
+    <MudTextField @bind-Value="_snap.Trinket" @bind-Value:after="MarkDirty"
+                  Variant="Variant.Outlined" Lines="2" AutoGrow="true"
+                  Style="width: 100%; font-size: 13px;" />
+</div>
+
+@* ── Notes ── *@
+<div class="build-section">
+    <div class="section-label">Notes</div>
+    <MudTextField @bind-Value="_snap.Notes1" @bind-Value:after="MarkDirty"
+                  Variant="Variant.Outlined" Lines="4" AutoGrow="true"
+                  Style="width: 100%; font-size: 13px; margin-bottom: 10px;" />
+    <MudTextField @bind-Value="_snap.Notes2" @bind-Value:after="MarkDirty"
+                  Variant="Variant.Outlined" Lines="4" AutoGrow="true"
+                  Style="width: 100%; font-size: 13px;" />
+</div>
+
+@code {
+    private CharacterSnapshot? _snap;
+
+    protected override void OnInitialized()
+    {
+        Tabs.TabsChanged += OnTabsChanged;
+        LoadFromActiveTab();
+    }
+
+    private void LoadFromActiveTab() => _snap = Tabs.ActiveTab?.Snapshot;
+
+    private void OnTabsChanged() => InvokeAsync(() =>
+    {
+        LoadFromActiveTab();
+        StateHasChanged();
+    });
+
+    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+
+    private void MarkDirty()
+    {
+        if (Tabs.ActiveTab is { } tab)
+            Tabs.MarkDirty(tab);
+    }
+}

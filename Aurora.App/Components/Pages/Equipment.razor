@@ -1,0 +1,203 @@
+@page "/equipment"
+@implements IDisposable
+@inject CharacterTabService Tabs
+@using Builder.Presentation.ViewModels.Shell.Items
+
+@if (_snap is null)
+{
+    <div style="margin-top: 24px;">
+        <MudText Color="Color.Secondary">No character loaded. Open a character from the <MudLink Href="/">Characters</MudLink> page.</MudText>
+    </div>
+    return;
+}
+
+@* ── Attacks ── *@
+@if (_snap.Attacks.Count > 0)
+{
+    <div class="section-label">Attacks</div>
+    <div class="attack-table mb-section">
+        <div class="attack-row attack-header">
+            <span class="attack-name">Name</span>
+            <span class="attack-bonus">Attack</span>
+            <span class="attack-damage">Damage</span>
+            <span class="attack-range">Range</span>
+        </div>
+        @foreach (var atk in _snap.Attacks)
+        {
+            <div class="attack-row">
+                <span class="attack-name">@atk.Name</span>
+                <span class="attack-bonus">@atk.Attack</span>
+                <span class="attack-damage">@atk.Damage</span>
+                <span class="attack-range">@atk.Range</span>
+            </div>
+        }
+    </div>
+}
+
+@* ── Currency ── *@
+<div class="section-label">Currency</div>
+<div class="currency-strip mb-section">
+    @CoinField("CP", "#b87333", () => _snap.CoinCopper,   v => { _snap.CoinCopper   = v; MarkDirty(); })
+    <div class="currency-sep"></div>
+    @CoinField("SP", "#a0a0b0", () => _snap.CoinSilver,   v => { _snap.CoinSilver   = v; MarkDirty(); })
+    <div class="currency-sep"></div>
+    @CoinField("EP", "#7ab3c4", () => _snap.CoinElectrum, v => { _snap.CoinElectrum = v; MarkDirty(); })
+    <div class="currency-sep"></div>
+    @CoinField("GP", "#f9e2af", () => _snap.CoinGold,     v => { _snap.CoinGold     = v; MarkDirty(); })
+    <div class="currency-sep"></div>
+    @CoinField("PP", "#cdd6f4", () => _snap.CoinPlatinum, v => { _snap.CoinPlatinum = v; MarkDirty(); })
+</div>
+
+@* ── Inventory ── *@
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+    <div class="section-label" style="margin-bottom: 0;">Inventory</div>
+    @if (_snap.AttunedMax > 0)
+    {
+        <span style="font-size: 11px; color: #6c7086;">
+            Attuned: @_snap.AttunedCount / @_snap.AttunedMax
+        </span>
+    }
+</div>
+
+@if (_snap.InventoryItems.Count == 0)
+{
+    <MudText Color="Color.Secondary" Style="font-size: 13px; margin-bottom: 20px;">No items in inventory.</MudText>
+}
+else
+{
+    <div class="inv-table mb-section">
+        <div class="inv-row inv-header">
+            <span class="inv-name">Item</span>
+            <span class="inv-tags"></span>
+            <span class="inv-weight">Weight</span>
+            <span class="inv-price">Value</span>
+        </div>
+        @foreach (var item in _snap.InventoryItems)
+        {
+            <div class="inv-row">
+                <span class="inv-name">@item.Name</span>
+                <span class="inv-tags">
+                    @if (item.IsEquippable)
+                    {
+                        <button class="inv-tag @(item.IsEquipped ? "inv-tag-equipped" : "inv-tag-inactive")"
+                                title="@(item.IsEquipped ? $"Equipped: {item.EquippedLocation} — click to unequip" : "Click to equip")"
+                                @onclick="() => ToggleEquipped(item)">E</button>
+                    }
+                    @if (item.IsAttunable)
+                    {
+                        <button class="inv-tag @(item.IsAttuned ? "inv-tag-attuned" : "inv-tag-attunable")"
+                                title="@(item.IsAttuned ? "Attuned — click to unattune" : "Requires Attunement — click to attune")"
+                                @onclick="() => ToggleAttuned(item)">@(item.IsAttuned ? "A" : "◇")</button>
+                    }
+                </span>
+                <span class="inv-weight">@item.DisplayWeight</span>
+                <span class="inv-price">@item.DisplayPrice</span>
+            </div>
+        }
+    </div>
+}
+
+@* ── Free-form text fields ── *@
+<div class="section-label">Equipment Notes</div>
+<MudTextField @bind-Value="_snap.InventoryEquipmentText" @bind-Value:after="MarkDirty"
+              Variant="Variant.Outlined" Lines="3" AutoGrow="true"
+              Style="width: 100%; font-size: 13px;" Class="mb-section" />
+
+<div class="section-label">Treasure</div>
+<MudTextField @bind-Value="_snap.InventoryTreasureText" @bind-Value:after="MarkDirty"
+              Variant="Variant.Outlined" Lines="3" AutoGrow="true"
+              Style="width: 100%; font-size: 13px;" Class="mb-section" />
+
+<div class="section-label">Quest Items</div>
+<MudTextField @bind-Value="_snap.InventoryQuestText" @bind-Value:after="MarkDirty"
+              Variant="Variant.Outlined" Lines="3" AutoGrow="true"
+              Style="width: 100%; font-size: 13px;" Class="mb-section" />
+
+@code {
+    private CharacterSnapshot? _snap;
+
+    protected override void OnInitialized()
+    {
+        Tabs.TabsChanged += OnTabsChanged;
+        LoadFromActiveTab();
+    }
+
+    private void LoadFromActiveTab() => _snap = Tabs.ActiveTab?.Snapshot;
+
+    private void OnTabsChanged() => InvokeAsync(() =>
+    {
+        LoadFromActiveTab();
+        StateHasChanged();
+    });
+
+    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+
+    private void MarkDirty()
+    {
+        if (Tabs.ActiveTab is { } tab)
+            Tabs.MarkDirty(tab);
+    }
+
+    private void ToggleEquipped(EquipmentItemEntry entry)
+    {
+        var item = FindLiveItem(entry.Identifier);
+        if (item == null) return;
+
+        if (item.IsEquipped)
+            item.Deactivate();
+        else
+            item.Activate(equip: true, attune: item.IsAttuned);
+
+        RefreshEquipment();
+        MarkDirty();
+    }
+
+    private void ToggleAttuned(EquipmentItemEntry entry)
+    {
+        var item = FindLiveItem(entry.Identifier);
+        if (item == null) return;
+
+        if (item.IsAttuned)
+            item.DeactivateAttunement();
+        else
+            item.Activate(equip: item.IsEquipped, attune: true);
+
+        RefreshEquipment();
+        MarkDirty();
+    }
+
+    private RefactoredEquipmentItem? FindLiveItem(string identifier) =>
+        Tabs.ActiveTab?.Character?.Inventory?.Items
+            .FirstOrDefault(i => i.Identifier == identifier);
+
+    private void RefreshEquipment()
+    {
+        if (Tabs.ActiveTab is not { Character: { } character, Snapshot: { } snap }) return;
+        snap.RefreshEquipmentFromCharacter(character);
+        _snap = snap;
+    }
+
+    // Coin fields can't use @bind-Value:after because MudNumericField<long> needs
+    // explicit get/set wiring to call MarkDirty on the same render cycle.
+    private RenderFragment CoinField(string label, string color,
+        Func<long> getter, Action<long> setter) => builder =>
+    {
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "currency-cell");
+        builder.OpenComponent<MudNumericField<long>>(2);
+        builder.AddAttribute(3, "Value", getter());
+        builder.AddAttribute(4, "ValueChanged", EventCallback.Factory.Create<long>(this, setter));
+        builder.AddAttribute(5, "Variant", Variant.Text);
+        builder.AddAttribute(6, "Margin", Margin.None);
+        builder.AddAttribute(7, "Min", 0L);
+        builder.AddAttribute(8, "HideSpinButtons", true);
+        builder.AddAttribute(9, "style",
+            $"color: {color}; font-size: 18px; font-weight: 700; text-align: center; width: 100%;");
+        builder.CloseComponent();
+        builder.OpenElement(10, "div");
+        builder.AddAttribute(11, "class", "currency-label");
+        builder.AddContent(12, label);
+        builder.CloseElement();
+        builder.CloseElement();
+    };
+}

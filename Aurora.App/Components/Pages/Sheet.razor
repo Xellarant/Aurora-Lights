@@ -1,0 +1,170 @@
+@page "/sheet"
+@implements IDisposable
+@inject CharacterTabService Tabs
+@inject ISnackbar Snackbar
+@using Builder.Presentation
+@using Builder.Presentation.Services.Data
+
+@if (_snap is null)
+{
+    <div style="margin-top: 24px;">
+        <MudText Color="Color.Secondary">No character loaded. Open a character from the <MudLink Href="/">Characters</MudLink> page.</MudText>
+    </div>
+    return;
+}
+
+<div class="page-header-row" style="margin-bottom: 16px;">
+    <MudText Typo="Typo.h6" Style="margin: 0;">@_snap.Name</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Style="margin: 0;">
+        Level @_snap.Level @_snap.Race @_snap.Class
+        @if (!string.IsNullOrEmpty(_snap.Archetype)) { <span> — @_snap.Archetype</span> }
+    </MudText>
+</div>
+
+@if (_generating)
+{
+    <div class="build-saving-bar" style="margin-bottom: 12px;">
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" Style="height: 2px;" />
+    </div>
+}
+
+@if (_error != null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-3" ShowCloseIcon="true"
+              CloseIconClicked="() => _error = null">
+        <div><b>Failed to generate PDF</b></div>
+        <div style="font-size:0.8em; word-break:break-all; white-space:pre-wrap;">@_error</div>
+    </MudAlert>
+}
+
+@if (_lastSavedPath != null)
+{
+    <MudAlert Severity="Severity.Success" Class="mb-3" ShowCloseIcon="true"
+              CloseIconClicked="() => _lastSavedPath = null">
+        <div>PDF saved to <code style="font-size:0.85em;">@_lastSavedPath</code></div>
+        <MudButton Size="Size.Small" Variant="Variant.Text" Color="Color.Success"
+                   Style="margin-top: 4px;"
+                   OnClick="() => OpenContainingFolder(_lastSavedPath!)">
+            Open Folder
+        </MudButton>
+    </MudAlert>
+}
+
+<div class="sheet-actions">
+    <MudButton StartIcon="@Icons.Material.Filled.PictureAsPdf"
+               Color="Color.Primary"
+               Variant="Variant.Filled"
+               Disabled="_generating"
+               OnClick="GeneratePdfAsync">
+        Generate PDF
+    </MudButton>
+    <MudText Typo="Typo.caption" Color="Color.Secondary" Style="margin-left: 12px; align-self: center;">
+        Saves to your Documents folder
+    </MudText>
+</div>
+
+@* Character summary card *@
+<div class="sheet-summary" style="margin-top: 24px;">
+    <div class="combat-strip">
+        <div class="combat-stat">
+            <div class="combat-stat-value">@_snap.ArmorClass</div>
+            <div class="combat-stat-label">AC</div>
+        </div>
+        <div class="combat-sep"></div>
+        <div class="combat-stat">
+            <div class="combat-stat-value">@_snap.MaxHp</div>
+            <div class="combat-stat-label">HP</div>
+        </div>
+        <div class="combat-sep"></div>
+        <div class="combat-stat">
+            <div class="combat-stat-value">@_snap.Initiative</div>
+            <div class="combat-stat-label">Initiative</div>
+        </div>
+        <div class="combat-sep"></div>
+        <div class="combat-stat">
+            <div class="combat-stat-value">@_snap.Speed ft.</div>
+            <div class="combat-stat-label">Speed</div>
+        </div>
+        <div class="combat-sep"></div>
+        <div class="combat-stat">
+            <div class="combat-stat-value">+@_snap.Proficiency</div>
+            <div class="combat-stat-label">Proficiency</div>
+        </div>
+    </div>
+
+    <div class="ability-grid" style="margin-top: 16px;">
+        @foreach (var ability in _snap.Abilities)
+        {
+            <div class="ability-box">
+                <div class="ability-abbr">@ability.Abbreviation.ToUpper()</div>
+                <div class="ability-score">@ability.FinalScore</div>
+                <div class="ability-mod">@ability.ModifierString</div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private CharacterSnapshot? _snap;
+    private bool   _generating;
+    private string? _error;
+    private string? _lastSavedPath;
+
+    protected override void OnInitialized()
+    {
+        Tabs.TabsChanged += OnTabsChanged;
+        _snap = Tabs.ActiveTab?.Snapshot;
+    }
+
+    private void OnTabsChanged() => InvokeAsync(() =>
+    {
+        _snap = Tabs.ActiveTab?.Snapshot;
+        StateHasChanged();
+    });
+
+    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+
+    private async Task GeneratePdfAsync()
+    {
+        if (_snap is null) return;
+        _generating   = true;
+        _error        = null;
+        _lastSavedPath= null;
+        StateHasChanged();
+
+        try
+        {
+            string outputPath = await Task.Run(() =>
+            {
+                string folder   = DataManager.Current.UserDocumentsRootDirectory
+                                  ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string safeName = string.Concat((_snap.Name ?? "Character")
+                    .Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
+                string fullPath = Path.Combine(folder, $"{safeName}.pdf");
+                CharacterSheetGeneratorContext.Current!.GenerateNewSheet(fullPath, isPreview: false);
+                return fullPath;
+            });
+            _lastSavedPath = outputPath;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _generating = false;
+            StateHasChanged();
+        }
+    }
+
+    private static void OpenContainingFolder(string filePath)
+    {
+        try
+        {
+            string? folder = Path.GetDirectoryName(filePath);
+            if (folder != null)
+                System.Diagnostics.Process.Start("explorer.exe", folder);
+        }
+        catch { }
+    }
+}

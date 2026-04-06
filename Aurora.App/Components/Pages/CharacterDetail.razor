@@ -1,0 +1,564 @@
+@page "/character"
+@implements IDisposable
+@inject CharacterTabService Tabs
+
+@if (_snap is null)
+{
+    <MudText Color="Color.Secondary">No character loaded.</MudText>
+    return;
+}
+
+@* ── Header ── *@
+<div class="detail-header">
+    <div class="detail-portrait">
+        @if (!string.IsNullOrEmpty(_portraitSrc))
+        {
+            <img src="@_portraitSrc" alt="@_snap.Name" class="detail-portrait-img" />
+        }
+        else
+        {
+            <MudIcon Icon="@Icons.Material.Filled.Person" Style="font-size: 72px; color: #585b70;" />
+        }
+    </div>
+    <div class="detail-header-info">
+        <div class="detail-name">@_snap.Name</div>
+        <div class="detail-build">Level @_snap.Level &nbsp;·&nbsp; @_snap.Race</div>
+        <div class="detail-build">@_snap.Class</div>
+        @if (!string.IsNullOrEmpty(_snap.Archetype))
+        {
+            <div class="detail-sub">@_snap.Archetype</div>
+        }
+        @if (!string.IsNullOrEmpty(_snap.Background))
+        {
+            <div class="detail-sub">@_snap.Background Background</div>
+        }
+        @if (!string.IsNullOrEmpty(_snap.Alignment))
+        {
+            <div class="detail-sub">@_snap.Alignment</div>
+        }
+    </div>
+</div>
+
+@* ── Combat stat strip ── *@
+<div class="combat-strip" style="margin-bottom: 20px;">
+    <div class="combat-stat">
+        <div class="combat-stat-value">@_snap.ArmorClass</div>
+        <div class="combat-stat-label">Armor Class</div>
+    </div>
+    <div class="combat-sep"></div>
+    <div class="combat-stat">
+        <div class="combat-stat-value">@_snap.MaxHp</div>
+        <div class="combat-stat-label">Max HP</div>
+    </div>
+    <div class="combat-sep"></div>
+    <div class="combat-stat">
+        <div class="combat-stat-value">@_snap.Speed ft.</div>
+        <div class="combat-stat-label">Speed</div>
+    </div>
+    @if (_snap.SpeedFly > 0)
+    {
+        <div class="combat-sep"></div>
+        <div class="combat-stat">
+            <div class="combat-stat-value">@_snap.SpeedFly ft.</div>
+            <div class="combat-stat-label">Fly</div>
+        </div>
+    }
+    @if (_snap.SpeedClimb > 0)
+    {
+        <div class="combat-sep"></div>
+        <div class="combat-stat">
+            <div class="combat-stat-value">@_snap.SpeedClimb ft.</div>
+            <div class="combat-stat-label">Climb</div>
+        </div>
+    }
+    @if (_snap.SpeedSwim > 0)
+    {
+        <div class="combat-sep"></div>
+        <div class="combat-stat">
+            <div class="combat-stat-value">@_snap.SpeedSwim ft.</div>
+            <div class="combat-stat-label">Swim</div>
+        </div>
+    }
+    @if (_snap.SpeedBurrow > 0)
+    {
+        <div class="combat-sep"></div>
+        <div class="combat-stat">
+            <div class="combat-stat-value">@_snap.SpeedBurrow ft.</div>
+            <div class="combat-stat-label">Burrow</div>
+        </div>
+    }
+    <div class="combat-sep"></div>
+    <div class="combat-stat">
+        <div class="combat-stat-value">@FormatBonus(_snap.Initiative)</div>
+        <div class="combat-stat-label">Initiative</div>
+    </div>
+    <div class="combat-sep"></div>
+    <div class="combat-stat">
+        <div class="combat-stat-value">@FormatBonus(_snap.Proficiency)</div>
+        <div class="combat-stat-label">Proficiency</div>
+    </div>
+</div>
+
+@* ── Abilities + Skills ── *@
+<div class="overview-two-col mb-section">
+
+    @* Left: ability scores with inline save bonuses *@
+    <div>
+        <div class="section-label">Ability Scores</div>
+        <div class="ability-grid">
+            @foreach (var ability in _snap.Abilities)
+            {
+                <div class="ability-box">
+                    <div class="ability-abbr">@ability.Abbreviation.ToUpper()</div>
+                    <div class="ability-score">@ability.FinalScore</div>
+                    <div class="ability-mod">@ability.ModifierString</div>
+                    <div class="ability-save-label">SAVE</div>
+                    <div class="ability-save @(ability.SaveIsProficient ? "ability-save-prof" : "")">
+                        <span class="prof-dot @(ability.SaveIsProficient ? "prof-dot-filled" : "")" style="width:6px;height:6px;"></span>
+                        @ability.SaveBonusString
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* Right: skills *@
+    <div>
+        <div class="section-label">Skills</div>
+        <div class="skill-list">
+            @foreach (var skill in _snap.Skills)
+            {
+                <div class="skill-row">
+                    <span class="prof-dot @(skill.IsProficient ? (skill.IsExpertise ? "prof-dot-expertise" : "prof-dot-filled") : "")"></span>
+                    <span class="skill-bonus">@FormatBonus(skill.FinalBonus)</span>
+                    <span class="skill-name">@skill.Name</span>
+                    <span class="skill-ability">(@skill.AbilityAbbreviation.ToUpper())</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@* ── Proficiencies & Languages ── *@
+@{
+    bool hasProfs = _snap.Languages.Count > 0 || _snap.ArmorProficiencies.Count > 0 ||
+                   _snap.WeaponProficiencies.Count > 0 || _snap.ToolProficiencies.Count > 0;
+}
+@if (hasProfs)
+{
+    <div class="section-label">Proficiencies &amp; Languages</div>
+    <div class="prof-grid mb-section">
+        @if (_snap.Languages.Count > 0)
+        {
+            <div class="prof-group">
+                <div class="prof-group-label">Languages</div>
+                <div class="prof-group-items">@string.Join(", ", _snap.Languages)</div>
+            </div>
+        }
+        @if (_snap.ArmorProficiencies.Count > 0)
+        {
+            <div class="prof-group">
+                <div class="prof-group-label">Armor</div>
+                <div class="prof-group-items">@string.Join(", ", _snap.ArmorProficiencies)</div>
+            </div>
+        }
+        @if (_snap.WeaponProficiencies.Count > 0)
+        {
+            <div class="prof-group">
+                <div class="prof-group-label">Weapons</div>
+                <div class="prof-group-items">@string.Join(", ", _snap.WeaponProficiencies)</div>
+            </div>
+        }
+        @if (_snap.ToolProficiencies.Count > 0)
+        {
+            <div class="prof-group">
+                <div class="prof-group-label">Tools</div>
+                <div class="prof-group-items">@string.Join(", ", _snap.ToolProficiencies)</div>
+            </div>
+        }
+    </div>
+}
+
+@* ── Background info ── *@
+@if (!string.IsNullOrWhiteSpace(_snap.Backstory))
+{
+    <div class="section-label">Backstory</div>
+    <div class="bg-text mb-section">@_snap.Backstory</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(_snap.BackgroundFeatureName))
+{
+    <div class="section-label">Background Feature</div>
+    <div class="build-feature-name mb-section" style="margin-top: 0;">
+        @_snap.BackgroundFeatureName
+        @if (!string.IsNullOrWhiteSpace(_snap.BackgroundFeatureDescription))
+        {
+            <div class="bg-text" style="margin-top: 4px; font-weight: 400;">@_snap.BackgroundFeatureDescription</div>
+        }
+    </div>
+}
+
+@{
+    bool hasAppearance = !string.IsNullOrWhiteSpace(_snap.Age)    ||
+                         !string.IsNullOrWhiteSpace(_snap.Height) ||
+                         !string.IsNullOrWhiteSpace(_snap.Weight) ||
+                         !string.IsNullOrWhiteSpace(_snap.Eyes)   ||
+                         !string.IsNullOrWhiteSpace(_snap.Hair)   ||
+                         !string.IsNullOrWhiteSpace(_snap.Skin)   ||
+                         !string.IsNullOrWhiteSpace(_snap.Gender);
+}
+@if (hasAppearance)
+{
+    <div class="section-label">Appearance</div>
+    <div class="appearance-grid mb-section">
+        @AppearanceRow("Age",    _snap.Age)
+        @AppearanceRow("Height", _snap.Height)
+        @AppearanceRow("Weight", _snap.Weight)
+        @AppearanceRow("Eyes",   _snap.Eyes)
+        @AppearanceRow("Hair",   _snap.Hair)
+        @AppearanceRow("Skin",   _snap.Skin)
+        @AppearanceRow("Gender", _snap.Gender)
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(_snap.AdditionalFeatures))
+{
+    <div class="section-label">Additional Features &amp; Traits</div>
+    <div class="bg-text mb-section">@_snap.AdditionalFeatures</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(_snap.Organisation) || !string.IsNullOrWhiteSpace(_snap.Allies))
+{
+    <div class="section-label">Affiliations</div>
+    <div class="appearance-grid mb-section">
+        @AppearanceRow("Organisation", _snap.Organisation)
+        @AppearanceRow("Allies",       _snap.Allies)
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(_snap.Trinket))
+{
+    <div class="section-label">Trinket</div>
+    <div class="bg-text mb-section">@_snap.Trinket</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(_snap.Notes1) || !string.IsNullOrWhiteSpace(_snap.Notes2))
+{
+    <div class="section-label">Notes</div>
+    @if (!string.IsNullOrWhiteSpace(_snap.Notes1))
+    {
+        <div class="bg-text">@_snap.Notes1</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_snap.Notes2))
+    {
+        <div class="bg-text" style="margin-top: 8px;">@_snap.Notes2</div>
+    }
+    <div class="mb-section"></div>
+}
+
+@* ── Tabs: Race | Class | Spells ── *@
+<MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="true" Class="detail-tabs" PanelClass="detail-tab-panel">
+
+    @* Race *@
+    <MudTabPanel Text="Race">
+        <div class="section-label">Race</div>
+        <div class="build-primary-text">@_snap.Race</div>
+        @if (!string.IsNullOrEmpty(_snap.Dragonmark))
+        {
+            <div class="build-secondary-text" style="margin-top: 4px;">Dragonmark of @_snap.Dragonmark</div>
+        }
+        @if (!string.IsNullOrEmpty(_snap.Deity))
+        {
+            <div class="build-secondary-text" style="margin-top: 4px;">Deity: @_snap.Deity</div>
+        }
+
+        @if (_snap.RaceFeatures.Count > 0)
+        {
+            <div class="section-label" style="margin-top: 16px;">Racial Traits</div>
+            @foreach (var feat in _snap.RaceFeatures)
+            {
+                <div class="feature-block">
+                    <div class="feature-name">@feat.Name</div>
+                    @if (!string.IsNullOrWhiteSpace(feat.Description))
+                    {
+                        <div class="feature-desc">@feat.Description</div>
+                    }
+                </div>
+            }
+        }
+    </MudTabPanel>
+
+    @* Class *@
+    <MudTabPanel Text="Class">
+        @if (_progressions is { Count: > 0 })
+        {
+            @foreach (var cls in _progressions)
+            {
+                <div class="build-section">
+                    <div class="build-class-header">
+                        <div class="build-primary-text">@cls.ClassName</div>
+                        <div class="build-badges">
+                            <span class="build-badge">Level @cls.Level</span>
+                            @if (!string.IsNullOrEmpty(cls.HitDie))
+                            {
+                                <span class="build-badge">@cls.HitDie</span>
+                            }
+                            @if (!cls.IsMainClass)
+                            {
+                                <span class="build-badge build-badge-multi">Multiclass</span>
+                            }
+                        </div>
+                    </div>
+                    @if (cls.IsMainClass && !string.IsNullOrEmpty(_snap.Archetype))
+                    {
+                        <div class="build-secondary-text" style="margin-top: 4px;">@_snap.Archetype</div>
+                    }
+                    @if (cls.Features.Count > 0)
+                    {
+                        <div class="section-label" style="margin-top: 14px;">Features</div>
+                        @foreach (var f in cls.Features)
+                        {
+                            <div class="feature-block">
+                                <div class="feature-name">@f.Name</div>
+                                @if (!string.IsNullOrWhiteSpace(f.Description))
+                                {
+                                    <div class="feature-desc">@f.Description</div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="build-primary-text">@_snap.Class</div>
+            @if (!string.IsNullOrEmpty(_snap.Archetype))
+            {
+                <div class="build-secondary-text" style="margin-top: 4px;">@_snap.Archetype</div>
+            }
+        }
+    </MudTabPanel>
+
+    @* Spells (only if the character has spellcasting) *@
+    @if (_snap.HasSpellcasting)
+    {
+        <MudTabPanel Text="Spells">
+            @* Spellcasting stats *@
+            <div class="combat-strip" style="margin-bottom: 16px;">
+                <div class="combat-stat">
+                    <div class="combat-stat-value" style="font-size: 14px; font-weight: 600;">@_snap.SpellcastingClass</div>
+                    <div class="combat-stat-label">Class</div>
+                </div>
+                <div class="combat-sep"></div>
+                <div class="combat-stat">
+                    <div class="combat-stat-value" style="font-size: 14px; font-weight: 600;">@_snap.SpellcastingAbility</div>
+                    <div class="combat-stat-label">Ability</div>
+                </div>
+                <div class="combat-sep"></div>
+                <div class="combat-stat">
+                    <div class="combat-stat-value">@_snap.SpellcastingDC</div>
+                    <div class="combat-stat-label">Spell DC</div>
+                </div>
+                <div class="combat-sep"></div>
+                <div class="combat-stat">
+                    <div class="combat-stat-value">@_snap.SpellcastingAttack</div>
+                    <div class="combat-stat-label">Spell Attack</div>
+                </div>
+            </div>
+
+            @* Two-column layout: spell list on left, detail on right *@
+            <div class="spell-overview-layout">
+                @* ── Left: scrollable spell list (cantrips always shown; leveled spells filtered to prepared) ── *@
+                <div class="spell-overview-list">
+                    @if (_snap.Cantrips.Count > 0)
+                    {
+                        <div class="section-label">Cantrips</div>
+                        @foreach (var cantrip in _cantripEntries)
+                        {
+                            <div class="spell-overview-row @(_selectedSpellKey == cantrip.Id ? "spell-overview-selected" : "")"
+                                 @onclick="() => SelectSpell(cantrip.Id)">
+                                <span class="spell-dot spell-dot-cantrip"></span>
+                                <span class="spell-name">@cantrip.Name</span>
+                            </div>
+                        }
+                    }
+
+                    @foreach (var lvl in _snap.SpellLevels)
+                    {
+                        var preparedSpells = lvl.Spells.Where(s => s.IsPrepared).ToList();
+                        @if (preparedSpells.Count > 0)
+                        {
+                            <div class="section-label" style="margin-top: 10px;">@Ordinal(lvl.Level) Level</div>
+                            @foreach (var spell in preparedSpells)
+                            {
+                                <div class="spell-overview-row @(_selectedSpellKey == spell.Id ? "spell-overview-selected" : "")"
+                                     @onclick="() => SelectSpell(spell.Id)">
+                                    <span class="spell-dot spell-dot-prepared"></span>
+                                    <span class="spell-name spell-name-prepared">@spell.Name</span>
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+
+                @* ── Right: detail panel ── *@
+                <div class="spell-overview-detail">
+                    @if (_spellDetail != null)
+                    {
+                        <div class="spell-detail-name">@_spellDetail.Name</div>
+                        <div class="spell-detail-meta">
+                            @if (!string.IsNullOrEmpty(_spellDetail.Subtitle))
+                            {
+                                <span class="spell-detail-subtitle">@_spellDetail.Subtitle</span>
+                            }
+                            @if (!string.IsNullOrEmpty(_spellDetail.Source))
+                            {
+                                <span class="spell-detail-source">@_spellDetail.Source</span>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(_spellDetail.CastingTime) ||
+                             !string.IsNullOrEmpty(_spellDetail.Range) ||
+                             !string.IsNullOrEmpty(_spellDetail.Components) ||
+                             !string.IsNullOrEmpty(_spellDetail.Duration))
+                        {
+                            <div class="spell-detail-props">
+                                @SpellPropRow("Casting Time", _spellDetail.CastingTime)
+                                @SpellPropRow("Range",        _spellDetail.Range)
+                                @SpellPropRow("Components",   _spellDetail.Components)
+                                @SpellPropRow("Duration",     _spellDetail.Duration)
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(_spellDetail.Description))
+                        {
+                            <div class="spell-detail-desc">@_spellDetail.Description</div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="spell-detail-empty">Select a spell to see details.</div>
+                    }
+                </div>
+            </div>
+        </MudTabPanel>
+    }
+
+</MudTabs>
+
+@code {
+    private CharacterSnapshot? _snap;
+    private string? _portraitSrc;
+    private IReadOnlyList<ClassProgressionSnapshot>? _progressions;
+    private string?      _selectedSpellKey;
+    private SpellDetail? _spellDetail;
+    // Cantrip entries with IDs resolved from DataManager for click-to-detail.
+    private IReadOnlyList<(string Id, string Name)> _cantripEntries = [];
+
+    protected override void OnInitialized()
+    {
+        Tabs.TabsChanged += OnTabsChanged;
+        LoadFromActiveTab();
+    }
+
+    private void LoadFromActiveTab()
+    {
+        _snap             = Tabs.ActiveTab?.Snapshot;
+        _progressions     = Tabs.ActiveTab?.ProgressionSnapshots;
+        _portraitSrc      = Tabs.ActiveTab?.File is { } f ? ResolvePortrait(f) : null;
+        _selectedSpellKey = null;
+        _spellDetail      = null;
+
+        // Resolve cantrip IDs from DataManager so clicking them can show spell detail.
+        if (_snap != null)
+        {
+            _cantripEntries = _snap.Cantrips
+                .Select(name =>
+                {
+                    var found = Builder.Presentation.Services.Data.DataManager.Current
+                        .ElementsCollection
+                        .FirstOrDefault(e => e.Type == "Spell" &&
+                                             string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase));
+                    return (Id: found?.Id ?? name, Name: name);
+                })
+                .ToList();
+        }
+        else
+        {
+            _cantripEntries = [];
+        }
+    }
+
+    private void OnTabsChanged() => InvokeAsync(() =>
+    {
+        LoadFromActiveTab();
+        StateHasChanged();
+    });
+
+    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+
+    private static string? ResolvePortrait(Builder.Presentation.Models.CharacterFile file)
+    {
+        if (!string.IsNullOrEmpty(file.DisplayPortraitBase64))
+            return $"data:image/png;base64,{file.DisplayPortraitBase64}";
+
+        if (!string.IsNullOrEmpty(file.DisplayPortraitFilePath))
+        {
+            try
+            {
+                if (File.Exists(file.DisplayPortraitFilePath))
+                {
+                    var bytes = File.ReadAllBytes(file.DisplayPortraitFilePath);
+                    return $"data:image/png;base64,{Convert.ToBase64String(bytes)}";
+                }
+            }
+            catch { }
+        }
+
+        return null;
+    }
+
+    private void SelectSpell(string id)
+    {
+        _selectedSpellKey = id;
+        _spellDetail      = BuildService.GetSpellDetail(id);
+    }
+
+    private static string FormatBonus(int value) => value >= 0 ? $"+{value}" : $"{value}";
+
+    private static string Ordinal(int n) => n switch
+    {
+        1 => "1st", 2 => "2nd", 3 => "3rd", _ => $"{n}th",
+    };
+
+    private RenderFragment SpellPropRow(string label, string value) => builder =>
+    {
+        if (string.IsNullOrWhiteSpace(value)) return;
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "spell-prop-row");
+        builder.OpenElement(2, "span");
+        builder.AddAttribute(3, "class", "spell-prop-label");
+        builder.AddContent(4, label);
+        builder.CloseElement();
+        builder.OpenElement(5, "span");
+        builder.AddAttribute(6, "class", "spell-prop-value");
+        builder.AddContent(7, value);
+        builder.CloseElement();
+        builder.CloseElement();
+    };
+
+    private RenderFragment AppearanceRow(string label, string value) => builder =>
+    {
+        if (string.IsNullOrWhiteSpace(value)) return;
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "appearance-row");
+        builder.OpenElement(2, "span");
+        builder.AddAttribute(3, "class", "appearance-label");
+        builder.AddContent(4, label);
+        builder.CloseElement();
+        builder.OpenElement(5, "span");
+        builder.AddAttribute(6, "class", "appearance-value");
+        builder.AddContent(7, value);
+        builder.CloseElement();
+        builder.CloseElement();
+    };
+}

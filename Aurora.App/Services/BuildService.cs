@@ -1,0 +1,722 @@
+using Builder.Data;
+using Builder.Data.Rules;
+using Builder.Presentation;
+using Builder.Presentation.Models;
+using Builder.Presentation.Services;
+using Builder.Presentation.Services.Data;
+using Builder.Presentation.Utilities;
+
+namespace Aurora.App.Services;
+
+/// <summary>
+/// Logic layer for the Build page — rule enumeration, option lookup, selection apply, and re-snapshotting.
+/// Also owns the SnapshotProgressionManagers / GetFeatureDescription helpers (moved here from Start.razor)
+/// so they can be called from both Start.razor (on load) and Build.razor (after editing).
+/// </summary>
+public static class BuildService
+{
+    // ── SelectionRule groups ─────────────────────────────────────────────────
+
+    /// <summary>
+    /// Returns all active SelectionRules grouped by the progression manager that owns them.
+    /// "Character" group = main progression manager (Race, Background, general choices).
+    /// One group per class = that class's progression manager (Archetype, Feats, Infusions, etc.)
+    /// Spell selection rules are excluded — spells are managed on the Magic page.
+    /// </summary>
+    public static IReadOnlyList<SelectionRuleGroup> GetRuleGroups()
+    {
+        var cm       = CharacterManager.Current;
+        var handler  = SelectionRuleExpanderContext.Current;
+        var classMgrs = cm.ClassProgressionManagers;
+
+        var mainEntries  = new List<SelectionRuleEntry>();
+        var classEntries = new Dictionary<ClassProgressionManager, List<SelectionRuleEntry>>();
+
+        foreach (var rule in cm.SelectionRules)
+        {
+            // Spells are managed on the Magic page, not here.
+            if (rule.Attributes.Type == "Spell") continue;
+
+            var pm       = cm.GetProgressManager(rule);
+            var classMgr = classMgrs.FirstOrDefault(m => ReferenceEquals(m, pm));
+
+            for (int n = 1; n <= rule.Attributes.Number; n++)
+            {
+                string? currentName = null;
+                try
+                {
+                    var current = handler?.GetRegisteredElement(rule, n);
+                    if (current != null)
+                        currentName = (string?)((dynamic)current).Name;
+                }
+                catch { }
+
+                string label = rule.Attributes.Number > 1
+                    ? $"{rule.Attributes.Name ?? rule.Attributes.Type} ({n})"
+                    : (rule.Attributes.Name ?? rule.Attributes.Type);
+
+                var entry = new SelectionRuleEntry(rule, n, label, currentName, rule.Attributes.RequiredLevel);
+
+                if (classMgr != null)
+                {
+                    if (!classEntries.ContainsKey(classMgr))
+                        classEntries[classMgr] = [];
+                    classEntries[classMgr].Add(entry);
+                }
+                else
+                {
+                    mainEntries.Add(entry);
+                }
+            }
+        }
+
+        var groups = new List<SelectionRuleGroup>();
+
+        if (mainEntries.Count > 0)
+        {
+            groups.Add(new SelectionRuleGroup(
+                "Character",
+                mainEntries.OrderBy(e => e.RequiredLevel).ThenBy(e => e.Label).ToList()));
+        }
+
+        foreach (var m in classMgrs)
+        {
+            if (!classEntries.TryGetValue(m, out var entries) || entries.Count == 0) continue;
+            string groupLabel = m.ClassElement?.Name ?? "Class";
+            groups.Add(new SelectionRuleGroup(
+                groupLabel,
+                entries.OrderBy(e => e.RequiredLevel).ThenBy(e => e.Label).ToList()));
+        }
+
+        return groups;
+    }
+
+    // ── Spell SelectionRule groups (for Magic page) ──────────────────────────
+
+    /// <summary>
+    /// Returns SelectionRule groups containing only Spell-type rules — the mirror of
+    /// GetRuleGroups() but restricted to Spell type. Used by the Magic page to allow
+    /// selecting/changing known spells for known-caster classes.
+    /// </summary>
+    public static IReadOnlyList<SelectionRuleGroup> GetSpellRuleGroups()
+    {
+        var cm      = CharacterManager.Current;
+        var handler = SelectionRuleExpanderContext.Current;
+
+        var byClass = new Dictionary<string, List<SelectionRuleEntry>>(StringComparer.Ordinal);
+
+        foreach (var rule in cm.SelectionRules)
+        {
+            if (rule.Attributes.Type != "Spell") continue;
+
+            var pm       = cm.GetProgressManager(rule);
+            var classMgr = cm.ClassProgressionManagers.FirstOrDefault(m => ReferenceEquals(m, pm));
+            string groupName = classMgr?.ClassElement?.Name ?? "Spells";
+
+            for (int n = 1; n <= rule.Attributes.Number; n++)
+            {
+                string? currentName = null;
+                try
+                {
+                    var current = handler?.GetRegisteredElement(rule, n);
+                    if (current != null)
+                        currentName = (string?)((dynamic)current).Name;
+                }
+                catch { }
+
+                string label = rule.Attributes.Number > 1
+                    ? $"{rule.Attributes.Name ?? rule.Attributes.Type} ({n})"
+                    : (rule.Attributes.Name ?? rule.Attributes.Type);
+
+                if (!byClass.ContainsKey(groupName))
+                    byClass[groupName] = [];
+                byClass[groupName].Add(new SelectionRuleEntry(rule, n, label, currentName, rule.Attributes.RequiredLevel));
+            }
+        }
+
+        return byClass
+            .Select(kv => new SelectionRuleGroup(
+                kv.Key,
+                kv.Value.OrderBy(e => e.RequiredLevel).ThenBy(e => e.Label).ToList()))
+            .ToList();
+    }
+
+    // ── Options for a rule ───────────────────────────────────────────────────
+
+    /// <summary>
+    /// Returns the full list of valid options for a SelectRule, filtered from DataManager.
+    /// Uses ElementsOrganizerRefactored which applies the rule's supports expression.
+    /// </summary>
+    public static IReadOnlyList<ElementOption> GetOptions(SelectRule rule)
+    {
+        try
+        {
+            // Use the same approach as SelectionRuleCollectionService / SelectionRuleComboBoxViewModel:
+            // • InitializeWithSelectionRule so level-based expressions can resolve
+            // • Pass SupportsElementIdRange() as the containsElementIDs flag (correct vs ElementsOrganizerRefactored's heuristic)
+            var interpreter = new ExpressionInterpreter();
+            interpreter.InitializeWithSelectionRule(rule);
+
+            var baseCollection = DataManager.Current.ElementsCollection
+                .Where(e => e.Type.Equals(rule.Attributes.Type));
+
+            IEnumerable<ElementBase> elements;
+            if (!rule.Attributes.ContainsSupports())
+            {
+                elements = baseCollection;
+            }
+            else
+            {
+                try
+                {
+                    elements = interpreter.EvaluateSupportsExpression<ElementBase>(
+                        rule.Attributes.Supports,
+                        baseCollection,
+                        rule.Attributes.SupportsElementIdRange());
+                }
+                catch
+                {
+                    // Supports expression may contain unsupported macros (e.g., "$(spellcasting:list)").
+                    // Fall back to a direct DataManager filter using the spellcasting class name.
+                    elements = SpellFallbackOptions(rule, baseCollection);
+                }
+            }
+
+            // If the expression evaluated but returned nothing (can happen with macro expressions),
+            // also try the spell fallback for Spell-type rules.
+            var list = elements
+                .Where(e => !string.IsNullOrWhiteSpace(e.Name))
+                .OrderBy(e => e.Name)
+                .Select(e => new ElementOption(
+                    e.Id, e.Name!, GetFeatureDescription(e),
+                    e.Source ?? "",
+                    e.HasRequirements ? FormatRequirements(e.Requirements) : ""))
+                .ToList();
+
+            if (list.Count == 0 && rule.Attributes.Type == "Spell")
+                list = SpellFallbackOptions(rule, baseCollection)
+                    .Where(e => !string.IsNullOrWhiteSpace(e.Name))
+                    .OrderBy(e => e.Name)
+                    .Select(e => new ElementOption(
+                        e.Id, e.Name!, GetFeatureDescription(e),
+                        e.Source ?? "",
+                        e.HasRequirements ? FormatRequirements(e.Requirements) : ""))
+                    .ToList();
+
+            return DeduplicateOptions(list);
+        }
+        catch { return []; }
+    }
+
+    /// <summary>
+    /// Collapses options with the same Name+Description (same content from multiple sources)
+    /// into a single entry with combined source names. Options with the same name but different
+    /// descriptions are kept as separate entries.
+    /// </summary>
+    private static List<ElementOption> DeduplicateOptions(List<ElementOption> options)
+    {
+        var result = new List<ElementOption>(options.Count);
+        foreach (var group in options.GroupBy(o => (o.Name, o.Description)))
+        {
+            if (group.Count() == 1)
+            {
+                result.Add(group.First());
+            }
+            else
+            {
+                // Same name + description from multiple sources — collapse and combine source names.
+                var combined = string.Join(", ",
+                    group.Select(o => o.Source)
+                         .Where(s => !string.IsNullOrEmpty(s))
+                         .Distinct(StringComparer.OrdinalIgnoreCase)
+                         .OrderBy(s => s));
+                result.Add(group.First() with { Source = combined });
+            }
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Converts a raw Aurora requirements expression into a concise human-readable string.
+    /// Handles <c>[ability:value]</c> tokens (e.g., <c>[str:13]</c> → "STR 13+") and
+    /// <c>[level:N]</c> tokens. Internal element IDs and boolean operators are stripped.
+    /// </summary>
+    private static string FormatRequirements(string requirements)
+    {
+        if (string.IsNullOrWhiteSpace(requirements)) return "";
+
+        // Split on comma, &&, ||, then trim whitespace and grouping chars.
+        var tokens = System.Text.RegularExpressions.Regex
+            .Split(requirements, @"[,;]+|&&|\|\|")
+            .Select(p => p.Trim(' ', '!', '(', ')'));
+
+        var parts = new List<string>();
+        foreach (var token in tokens)
+        {
+            if (string.IsNullOrEmpty(token)) continue;
+
+            // [ability:value] or [level:N]
+            var m = System.Text.RegularExpressions.Regex.Match(token, @"^\[(\w+):(\d+)\]$");
+            if (m.Success)
+            {
+                string key = m.Groups[1].Value.ToLowerInvariant();
+                string val = m.Groups[2].Value;
+                parts.Add(key switch
+                {
+                    "str"   => $"STR {val}+",
+                    "dex"   => $"DEX {val}+",
+                    "con"   => $"CON {val}+",
+                    "int"   => $"INT {val}+",
+                    "wis"   => $"WIS {val}+",
+                    "cha"   => $"CHA {val}+",
+                    "level" => $"Level {val}",
+                    _       => $"{key.ToUpperInvariant()} {val}",
+                });
+                continue;
+            }
+
+            // Element IDs — look up the name from DataManager so the user sees something meaningful.
+            // Skip IDs that resolve to nothing (internal flags, generated IDs, etc.).
+            if (token.StartsWith("ID_", StringComparison.OrdinalIgnoreCase))
+            {
+                var element = DataManager.Current.ElementsCollection
+                    .FirstOrDefault(e => e.Id.Equals(token, StringComparison.OrdinalIgnoreCase));
+                if (element != null && !string.IsNullOrWhiteSpace(element.Name))
+                    parts.Add(element.Name!);
+                continue;
+            }
+
+            if (token.Contains('[') || token.Contains(':')) continue;
+
+            // Plain text (e.g., class/feature names embedded directly).
+            parts.Add(token);
+        }
+
+        return parts.Count > 0 ? string.Join(", ", parts) : "";
+    }
+
+    /// <summary>
+    /// Fallback option loader for Spell-type rules whose supports expression uses macros
+    /// (e.g., "$(spellcasting:list)") that the expression parser cannot evaluate.
+    /// Uses SpellcastingInformation or raw supports text to filter DataManager spells directly.
+    /// </summary>
+    private static IEnumerable<ElementBase> SpellFallbackOptions(
+        SelectRule rule, IEnumerable<ElementBase> spellBase)
+    {
+        // Determine cantrip vs levelled spell from the supports text.
+        bool isCantrip = rule.Attributes.ContainsSupports() &&
+                         rule.Attributes.Supports.Contains("Cantrip", StringComparison.OrdinalIgnoreCase);
+
+        // Prefer the spellcasting class name from the rule attribute; fall back to parsing
+        // the supports expression for the first plain word (strips macros like "$(...)").
+        string? className = null;
+        if (rule.Attributes.ContainsSpellcastingName())
+            className = rule.Attributes.SpellcastingName;
+
+        if (className == null && rule.Attributes.ContainsSupports())
+        {
+            // Extract first plain word — skips macro tokens like "$(spellcasting:list)".
+            var firstWord = System.Text.RegularExpressions.Regex
+                .Match(rule.Attributes.Supports, @"(?<!\$\()[A-Za-z][A-Za-z0-9 ]+")
+                .Value.Trim();
+            if (!string.IsNullOrEmpty(firstWord))
+                className = firstWord;
+        }
+
+        if (className == null) return [];
+
+        string scName = className;
+        return spellBase.Where(e =>
+        {
+            if (e.Supports == null || !e.Supports.Contains(scName)) return false;
+            int lvl = 0;
+            try { lvl = (int)((dynamic)e).Level; } catch { }
+            return isCantrip ? lvl == 0 : lvl > 0;
+        });
+    }
+
+    // ── Apply selection + validate + save ────────────────────────────────────
+
+    /// <summary>
+    /// Applies a new selection, re-validates all other selections, saves the full character
+    /// file (not just text patches), then rebuilds the tab snapshot. The whole pipeline runs
+    /// on a background thread so the UI stays responsive.
+    ///
+    /// Returns a list of rule labels for selections that were removed during validation
+    /// so the caller can notify the user.
+    /// </summary>
+    public static async Task<IReadOnlyList<string>> ApplySelectionAndSaveAsync(
+        SelectRule rule, string elementId, int number, CharacterTab tab,
+        Builder.Presentation.Models.CharacterFile file,
+        bool saveToFile = true)
+    {
+        var invalidated = new List<string>();
+
+        string? taskError = null;
+
+        await Task.Run(() =>
+        {
+            try
+            {
+            var cm = CharacterManager.Current;
+
+            // 1. Register the new selection (handler also unregisters the previous one).
+            SelectionRuleExpanderContext.Current?.SetRegisteredElement(rule, elementId, number);
+
+            // 2. Re-run progression processing so grant rules and requirement checks fire.
+            cm.ReprocessCharacter();
+
+            // 3. Validate every other SelectionRule: check if its registered element is
+            //    still a valid option. If not, unregister it to avoid an inconsistent state.
+            var organizer = new ElementsOrganizerRefactored(DataManager.Current.ElementsCollection);
+            var currentIds = cm.GetElements().Select(e => e.Id).ToHashSet();
+
+            foreach (var r in cm.SelectionRules.ToList())
+            {
+                if (r.Attributes.Type == "Spell") continue; // spell management is on Magic page
+
+                int count = r.Attributes.Number;
+                for (int n = 1; n <= count; n++)
+                {
+                    var registered = SelectionRuleExpanderContext.Current?.GetRegisteredElement(r, n)
+                        as Builder.Data.ElementBase;
+                    if (registered == null) continue;
+
+                    // Check if it still appears in the valid option list for this rule.
+                    bool stillValid;
+                    try
+                    {
+                        var supported = organizer.GetSupportedElements(r);
+                        stillValid = supported.Any(e => e.Id == registered.Id);
+
+                        // Also re-check element-level requirements.
+                        if (stillValid && registered.HasRequirements)
+                        {
+                            var interp = new ExpressionInterpreter();
+                            stillValid = interp.EvaluateElementRequirementsExpression(
+                                registered.Requirements, currentIds);
+                        }
+                    }
+                    catch { stillValid = true; } // be conservative on errors
+
+                    if (!stillValid)
+                    {
+                        try
+                        {
+                            cm.UnregisterElement(registered);
+                            // Clear from the handler's registry so it isn't returned again.
+                            (SelectionRuleExpanderContext.Current as MauiSelectionRuleExpanderHandler)
+                                ?.ClearRegisteredElement(r, n);
+                        }
+                        catch { }
+
+                        string label = r.Attributes.Number > 1
+                            ? $"{r.Attributes.Name ?? r.Attributes.Type} ({n})"
+                            : (r.Attributes.Name ?? r.Attributes.Type);
+                        invalidated.Add(label);
+                    }
+                }
+            }
+
+            // 4. Reprocess after any invalidations.
+            if (invalidated.Count > 0)
+                cm.ReprocessCharacter();
+
+            // 5. Flush snapshot text edits back into the Character object so they
+            //    survive a full Save() which regenerates the XML from CharacterManager state.
+            if (tab.Snapshot != null && tab.Character != null)
+                FlushSnapshotToCharacter(tab.Snapshot, tab.Character);
+
+            // 6. Full save — rebuilds entire XML from CharacterManager.Current state.
+            if (saveToFile)
+                file.Save();
+            }
+            catch (Exception ex)
+            {
+                // Include the innermost stack frame so we can pinpoint the NRE location.
+                var firstFrame = ex.StackTrace?.Split('\n')
+                    .FirstOrDefault(l => l.TrimStart().StartsWith("at "))?.Trim() ?? "";
+                taskError = $"{ex.GetType().Name}: {ex.Message} | {firstFrame}";
+            }
+        });
+
+        if (taskError != null)
+            invalidated.Add($"[Error: {taskError}]");
+
+        // 7. Rebuild the in-memory snapshot and progression list.
+        ResnapTab(tab);
+
+        return invalidated;
+    }
+
+    // ── Manual save ─────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Flushes snapshot text edits into the Character object and performs a full
+    /// CharacterFile.Save(). Called from the AppBar save button and the close-tab
+    /// dialog so that build-page changes (which modify CharacterManager state rather
+    /// than the raw XML) are always captured correctly.
+    /// Returns null on success, or an error message on failure.
+    /// </summary>
+    public static async Task<string?> SaveTabAsync(CharacterTab tab)
+    {
+        if (tab.File == null) return "No file associated with this tab.";
+        string? error = null;
+        await Task.Run(() =>
+        {
+            try
+            {
+                if (tab.Snapshot != null && tab.Character != null)
+                    FlushSnapshotToCharacter(tab.Snapshot, tab.Character);
+                tab.File.Save();
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+        });
+        return error;
+    }
+
+    /// <summary>
+    /// Pushes the editable text fields from a CharacterSnapshot back into the live
+    /// Character object so that a full CharacterFile.Save() includes them.
+    /// Called before Save() since Save() reads directly from the Character object.
+    /// </summary>
+    private static void FlushSnapshotToCharacter(
+        CharacterSnapshot snap, Builder.Presentation.Models.Character character)
+    {
+        character.Name            = snap.Name;
+        character.PlayerName      = snap.PlayerName;
+        character.Experience      = snap.Experience;
+        character.Alignment       = snap.Alignment;
+        character.Deity           = snap.Deity;
+        character.Backstory       = snap.Backstory;
+        character.OrganisationName = snap.Organisation;
+        character.Allies          = snap.Allies;
+        character.Notes1          = snap.Notes1;
+        character.Notes2          = snap.Notes2;
+        character.Gender          = snap.Gender;
+        character.Eyes            = snap.Eyes;
+        character.Skin            = snap.Skin;
+        character.Hair            = snap.Hair;
+        // FillableField properties used by CharacterFile.Save()
+        character.AgeField.Content    = snap.Age;
+        character.HeightField.Content = snap.Height;
+        character.WeightField.Content = snap.Weight;
+        character.BackgroundStory.Content = snap.Backstory;
+        if (!string.IsNullOrEmpty(snap.Trinket))
+            character.Trinket.Content = snap.Trinket;
+        character.Inventory.Equipment  = snap.InventoryEquipmentText;
+        character.Inventory.Treasure   = snap.InventoryTreasureText;
+        character.Inventory.QuestItems = snap.InventoryQuestText;
+        character.Inventory.Coins.Set(snap.CoinCopper, snap.CoinSilver, snap.CoinElectrum, snap.CoinGold, snap.CoinPlatinum);
+    }
+
+    // ── Re-snapshot ──────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Rebuilds the snapshot and progression snapshots for a tab after a selection change.
+    /// Assumes CharacterManager.Current corresponds to the tab being edited.
+    /// </summary>
+    public static void ResnapTab(CharacterTab tab)
+    {
+        if (tab.Character == null) return;
+        tab.Snapshot             = CharacterSnapshot.From(tab.Character);
+        tab.ProgressionSnapshots = SnapshotProgressionManagers();
+    }
+
+    // ── Snapshot helpers (shared with Start.razor) ───────────────────────────
+
+    /// <summary>
+    /// Builds ClassProgressionSnapshot list from CharacterManager.Current.
+    /// Called at load time (Start.razor) and after edits (Build.razor).
+    /// </summary>
+    public static IReadOnlyList<ClassProgressionSnapshot> SnapshotProgressionManagers()
+    {
+        var cm = CharacterManager.Current;
+
+        // Build feat lookup: SelectRule object → FeatureEntry for the actual chosen feat.
+        // Feats are stored in the main ProgressionManager (default case in RegisterElement),
+        // not in any ClassProgressionManager. We match them back to their class by SelectRule ref.
+        var featByRule = new Dictionary<object, FeatureEntry>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+        foreach (var e in cm.GetElements().Where(e => e.Type == "Feat"))
+        {
+            try
+            {
+                dynamic d = e;
+                if (!(bool)d.Aquisition.WasSelected) continue;
+                object rule     = d.Aquisition.SelectRule;
+                string ruleName = (string)(d.Aquisition.SelectRule.Attributes.Name ?? "");
+                string label    = string.IsNullOrEmpty(ruleName) ? e.Name ?? "" : $"{ruleName}: {e.Name}";
+                featByRule[rule] = new FeatureEntry(label, GetFeatureDescription(e));
+            }
+            catch { }
+        }
+
+        return cm.ClassProgressionManagers
+            .Select(m =>
+            {
+                var features = m.GetElements()
+                    .Where(e => (e.Type == "Class Feature" || e.Type == "Archetype Feature") &&
+                                !string.IsNullOrWhiteSpace(e.Name) &&
+                                !e.Name.StartsWith("Ability Score Increase") &&
+                                !e.Name.StartsWith("Ability Score Improvement") &&
+                                !e.Name.Equals("Feat", StringComparison.OrdinalIgnoreCase))
+                    .GroupBy(e => e.Id)
+                    .Select(g => g.First())
+                    .Select(e => new FeatureEntry(e.Name!, GetFeatureDescription(e)))
+                    .ToList();
+
+                foreach (var rule in m.SelectionRules)
+                {
+                    if (featByRule.TryGetValue(rule, out var featEntry))
+                        features.Add(featEntry);
+                }
+
+                return new ClassProgressionSnapshot(
+                    m.ClassElement?.Name ?? string.Empty,
+                    m.HD ?? "—",
+                    m.ProgressionLevel,
+                    m.IsMainClass,
+                    features);
+            })
+            .ToList();
+    }
+
+    /// <summary>
+    /// Extracts a plain-text description from an element.
+    /// Prefers SheetDescription[0].Description; falls back to Description via generator.
+    /// Uses dynamic dispatch to avoid Builder.Data.Elements import constraints.
+    /// </summary>
+    public static string GetFeatureDescription(object e)
+    {
+        try
+        {
+            dynamic el = e;
+            var sheetDesc = el.SheetDescription as System.Collections.IList;
+            if (sheetDesc != null && sheetDesc.Count > 0)
+            {
+                dynamic first = sheetDesc[0]!;
+                return (string)(first.Description ?? "");
+            }
+            string raw = (string)(el.Description ?? "");
+            if (!string.IsNullOrWhiteSpace(raw))
+                return ElementDescriptionGenerator.GeneratePlainDescription(raw).Trim();
+        }
+        catch { }
+        return "";
+    }
+
+    // ── Spell detail lookup ──────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Returns full detail for a single spell, looked up by element ID from DataManager.
+    /// Accesses structured Spell properties (CastingTime, Range, Duration, Underline,
+    /// GetComponentsString) via dynamic dispatch on the Builder.Data.Elements.Spell runtime type.
+    /// Returns null if the spell is not found.
+    /// </summary>
+    public static SpellDetail? GetSpellDetail(string id)
+    {
+        try
+        {
+            var e = DataManager.Current.ElementsCollection
+                .FirstOrDefault(x => x.Type == "Spell" &&
+                                     x.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+            if (e == null) return null;
+
+            dynamic d = e;
+
+            int    level      = 0;
+            string subtitle   = "";   // e.g. "1st-level abjuration (ritual)"
+            string castingTime = "";
+            string range      = "";
+            string components = "";
+            string duration   = "";
+
+            try { level       = (int)(d.Level); }        catch { }
+            try { subtitle    = (string)(d.Underline ?? ""); } catch { }
+            try { castingTime = (string)(d.CastingTime ?? ""); } catch { }
+            try { range       = (string)(d.Range ?? ""); }       catch { }
+            try { duration    = (string)(d.Duration ?? ""); }    catch { }
+            try { components  = (string)(d.GetComponentsString()); } catch { }
+
+            // Body description — use the plain-text generator on the raw XML description.
+            string body = "";
+            try
+            {
+                string raw = (string)(d.Description ?? "");
+                if (!string.IsNullOrWhiteSpace(raw))
+                    body = ElementDescriptionGenerator.GeneratePlainDescription(raw).Trim();
+            }
+            catch { }
+
+            // If structured fields came back empty, fall back to parsing "Key: Value" lines
+            // from the description (some content packs embed them inline).
+            if (string.IsNullOrEmpty(castingTime) && string.IsNullOrEmpty(range))
+            {
+                var lines    = body.Split('\n').Select(l => l.Trim()).ToList();
+                var bodyLeft = new List<string>();
+                foreach (var line in lines)
+                {
+                    if (TryParseSpellHeader(line, "Casting Time", out var ct))  { castingTime = ct; continue; }
+                    if (TryParseSpellHeader(line, "Range",        out var rng)) { range       = rng; continue; }
+                    if (TryParseSpellHeader(line, "Components",   out var cmp)) { components  = cmp; continue; }
+                    if (TryParseSpellHeader(line, "Duration",     out var dur)) { duration    = dur; continue; }
+                    bodyLeft.Add(line);
+                }
+                body = string.Join("\n", bodyLeft).Trim();
+            }
+
+            return new SpellDetail(
+                Id:          e.Id,
+                Name:        e.Name ?? "",
+                Source:      e.Source ?? "",
+                Level:       level,
+                Subtitle:    subtitle,
+                CastingTime: castingTime,
+                Range:       range,
+                Components:  components,
+                Duration:    duration,
+                Description: body);
+        }
+        catch { return null; }
+    }
+
+    private static bool TryParseSpellHeader(string line, string key, out string value)
+    {
+        string prefix = key + ":";
+        if (line.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            value = line[prefix.Length..].Trim();
+            return true;
+        }
+        value = "";
+        return false;
+    }
+}
+
+// ── Value types ───────────────────────────────────────────────────────────────
+
+public sealed record SelectionRuleGroup(string Label, IReadOnlyList<SelectionRuleEntry> Rules);
+
+public sealed record SelectionRuleEntry(
+    SelectRule Rule,
+    int        Number,
+    string     Label,
+    string?    CurrentName,
+    int        RequiredLevel);
+
+public sealed record ElementOption(string Id, string Name, string Description, string Source = "", string Requirements = "");
+
+public sealed record SpellDetail(
+    string Id,
+    string Name,
+    string Source,
+    int    Level,
+    string Subtitle,     // e.g. "1st-level abjuration (ritual)" or "Transmutation Cantrip"
+    string CastingTime,
+    string Range,
+    string Components,
+    string Duration,
+    string Description);

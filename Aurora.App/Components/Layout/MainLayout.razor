@@ -1,0 +1,161 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject CharacterTabService Tabs
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@using Aurora.App.Services
+
+<MudThemeProvider Theme="_theme" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Dark">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Inherit"
+                       Edge="Edge.Start"
+                       OnClick="ToggleDrawer" />
+        <MudText Typo="Typo.h6" Class="ml-2">Aurora: Reflections</MudText>
+        <MudSpacer />
+        @if (Tabs.ActiveTab?.IsDirty == true)
+        {
+            <MudIconButton Icon="@Icons.Material.Filled.Save"
+                           Color="Color.Primary"
+                           title="Save (Ctrl+S)"
+                           OnClick="@(() => SaveActive())" />
+        }
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen"
+               ClipMode="DrawerClipMode.Always"
+               Elevation="2"
+               Variant="DrawerVariant.Mini"
+               OpenMiniOnHover="true">
+        <NavMenu />
+    </MudDrawer>
+
+    <MudMainContent>
+        @* Character tab bar — only visible when one or more characters are open *@
+        @if (Tabs.Tabs.Count > 0)
+        {
+            <div class="char-tab-bar">
+                @foreach (var tab in Tabs.Tabs)
+                {
+                    <div class="char-tab @(tab == Tabs.ActiveTab ? "char-tab-active" : "")"
+                         @onclick="() => ActivateTab(tab)">
+                        <span class="char-tab-name">@tab.DisplayName</span>
+                        @if (tab.IsDirty)
+                        {
+                            <span class="char-tab-dirty" title="Unsaved changes">●</span>
+                        }
+                        <button class="char-tab-close"
+                                @onclick:stopPropagation="true"
+                                @onclick="() => CloseTabAsync(tab)"
+                                title="Close">×</button>
+                    </div>
+                }
+            </div>
+        }
+        <MudContainer MaxWidth="MaxWidth.False" Class="pa-4" Style="@ContentStyle">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+<div style="position: fixed; bottom: 0; left: 0; right: 0; height: 28px; background: #181825; border-top: 1px solid #313244; display: flex; align-items: center; padding: 0 12px; z-index: 1000;">
+    <MudText Typo="Typo.caption" Style="color: #6c7086;">Aurora: Reflections</MudText>
+</div>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private string ContentStyle => Tabs.Tabs.Count > 0
+        ? "height: calc(100vh - 64px - 34px - 28px); overflow-y: auto;"
+        : "height: calc(100vh - 64px - 28px); overflow-y: auto;";
+
+    protected override void OnInitialized() => Tabs.TabsChanged += OnTabsChanged;
+
+    private void OnTabsChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+
+    private void ActivateTab(CharacterTab tab)
+    {
+        Tabs.ActivateTab(tab);
+        Nav.NavigateTo("/character");
+    }
+
+    private async Task CloseTabAsync(CharacterTab tab)
+    {
+        if (tab.IsDirty)
+        {
+            bool? result = await DialogService.ShowMessageBox(
+                "Unsaved Changes",
+                $"Save changes to {tab.DisplayName} before closing?",
+                yesText: "Save", noText: "Discard", cancelText: "Cancel");
+
+            if (result == null) return; // Cancel
+
+            if (result == true)
+            {
+                var error = await BuildService.SaveTabAsync(tab);
+                if (error != null)
+                {
+                    Snackbar.Add($"Save failed: {error}", Severity.Error);
+                    return;
+                }
+            }
+        }
+
+        var wasActive = tab == Tabs.ActiveTab;
+        Tabs.CloseTab(tab);
+
+        if (wasActive)
+        {
+            if (Tabs.ActiveTab != null)
+                Nav.NavigateTo("/character");
+            else
+                Nav.NavigateTo("/");
+        }
+    }
+
+    private async Task SaveActive()
+    {
+        var tab = Tabs.ActiveTab;
+        if (tab == null) return;
+
+        var error = await BuildService.SaveTabAsync(tab);
+        if (error == null)
+        {
+            Tabs.MarkClean(tab);
+            Snackbar.Add("Saved.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add($"Save failed: {error}", Severity.Error);
+        }
+    }
+
+    private readonly MudTheme _theme = new()
+    {
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#89b4fa",
+            Secondary = "#cba6f7",
+            Background = "#1e1e2e",
+            BackgroundGray = "#181825",
+            Surface = "#313244",
+            DrawerBackground = "#181825",
+            AppbarBackground = "#181825",
+            ActionDefault = "#cdd6f4",
+            TextPrimary = "#cdd6f4",
+            TextSecondary = "#a6adc8",
+            TextDisabled = "#6c7086",
+            Divider = "#313244",
+        }
+    };
+
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+}

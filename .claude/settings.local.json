@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(head -10 grep -n \"class EventAggregator\\\\|new EventAggregator\\\\|IEventAggregator\" Aurora.Logic/Events/EventAggregator.cs)",
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -E \"\\\\.\\(cs|xaml\\)$\")",
+      "Read(//c/Users/Ralla/source/repos/Aurora-Lights/$LOCALAPPDATA/5e Character Builder/**)",
+      "Read(//c/Users/Ralla/source/repos/Aurora-Lights/$APPDATA/**)",
+      "Read(//c/Users/Ralla/source/repos/Aurora-Lights/$APPDATA/AuroraLights/**)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''AdditionalCustomDirectory:'''', d.get\\(''''AdditionalCustomDirectory'''',''''\\(missing\\)''''\\)\\); print\\(''''DocumentsRootDirectory:'''', d.get\\(''''DocumentsRootDirectory'''',''''\\(missing\\)''''\\)\\)\")",
+      "Read(//c/Users/Ralla/AppData/Roaming/AuroraLights/**)",
+      "Read(//c/Users/Ralla/source/repos/Aurora-Lights/$LOCALAPPDATA/**)",
+      "Read(//c/Users/Ralla/source/repos/Aurora-Lights/**)",
+      "Read(//c/Users/Ralla/source/repos/Aurora-Lights/$LOCALAPPDATA/Builder/Aurora_Builder.exe_Url_pqyinmgam1mggymelm2mfn0f2l2g5tua/1.0.166.7407/**)",
+      "Read(//c/Users/Ralla/source/repos/Aurora-Lights/$USERPROFILE/Documents/5e Character Builder/**)",
+      "Bash(find c:/Users/Ralla/source/repos/Aurora-Lights/Aurora.Logic -name *.xml -path */Resources/*)",
+      "Read(//c/Users/Ralla/source/repos/Aurora-Lights/$USERPROFILE/Documents/**)",
+      "Bash(xargs grep:*)",
+      "Read(//c/Users/Ralla/source/repos/Aurora-Lights/$USERPROFILE/Documents/5e Character Builder/custom/**)",
+      "Bash(dotnet run:*)",
+      "Read(//c/Program Files \\(x86\\)/Aurora/**)",
+      "Read(//c/Program Files \\(x86\\)/Aurora/Aurora Character Builder//**)",
+      "Bash(xxd)",
+      "Read(//c/Users/Ralla/source/repos/Aurora-Lights/$USERPROFILE/Documents/5e Character Builder/custom/supplements/**)",
+      "Read(//c/Users/Ralla/Documents/5e Character Builder/custom/reddit/reddit-unearthed-arcana/kibblestasty/psion/**)",
+      "Read(//c/Users/Ralla/Documents/5e Character Builder/**)",
+      "Read(//c/Users/Ralla/.claude/projects/c--Users-Ralla-source-repos-Aurora-Lights/memory/**)",
+      "Bash(ls \"c:/Users/Ralla/source/repos/Aurora-Lights/\"*.sln)",
+      "Bash(ls \"c:/Users/Ralla/source/repos/Aurora-Lights/\"*.csproj)",
+      "Bash(powershell -Command \"[System.Reflection.Assembly]::LoadFrom\\(''lib/Builder.Core.dll''\\).GetTypes\\(\\) | Where-Object { $_.Name -like ''*EventAggregator*'' -or $_.Name -like ''*IEvent*'' } | Select-Object FullName\")",
+      "Bash(powershell -Command \"[System.Reflection.Assembly]::LoadFrom\\(''lib/Builder.Core.dll''\\).GetType\\(''Builder.Core.Events.IEventAggregator''\\).GetMethods\\(\\) | Select-Object Name, ToString\")",
+      "Bash(powershell -Command \"[System.Reflection.Assembly]::LoadFrom\\(''lib/Builder.Core.dll''\\).GetType\\(''Builder.Core.Events.IEventAggregator''\\).GetMethods\\(\\) | ForEach-Object { $_.ToString\\(\\) }\")",
+      "Bash(powershell -Command \":*)",
+      "Read(//c/Users/Ralla/AppData/Roaming/**)",
+      "Read(//c/Users/Ralla/Documents/**)",
+      "Read(//c/Users/Ralla/**)",
+      "Read(//.Supports/**)",
+      "Bash(grep -l \"prepared\" \"C:/Users/Ralla/Documents/5e Character Builder/\"*.dnd5e)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Ralla\\.claude\\projects\\c--Users-Ralla-source-repos-Aurora-Lights\\memory"
+    ]
+  }
+}

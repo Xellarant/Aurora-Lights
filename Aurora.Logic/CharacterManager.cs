@@ -46,6 +46,9 @@ public sealed class CharacterManager
   private readonly IEventAggregator _eventAggregator;
   private readonly ProgressionManager _progressionManager;
   private static Random _rnd = new Random();
+  private ElementBaseCollection? _elementsCache;
+  private bool _elementsCacheDirty = true;
+  private bool _suppressSetCharacterDetails = false;
 
   private CharacterManager()
   {
@@ -252,7 +255,9 @@ public sealed class CharacterManager
     this._progressionManager.ProcessExistingElements();
     foreach (ProgressionManager progressionManager3 in (Collection<ClassProgressionManager>) this.ClassProgressionManagers)
       progressionManager3.ProcessExistingElements();
-    this.SetCharacterDetails();
+    _elementsCacheDirty = true;
+    if (!_suppressSetCharacterDetails)
+      this.SetCharacterDetails();
     this._eventAggregator.Send<CharacterManagerElementRegistered>(new CharacterManagerElementRegistered(element));
     this._eventAggregator.Send<CharacterManagerElementsUpdated>(new CharacterManagerElementsUpdated(element, CharacterManagerUpdateReason.ElementRegistered));
     if (element.Type == "Race" || element.Type == "Sub Race" || element.Type == "Class" || element.Type == "Multiclass" || element.Type == "Archetype" || element.Type == "Level")
@@ -345,7 +350,9 @@ public sealed class CharacterManager
     this._progressionManager.ProcessExistingElements();
     foreach (ProgressionManager progressionManager5 in (Collection<ClassProgressionManager>) this.ClassProgressionManagers)
       progressionManager5.ProcessExistingElements();
-    this.SetCharacterDetails();
+    _elementsCacheDirty = true;
+    if (!_suppressSetCharacterDetails)
+      this.SetCharacterDetails();
     this._eventAggregator.Send<CharacterManagerElementUnregistered>(new CharacterManagerElementUnregistered(element));
     this._eventAggregator.Send<CharacterManagerElementsUpdated>(new CharacterManagerElementsUpdated(element, CharacterManagerUpdateReason.ElementUnregistered));
     if (element.Type == "Race" || element.Type == "Sub Race" || element.Type == "Class" || element.Type == "Multiclass" || element.Type == "Archetype" || element.Type == "Level")
@@ -360,14 +367,23 @@ public sealed class CharacterManager
     Logger.Info("creating a new character");
     Stopwatch sw = Stopwatch.StartNew();
     Logger.Info("unregister all remaining elements");
-    foreach (ClassProgressionManager progressionManager in (Collection<ClassProgressionManager>) this.ClassProgressionManagers)
+    _suppressSetCharacterDetails = true;
+    try
     {
-      while (progressionManager.Elements.Any<ElementBase>())
-        this.UnregisterElement(progressionManager.Elements.Last<ElementBase>());
+      foreach (ClassProgressionManager progressionManager in (Collection<ClassProgressionManager>) this.ClassProgressionManagers)
+      {
+        while (progressionManager.Elements.Any<ElementBase>())
+          this.UnregisterElement(progressionManager.Elements.Last<ElementBase>());
+      }
+      this.ClassProgressionManagers.Clear();
+      while (this._progressionManager.Elements.Any<ElementBase>())
+        this.UnregisterElement(this._progressionManager.Elements.Last<ElementBase>());
     }
-    this.ClassProgressionManagers.Clear();
-    while (this._progressionManager.Elements.Any<ElementBase>())
-      this.UnregisterElement(this._progressionManager.Elements.Last<ElementBase>());
+    finally
+    {
+      _suppressSetCharacterDetails = false;
+    }
+    _elementsCacheDirty = true;
     this._progressionManager.ProgressionLevel = 0;
     while (true)
     {
@@ -975,9 +991,13 @@ public sealed class CharacterManager
 
   public ElementBaseCollection GetElements()
   {
+    if (!_elementsCacheDirty && _elementsCache != null)
+      return _elementsCache;
     ElementBaseCollection elements = this._progressionManager.GetElements();
     foreach (ClassProgressionManager progressionManager in (Collection<ClassProgressionManager>) this.ClassProgressionManagers)
       elements.AddRange((IEnumerable<ElementBase>) progressionManager.GetElements());
+    _elementsCache = elements;
+    _elementsCacheDirty = false;
     return elements;
   }
 
