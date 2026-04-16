@@ -8,8 +8,6 @@ using Builder.Presentation.Events.Shell;
 using Builder.Presentation.Services.Data;
 using Builder.Presentation.Services.QuickBar.Commands.Base;
 using System;
-using System.Diagnostics;
-
 #nullable disable
 namespace Builder.Presentation.Services.QuickBar.Commands;
 
@@ -36,8 +34,9 @@ public sealed class QuickBarPortraitsCommand : QuickBarCommand
           break;
         case "":
         case "open":
-          Process.Start(DataManager.Current.UserDocumentsPortraitsDirectory);
-          args.StatusMessage = "opening " + DataManager.Current.UserDocumentsPortraitsDirectory;
+          args.StatusMessage = ExternalLauncherContext.Current?.OpenPath(DataManager.Current.UserDocumentsPortraitsDirectory) == true
+            ? "opening " + DataManager.Current.UserDocumentsPortraitsDirectory
+            : "unable to open " + DataManager.Current.UserDocumentsPortraitsDirectory;
           break;
         default:
           args.StatusMessage = $"invalid @{this.CommandName} command ({parameter})";

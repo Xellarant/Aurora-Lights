@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -40,8 +39,9 @@ public sealed class DataManager
   private const string UserDocumentsRootDirectoryName = "5e Character Builder";
   private const string UserDocumentsPortraitsDirectoryName = "portraits";
   private const string UserDocumentsCustomElementsDirectoryName = "custom";
-  private const string UserDocumentsCompanionGalleryDirectoryName = "gallery\\companions";
-  private const string UserDocumentsSymbolsGalleryDirectoryName = "gallery\\symbols";
+  private const string UserDocumentsGalleryDirectoryName = "gallery";
+  private const string UserDocumentsCompanionGalleryDirectoryName = "companions";
+  private const string UserDocumentsSymbolsGalleryDirectoryName = "symbols";
   private const string IndexFileExtension = ".index";
   private const string ElementsDataFileExtension = ".xml";
   private const string CharacterFileExtension = ".dnd5e";
@@ -107,10 +107,10 @@ public sealed class DataManager
   {
     try
     {
-      this.LocalAppDataRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "5e Character Builder");
-      this.LocalAppDataApplicationElementsDirectory = Path.Combine(this.LocalAppDataRootDirectory, "elements");
-      this.LocalAppDataLogsDirectory = Path.Combine(this.LocalAppDataRootDirectory, "logs");
-      this.LocalAppDataAssetsDirectory = Path.Combine(this.LocalAppDataRootDirectory, "assets");
+      this.LocalAppDataRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), LocalAppDataRootDirectoryName);
+      this.LocalAppDataApplicationElementsDirectory = Path.Combine(this.LocalAppDataRootDirectory, LocalAppDataApplicationElementsDirectoryName);
+      this.LocalAppDataLogsDirectory = Path.Combine(this.LocalAppDataRootDirectory, LocalAppDataLogsDirectoryName);
+      this.LocalAppDataAssetsDirectory = Path.Combine(this.LocalAppDataRootDirectory, LocalAppDataAssetsDirectoryName);
       DataManager.CreateDirectory(this.LocalAppDataRootDirectory);
       DataManager.CreateDirectory(this.LocalAppDataApplicationElementsDirectory);
       DataManager.CreateDirectory(this.LocalAppDataLogsDirectory);
@@ -123,7 +123,7 @@ public sealed class DataManager
     }
     try
     {
-      this.UserDocumentsRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "5e Character Builder");
+      this.UserDocumentsRootDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), UserDocumentsRootDirectoryName);
       if (!string.IsNullOrWhiteSpace(ApplicationContext.Current.Settings.DocumentsRootDirectory))
       {
         if (Directory.Exists(ApplicationContext.Current.Settings.DocumentsRootDirectory))
@@ -136,10 +136,10 @@ public sealed class DataManager
           ApplicationContext.Current.Settings.DocumentsRootDirectory = "";
         }
       }
-      this.UserDocumentsCompanionGalleryDirectory = Path.Combine(this.UserDocumentsRootDirectory, "gallery\\companions");
-      this.UserDocumentsSymbolsGalleryDirectory = Path.Combine(this.UserDocumentsRootDirectory, "gallery\\symbols");
-      this.UserDocumentsPortraitsDirectory = Path.Combine(this.UserDocumentsRootDirectory, "portraits");
-      this.UserDocumentsCustomElementsDirectory = Path.Combine(this.UserDocumentsRootDirectory, "custom");
+      this.UserDocumentsCompanionGalleryDirectory = Path.Combine(this.UserDocumentsRootDirectory, UserDocumentsGalleryDirectoryName, UserDocumentsCompanionGalleryDirectoryName);
+      this.UserDocumentsSymbolsGalleryDirectory = Path.Combine(this.UserDocumentsRootDirectory, UserDocumentsGalleryDirectoryName, UserDocumentsSymbolsGalleryDirectoryName);
+      this.UserDocumentsPortraitsDirectory = Path.Combine(this.UserDocumentsRootDirectory, UserDocumentsPortraitsDirectoryName);
+      this.UserDocumentsCustomElementsDirectory = Path.Combine(this.UserDocumentsRootDirectory, UserDocumentsCustomElementsDirectoryName);
       DataManager.CreateDirectory(this.UserDocumentsRootDirectory);
       DataManager.CreateDirectory(this.UserDocumentsPortraitsDirectory);
       DataManager.CreateDirectory(this.UserDocumentsCustomElementsDirectory);
@@ -359,7 +359,7 @@ public sealed class DataManager
       "]",
       ":",
       "'",
-      "’"
+      "ï¿½"
     };
     foreach (ElementBase elements in (Collection<ElementBase>) this.ElementsCollection)
     {
@@ -441,7 +441,7 @@ public sealed class DataManager
           string str1 = $"ID_INTERNAL_CLASS_FEATURE_ASI_{num}_{name.ToUpperInvariant()}";
           if (!ElementsHelper.ValidateID(str1))
             str1 = ElementsHelper.SanitizeID(str1);
-          elementBase3.ElementHeader = new ElementHeader($"Ability Score Improvement ({num})", "Class Feature", "Player’s Handbook", str1);
+          elementBase3.ElementHeader = new ElementHeader($"Ability Score Improvement ({num})", "Class Feature", "Playerï¿½s Handbook", str1);
           elementBase3.GetSelectRules().First<SelectRule>().Attributes.Name = $"Ability Score Increase ({name.ToUpperInvariant()} {num})";
           elementBase3.GetSelectRules().First<SelectRule>().Attributes.RequiredLevel = num;
           elementBase3.GetSelectRules().First<SelectRule>().RenewIdentifier();
@@ -456,7 +456,7 @@ public sealed class DataManager
           string str2 = $"ID_INTERNAL_CLASS_FEATURE_FEAT_{num}_{name.ToUpperInvariant()}";
           if (!ElementsHelper.ValidateID(str2))
             str2 = ElementsHelper.SanitizeID(str2);
-          elementBase4.ElementHeader = new ElementHeader($"Feat ({num})", "Class Feature", "Player’s Handbook", str2);
+          elementBase4.ElementHeader = new ElementHeader($"Feat ({num})", "Class Feature", "Playerï¿½s Handbook", str2);
           elementBase4.GetSelectRules().First<SelectRule>().Attributes.Name = $"Feat ({name.ToUpperInvariant()} {num})";
           elementBase4.GetSelectRules().First<SelectRule>().Attributes.RequiredLevel = num;
           elementBase4.GetSelectRules().First<SelectRule>().RenewIdentifier();
@@ -693,8 +693,7 @@ public sealed class DataManager
         {
           if (manifestResourceStream != null)
           {
-            using (Image image = Image.FromStream(manifestResourceStream))
-              image.Save(str);
+            DataManager.CopyStreamToFile(manifestResourceStream, str);
             Logger.Info("Embedded portrait image '{0}' copied to the portraits directory", (object) path2);
           }
         }
@@ -716,8 +715,7 @@ public sealed class DataManager
         {
           if (manifestResourceStream != null)
           {
-            using (Image image = Image.FromStream(manifestResourceStream))
-              image.Save(str);
+            DataManager.CopyStreamToFile(manifestResourceStream, str);
             Logger.Info("Embedded portrait image '{0}' copied to the portraits directory", (object) path2);
           }
         }
@@ -738,8 +736,7 @@ public sealed class DataManager
         {
           if (manifestResourceStream != null)
           {
-            using (Image image = Image.FromStream(manifestResourceStream))
-              image.Save(str);
+            DataManager.CopyStreamToFile(manifestResourceStream, str);
             Logger.Info("Embedded companion portrait image '{0}' copied to the portraits directory", (object) path2);
           }
         }
@@ -760,8 +757,7 @@ public sealed class DataManager
         {
           if (manifestResourceStream != null)
           {
-            using (Image image = Image.FromStream(manifestResourceStream))
-              image.Save(str);
+            DataManager.CopyStreamToFile(manifestResourceStream, str);
             Logger.Info("Embedded organization symbol image '{0}' copied to the gallery directory", (object) path2);
           }
         }
@@ -782,8 +778,7 @@ public sealed class DataManager
         {
           if (manifestResourceStream != null)
           {
-            using (Image image = Image.FromStream(manifestResourceStream))
-              image.Save(str);
+            DataManager.CopyStreamToFile(manifestResourceStream, str);
             Logger.Info("Embedded dragonmark image '{0}' copied to the gallery directory", (object) path2);
           }
         }
@@ -799,10 +794,15 @@ public sealed class DataManager
     {
       if (manifestResourceStream == null)
         return;
-      using (Image image = Image.FromStream(manifestResourceStream))
-        image.Save(filename);
+      DataManager.CopyStreamToFile(manifestResourceStream, filename);
       Logger.Info("Embedded spellcard background image '{0}' copied to the local app directory", (object) "spellcard-background.jpg");
     }
+  }
+
+  private static void CopyStreamToFile(Stream source, string path)
+  {
+    using Stream fileStream = File.Create(path);
+    source.CopyTo(fileStream);
   }
 
   public List<XmlDocument> LoadElementDocumentsFromResource()
@@ -845,14 +845,23 @@ public sealed class DataManager
 
   private List<FileInfo> GetCustomFiles()
   {
-    List<FileInfo> customFiles1 = this.GetCustomFiles(this.UserDocumentsCustomElementsDirectory);
-    string additionalCustomDirectory = ApplicationContext.Current.Settings.AdditionalCustomDirectory;
-    if (!string.IsNullOrWhiteSpace(additionalCustomDirectory) && Directory.Exists(additionalCustomDirectory))
+    List<FileInfo> all = this.GetCustomFiles(this.UserDocumentsCustomElementsDirectory);
+
+    // Legacy single-directory setting (kept for compatibility).
+    string legacy = ApplicationContext.Current.Settings.AdditionalCustomDirectory;
+    if (!string.IsNullOrWhiteSpace(legacy) && Directory.Exists(legacy))
+      all.AddRange(this.GetCustomFiles(legacy));
+
+    // Multi-directory list.
+    foreach (string dir in ApplicationContext.Current.Settings.AdditionalCustomDirectories)
     {
-      List<FileInfo> customFiles2 = this.GetCustomFiles(additionalCustomDirectory);
-      customFiles1.AddRange((IEnumerable<FileInfo>) customFiles2);
+      if (string.IsNullOrWhiteSpace(dir) || !Directory.Exists(dir)) continue;
+      if (dir.Equals(this.UserDocumentsCustomElementsDirectory, StringComparison.OrdinalIgnoreCase)) continue;
+      if (dir.Equals(legacy, StringComparison.OrdinalIgnoreCase)) continue;
+      all.AddRange(this.GetCustomFiles(dir));
     }
-    return customFiles1;
+
+    return all;
   }
 
   private List<FileInfo> GetCustomFiles(string path)
@@ -861,21 +870,21 @@ public sealed class DataManager
     {
       List<FileInfo> files = DataManager.GetFiles(path, "*.xml");
       List<FileInfo> includedFiles = new List<FileInfo>();
-      List<FileInfo> list = files.Where<FileInfo>((Func<FileInfo, bool>) (x => !x.FullName.Contains("custom\\ignore"))).ToList<FileInfo>();
-      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.FullName.StartsWith(Path.Combine(path, "srd")))));
-      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.FullName.StartsWith(Path.Combine(path, "system-reference-document")))));
+      List<FileInfo> list = files.Where<FileInfo>((Func<FileInfo, bool>) (x => !DataManager.IsPathInDirectory(x.FullName, Path.Combine(path, "ignore")))).ToList<FileInfo>();
+      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => DataManager.IsPathInDirectory(x.FullName, Path.Combine(path, "srd")))));
+      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => DataManager.IsPathInDirectory(x.FullName, Path.Combine(path, "system-reference-document")))));
       list.RemoveAll((Predicate<FileInfo>) (info => includedFiles.Contains(info)));
-      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.FullName.StartsWith(Path.Combine(path, "core")))));
-      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.FullName.StartsWith(Path.Combine(path, "supplements")))));
-      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.FullName.StartsWith(Path.Combine(path, "unearthed-arcana")))));
-      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.FullName.StartsWith(Path.Combine(path, "third-party")))));
-      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.FullName.StartsWith(Path.Combine(path, "homebrew")))));
+      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => DataManager.IsPathInDirectory(x.FullName, Path.Combine(path, "core")))));
+      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => DataManager.IsPathInDirectory(x.FullName, Path.Combine(path, "supplements")))));
+      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => DataManager.IsPathInDirectory(x.FullName, Path.Combine(path, "unearthed-arcana")))));
+      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => DataManager.IsPathInDirectory(x.FullName, Path.Combine(path, "third-party")))));
+      includedFiles.AddRange(list.Where<FileInfo>((Func<FileInfo, bool>) (x => DataManager.IsPathInDirectory(x.FullName, Path.Combine(path, "homebrew")))));
       list.RemoveAll((Predicate<FileInfo>) (info => includedFiles.Contains(info)));
-      List<FileInfo> user = list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.Directory != null && x.FullName.StartsWith(Path.Combine(path, "user")) && x.Directory.Name.Equals("user"))).ToList<FileInfo>();
+      List<FileInfo> user = list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.Directory != null && DataManager.IsPathInDirectory(x.FullName, Path.Combine(path, "user")) && x.Directory.Name.Equals("user"))).ToList<FileInfo>();
       list.RemoveAll((Predicate<FileInfo>) (info => user.Contains(info)));
-      List<FileInfo> userIndices = list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.Directory != null && x.FullName.StartsWith(Path.Combine(path, "user")))).ToList<FileInfo>();
+      List<FileInfo> userIndices = list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.Directory != null && DataManager.IsPathInDirectory(x.FullName, Path.Combine(path, "user")))).ToList<FileInfo>();
       list.RemoveAll((Predicate<FileInfo>) (info => userIndices.Contains(info)));
-      List<FileInfo> root = list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.DirectoryName != null && x.DirectoryName.EndsWith("custom", StringComparison.OrdinalIgnoreCase))).ToList<FileInfo>();
+      List<FileInfo> root = list.Where<FileInfo>((Func<FileInfo, bool>) (x => x.DirectoryName != null && DataManager.PathsEqual(x.DirectoryName, path))).ToList<FileInfo>();
       list.RemoveAll((Predicate<FileInfo>) (info => root.Contains(info)));
       includedFiles.AddRange((IEnumerable<FileInfo>) list);
       list.RemoveAll((Predicate<FileInfo>) (info => includedFiles.Contains(info)));
@@ -918,6 +927,23 @@ public sealed class DataManager
   public static int GetPercentage(double count, double totalCount)
   {
     return (int) Math.Round(100.0 * count / totalCount);
+  }
+
+  private static bool IsPathInDirectory(string filePath, string directoryPath)
+  {
+    string str1 = DataManager.NormalizePath(filePath);
+    string str2 = DataManager.NormalizePath(directoryPath) + Path.DirectorySeparatorChar;
+    return str1.StartsWith(str2, StringComparison.OrdinalIgnoreCase);
+  }
+
+  private static string NormalizePath(string path)
+  {
+    return Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+  }
+
+  private static bool PathsEqual(string left, string right)
+  {
+    return string.Equals(DataManager.NormalizePath(left), DataManager.NormalizePath(right), StringComparison.OrdinalIgnoreCase);
   }
 
   private void AppendElements(

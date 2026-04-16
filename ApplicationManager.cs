@@ -40,6 +40,8 @@ public sealed class ApplicationManager : IApplicationContext
     ApplicationContext.SetCurrent(this);
     // Wire up dialog service so Aurora.Logic code can show dialogs.
     MessageDialogContext.Current = new MessageDialogServiceAdapter();
+    // Wire up platform launcher so Aurora.Logic can open files/folders/URLs without Process.Start.
+    ExternalLauncherContext.Current = new ExternalLauncherService();
     // Force SelectionRuleExpanderHandler to initialise now so that
     // SelectionRuleExpanderContext.Current is non-null before any
     // SupportExpanderViewModel subclass is constructed during ShellWindow init.

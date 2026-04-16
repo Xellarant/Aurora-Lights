@@ -25,6 +25,22 @@ public sealed class CharacterTab
 
     public string DisplayName => File.DisplayName ?? "Character";
 
+    /// <summary>Session state (HP, spell slots, custom resources, etc.) for this character.</summary>
+    public SessionState Session { get; set; } = new();
+
+    /// <summary>
+    /// True while the character is loading in the background (eager-navigation mode).
+    /// Build.razor shows a loading indicator instead of "no character" when this is set.
+    /// Cleared by Start.razor once LoadCharacterAsync completes.
+    /// </summary>
+    public bool IsLoading { get; set; }
+
+    /// <summary>
+    /// True when this character was just created (not loaded from an existing file).
+    /// Used by Build.razor to show the guided creation banner.
+    /// </summary>
+    public bool IsNew { get; set; }
+
     public CharacterTab(CharacterFile file) => File = file;
 }
 

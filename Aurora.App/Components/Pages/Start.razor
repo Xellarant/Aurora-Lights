@@ -3,6 +3,9 @@
 @inject CharacterService Characters
 @inject CharacterTabService Tabs
 @inject NavigationManager Nav
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject UserPreferencesService Prefs
 @using Builder.Presentation
 
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
@@ -20,17 +23,7 @@
         <MudText Color="Color.Secondary">Loading characters…</MudText>
     </div>
 }
-@if (_loadingCharacter)
-{
-    <div class="char-load-overlay">
-        <div class="char-load-box">
-            <div class="char-load-name">@_loadingCharacterName</div>
-            <MudProgressLinear Value="@Characters.LoadingPercent" Color="Color.Primary" Class="char-load-bar" />
-            <div class="char-load-status">@(string.IsNullOrEmpty(Characters.LoadingStatus) ? "Starting…" : Characters.LoadingStatus)</div>
-        </div>
-    </div>
-}
-else if (_error is not null)
+@if (_error is not null)
 {
     <MudAlert Severity="@(_warning ? Severity.Warning : Severity.Error)" Class="mt-4">
         <pre style="white-space: pre-wrap; font-size: 11px; max-height: 300px; overflow-y: auto; margin: 0;">@_error</pre>
@@ -97,16 +90,8 @@ else
     private bool _preloading;
     private string? _error;
     private bool _warning;
-    private string _loadingCharacterName = "";
 
-    protected override void OnInitialized()
-    {
-        Characters.LoadingProgressChanged += OnLoadingProgress;
-    }
-
-    private void OnLoadingProgress() => InvokeAsync(StateHasChanged);
-
-    public void Dispose() => Characters.LoadingProgressChanged -= OnLoadingProgress;
+    public void Dispose() { }
 
     protected override Task OnInitializedAsync()
     {
@@ -143,6 +128,16 @@ else
         try
         {
             await Characters.PreloadAsync();
+
+            // Once element data is loaded, speculatively load the last-opened character
+            // so it is ready before the user clicks it.
+            var mruPath = Prefs.MruCharacterPath;
+            if (!string.IsNullOrEmpty(mruPath))
+            {
+                var mruFile = _characters.FirstOrDefault(f => f.FilePath == mruPath);
+                if (mruFile != null && Tabs.FindTab(mruFile) == null)
+                    Characters.BeginPreload(mruFile);
+            }
         }
         finally
         {
@@ -151,70 +146,125 @@ else
         }
     }
 
-    private bool _loadingCharacter;
-
     private async Task OnCharacterSelected(Builder.Presentation.Models.CharacterFile c)
     {
-        // If already open in a tab, just activate it — no reload needed.
+        // ── Already open ────────────────────────────────────────────────────────
         var existing = Tabs.FindTab(c);
         if (existing != null)
         {
             Tabs.ActivateTab(existing);
-            Nav.NavigateTo("/character");
+            Nav.NavigateTo("/build");
             return;
         }
 
-        _loadingCharacter = true;
-        _loadingCharacterName = c.DisplayName ?? "";
-        _error = null;
+        // ── MRU fast path: character already loaded in background ───────────────
+        // IsPreloaded checks CurrentCharacterFile.FilePath matches and Character is set.
+        // The lock in LoadCharacterAsync guarantees this snapshot is consistent.
+        if (Characters.IsPreloaded(c))
+        {
+            var tab = Tabs.OpenTab(c, Characters.CurrentCharacter!);
+            tab.Snapshot             = CharacterSnapshot.From(Characters.CurrentCharacter!);
+            tab.ProgressionSnapshots = SnapshotProgressionManagers();
+            tab.Session              = c.LoadSession();
+            Nav.NavigateTo("/build");
+            return;
+        }
+
+        // ── Eager navigation: open a loading tab and navigate now ───────────────
+        // The user sees the Build page with a loading indicator instead of waiting
+        // on the Start page. This method continues running after navigation.
+        _error   = null;
         _warning = false;
-        StateHasChanged();
+        var loadingTab = Tabs.OpenLoadingTab(c);
+        Nav.NavigateTo("/build");
 
         try
         {
             var (success, message) = await Characters.LoadCharacterAsync(c);
+
             if (success && Characters.CurrentCharacter != null)
             {
-                var tab = Tabs.OpenTab(c, Characters.CurrentCharacter);
-                tab.Snapshot = CharacterSnapshot.From(Characters.CurrentCharacter);
-                tab.ProgressionSnapshots = SnapshotProgressionManagers();
-                Nav.NavigateTo("/character");
+                loadingTab.Character         = Characters.CurrentCharacter;
+                loadingTab.Snapshot          = CharacterSnapshot.From(Characters.CurrentCharacter);
+                loadingTab.ProgressionSnapshots = SnapshotProgressionManagers();
+                loadingTab.Session           = c.LoadSession();
+                loadingTab.IsLoading         = false;
+                Tabs.NotifyChanged();
                 return;
             }
-            // Partial load: character exists but something is missing
-            if (!success && Characters.CurrentCharacter != null)
+
+            // Partial load: character exists but has missing elements.
+            if (Characters.CurrentCharacter != null)
             {
-                var tab = Tabs.OpenTab(c, Characters.CurrentCharacter);
-                tab.Snapshot = CharacterSnapshot.From(Characters.CurrentCharacter);
-                tab.ProgressionSnapshots = SnapshotProgressionManagers();
-                _warning = true;
-                _error = string.IsNullOrEmpty(message)
+                loadingTab.Character         = Characters.CurrentCharacter;
+                loadingTab.Snapshot          = CharacterSnapshot.From(Characters.CurrentCharacter);
+                loadingTab.ProgressionSnapshots = SnapshotProgressionManagers();
+                loadingTab.Session           = c.LoadSession();
+                loadingTab.IsLoading         = false;
+                Tabs.NotifyChanged();
+                var warn = string.IsNullOrEmpty(message)
                     ? $"⚠ {c.DisplayName} loaded with missing elements — some features may not display."
                     : message;
+                Snackbar.Add(warn, Severity.Warning);
+                return;
             }
-            else
-            {
-                _error = string.IsNullOrEmpty(message)
-                    ? $"Could not load {c.DisplayName}."
-                    : $"Could not load {c.DisplayName}: {message}";
-            }
+
+            // Full failure — discard the placeholder tab and report via snackbar.
+            Tabs.CloseTab(loadingTab);
+            var err = string.IsNullOrEmpty(message)
+                ? $"Could not load {c.DisplayName}."
+                : $"Could not load {c.DisplayName}: {message}";
+            Snackbar.Add(err, Severity.Error);
         }
         catch (Exception ex)
         {
-            _error = $"{c.DisplayName}: {ex.GetType().Name} — {ex.Message}";
-        }
-        finally
-        {
-            _loadingCharacter = false;
-            StateHasChanged();
+            DebugLogService.Instance.LogException(ex, "Start.OnCharacterSelected");
+            Tabs.CloseTab(loadingTab);
+            Snackbar.Add($"{c.DisplayName}: {ex.GetType().Name} — {ex.Message}", Severity.Error);
         }
     }
 
     private void NavigateToCharacter() => Nav.NavigateTo("/character");
 
-    private void OnNewCharacter()
+    private async Task OnNewCharacter()
     {
-        // TODO: open new character flow
+        var dialog = await DialogService.ShowAsync<NewCharacterDialog>("New Character");
+        var result = await dialog.Result;
+        if (result is not { Canceled: false, Data: NewCharacterInfo info }) return;
+
+        _error   = null;
+        _warning = false;
+
+        try
+        {
+            var (file, error) = await Characters.CreateNewCharacterAsync(info.Name, info.PlayerName, Prefs.DefaultHpMethod);
+            if (file == null || Characters.CurrentCharacter == null)
+            {
+                _error = error ?? "Failed to create character.";
+                StateHasChanged();
+                return;
+            }
+
+            var tab = Tabs.OpenTab(file, Characters.CurrentCharacter);
+            tab.Snapshot             = CharacterSnapshot.From(Characters.CurrentCharacter);
+            tab.ProgressionSnapshots = SnapshotProgressionManagers();
+            tab.IsNew = true;
+
+            // Refresh character list so the new file appears on return
+            _characters = Characters.LoadCharacterFiles().ToList();
+            _favorites  = _characters.Where(x => x.IsFavorite).ToList();
+            _groups     = _characters
+                .GroupBy(x => string.IsNullOrEmpty(x.CollectionGroupName) ? "Characters" : x.CollectionGroupName)
+                .OrderBy(g => g.Key);
+
+            Nav.NavigateTo("/build");
+        }
+        catch (Exception ex)
+        {
+            DebugLogService.Instance.LogException(ex, "Start.OnNewCharacter");
+            _error = $"{ex.GetType().Name}: {ex.Message}";
+            StateHasChanged();
+        }
     }
 
     private static IReadOnlyList<ClassProgressionSnapshot> SnapshotProgressionManagers() =>

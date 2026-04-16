@@ -404,9 +404,7 @@ public static class BuildService
                         try
                         {
                             cm.UnregisterElement(registered);
-                            // Clear from the handler's registry so it isn't returned again.
-                            (SelectionRuleExpanderContext.Current as MauiSelectionRuleExpanderHandler)
-                                ?.ClearRegisteredElement(r, n);
+                            SelectionRuleExpanderContext.Current?.ClearRegisteredElement(r, n);
                         }
                         catch { }
 
@@ -433,6 +431,7 @@ public static class BuildService
             }
             catch (Exception ex)
             {
+                DebugLogService.Instance.LogException(ex, "BuildService.ApplySelectionAsync");
                 // Include the innermost stack frame so we can pinpoint the NRE location.
                 var firstFrame = ex.StackTrace?.Split('\n')
                     .FirstOrDefault(l => l.TrimStart().StartsWith("at "))?.Trim() ?? "";
@@ -472,7 +471,7 @@ public static class BuildService
             }
             catch (Exception ex)
             {
-                error = ex.Message;
+                error = DebugLogService.Catch(ex, "BuildService.SaveTabAsync");
             }
         });
         return error;
@@ -694,7 +693,415 @@ public static class BuildService
         value = "";
         return false;
     }
+
+    // ── Level management ─────────────────────────────────────────────────────────
+
+    /// <summary>True when the character can gain another level (below 20).</summary>
+    public static bool CanLevelUp   => CharacterManager.Current.Status.CanLevelUp;
+
+    /// <summary>True when the character can lose a level (above 1).</summary>
+    public static bool CanLevelDown => CharacterManager.Current.Status.CanLevelDown;
+
+    /// <summary>True when the character has a main class registered.</summary>
+    public static bool HasMainClass => CharacterManager.Current.Status.HasMainClass;
+
+    /// <summary>
+    /// True when the character is currently using average HP (the option element is registered).
+    /// </summary>
+    public static bool IsUsingAverageHp =>
+        CharacterManager.Current.ContainsAverageHitPointsOption();
+
+    /// <summary>
+    /// Registers or unregisters the AllowAverageHitPoints option element, then reprocesses
+    /// and saves. Returns null on success, or an error string.
+    /// </summary>
+    public static async Task<string?> SetHpMethodAsync(CharacterTab tab, HpMethod method)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                var cm = CharacterManager.Current;
+                var optionId = Builder.Data.Strings.InternalOptions.AllowAverageHitPoints;
+
+                bool wantsAverage = method == HpMethod.Average;
+                bool hasAverage   = cm.ContainsAverageHitPointsOption();
+
+                if (wantsAverage && !hasAverage)
+                {
+                    var element = DataManager.Current.ElementsCollection
+                        .FirstOrDefault(e => e.Id == optionId);
+                    if (element != null) cm.RegisterElement(element);
+                }
+                else if (!wantsAverage && hasAverage)
+                {
+                    var element = cm.GetElements()
+                        .FirstOrDefault(e => e.Id == optionId);
+                    if (element != null) cm.UnregisterElement(element);
+                }
+
+                cm.ReprocessCharacter();
+                ResnapTab(tab);
+                tab.File.Save();
+                return (string?)null;
+            }
+            catch (Exception ex) { return DebugLogService.Catch(ex, "BuildService.SetHpMethodAsync"); }
+        });
+    }
+
+    /// <summary>
+    /// Adds a level to the main class (or the bare level if class not yet chosen).
+    /// Saves the file and re-snaps the tab.
+    /// Returns (error, hpGained, isAverage) — error is null on success.
+    /// </summary>
+    public static async Task<(string? Error, int HpGained, bool IsAverage)> LevelUpMainAsync(CharacterTab tab)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                var cm = CharacterManager.Current;
+                int hpBefore = cm.Character.MaxHp;
+
+                cm.LevelUpMain();
+
+                // Capture HP gained before reprocessing overwrites it
+                int hpAfter  = cm.Character.MaxHp;
+                // ReprocessCharacter is called by LevelUpMain indirectly; MaxHp should be fresh.
+                // If it hasn't updated yet, force it.
+                if (hpAfter == hpBefore)
+                {
+                    cm.ReprocessCharacter();
+                    hpAfter = cm.Character.MaxHp;
+                }
+
+                int hpGained  = hpAfter - hpBefore;
+                bool isAverage = cm.ContainsAverageHitPointsOption();
+
+                ResnapTab(tab);
+                tab.File.Save();
+                return ((string?)null, hpGained, isAverage);
+            }
+            catch (Exception ex) { DebugLogService.Instance.LogException(ex, "BuildService.LevelUpMainAsync"); return (ex.Message, 0, false); }
+        });
+    }
+
+    /// <summary>
+    /// Removes the last level. Saves the file and re-snaps the tab. Returns any error string.
+    /// </summary>
+    public static async Task<string?> LevelDownAsync(CharacterTab tab)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                CharacterManager.Current.LevelDown();
+                ResnapTab(tab);
+                tab.File.Save();
+                return (string?)null;
+            }
+            catch (Exception ex) { return DebugLogService.Catch(ex, "BuildService.LevelDownAsync"); }
+        });
+    }
+
+    /// <summary>
+    /// Returns all Multiclass elements from the data collection — the list of classes
+    /// the character could multiclass into. Uses dynamic dispatch since Multiclass is
+    /// a Builder.Data type not directly nameable from Aurora.App.
+    /// </summary>
+    public static IReadOnlyList<ElementOption> GetMulticlassOptions()
+    {
+        return DataManager.Current.ElementsCollection
+            .Where(e => e.Type == "Multiclass")
+            .OrderBy(e => e.Name)
+            .Select(e => new ElementOption(
+                e.Id,
+                e.Name ?? "",
+                GetFeatureDescription(e),
+                e.Source ?? ""))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Starts a new multiclass or adds a level to an existing one.
+    /// <paramref name="multiclassElementId"/> is the element ID of the Multiclass element.
+    /// Saves and re-snaps. Returns any error string.
+    /// </summary>
+    public static async Task<string?> AddMulticlassLevelAsync(CharacterTab tab, string multiclassElementId)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                var cm = CharacterManager.Current;
+                var element = DataManager.Current.ElementsCollection
+                    .FirstOrDefault(e => e.Id == multiclassElementId && e.Type == "Multiclass");
+                if (element == null) return "Multiclass element not found.";
+
+                // Check if this multiclass already exists on the character
+                bool alreadyHasThisMulticlass = cm.ClassProgressionManagers
+                    .Any(m => m.IsMulticlass && m.ClassElement?.Id == multiclassElementId);
+
+                if (alreadyHasThisMulticlass)
+                {
+                    // Add a level to the existing multiclass via dynamic dispatch
+                    dynamic d = element;
+                    cm.LevelUpMulti(d);
+                }
+                else
+                {
+                    // Start a new multiclass: first register the Multiclass element
+                    cm.RegisterElement(element);
+                    // NewMulticlass() adds the level and wires the progression manager
+                    cm.NewMulticlass();
+                }
+
+                ResnapTab(tab);
+                tab.File.Save();
+                return (string?)null;
+            }
+            catch (Exception ex) { return DebugLogService.Catch(ex, "BuildService.AddMulticlassLevelAsync"); }
+        });
+    }
+
+    // ── Tab-based build structure ─────────────────────────────────────────────────
+
+    /// <summary>
+    /// Selection rule types that belong in the Race tab.
+    /// </summary>
+    private static readonly HashSet<string> AsiTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Ability Score Improvement", "Feat",
+    };
+
+    private static readonly HashSet<string> LanguageTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Language",
+    };
+
+    private static readonly HashSet<string> ProficiencyTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Proficiency", "Skill", "Tool Proficiency", "Armor Proficiency", "Weapon Proficiency",
+        "Expertise",
+    };
+
+    private static readonly HashSet<string> RaceTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Race", "Sub Race", "Racial Trait", "Dragonmark", "Variant",
+        "Race Variant", "Heritage", "Lineage",
+    };
+
+    /// <summary>
+    /// Selection rule types from the main progression manager that belong in the Class tab
+    /// (before a ClassProgressionManager exists, e.g. the initial Class selection rule).
+    /// </summary>
+    private static readonly HashSet<string> ClassTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Class", "Archetype",
+    };
+
+    /// <summary>
+    /// Selection rule types that belong in the Background tab.
+    /// </summary>
+    private static readonly HashSet<string> BackgroundTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Background", "Background Feature", "Background Variant", "Background Characteristics",
+        "Deity", "Alignment",
+        "Bond", "Flaw", "Ideal", "Personality Trait",
+    };
+
+    /// <summary>
+    /// Classifies all active SelectionRules into tab groups for the Build page.
+    /// Always returns Race, Class, and Background tabs (may be empty of rules if none
+    /// apply yet). Additional overflow tabs are added for any other rule types.
+    /// </summary>
+    public static IReadOnlyList<BuildTabGroup> GetBuildTabs()
+    {
+        var cm       = CharacterManager.Current;
+        var handler  = SelectionRuleExpanderContext.Current;
+        var classMgrs = cm.ClassProgressionManagers;
+
+        var raceEntries        = new List<SelectionRuleEntry>();
+        var classMainEntries   = new List<SelectionRuleEntry>(); // "Class" type before PM exists
+        var bgEntries          = new List<SelectionRuleEntry>();
+        var languageEntries    = new List<SelectionRuleEntry>();
+        var proficiencyEntries = new List<SelectionRuleEntry>();
+        var overflowEntries    = new Dictionary<string, List<SelectionRuleEntry>>(StringComparer.OrdinalIgnoreCase);
+        var classGroupEntries  = new Dictionary<ClassProgressionManager, List<SelectionRuleEntry>>();
+
+        foreach (var rule in cm.SelectionRules)
+        {
+            if (rule.Attributes.Type == "Spell") continue;
+
+            var pm       = cm.GetProgressManager(rule);
+            var classMgr = classMgrs.FirstOrDefault(m => ReferenceEquals(m, pm));
+
+            for (int n = 1; n <= rule.Attributes.Number; n++)
+            {
+                string? currentName = null;
+                try
+                {
+                    var current = handler?.GetRegisteredElement(rule, n);
+                    if (current != null)
+                        currentName = (string?)((dynamic)current).Name;
+                }
+                catch { }
+
+                string ruleType  = rule.Attributes.Type  ?? "Other";
+                string ruleName  = rule.Attributes.Name  ?? ruleType;
+                string label = rule.Attributes.Number > 1
+                    ? $"{ruleName} ({n})"
+                    : ruleName;
+
+                var entry = new SelectionRuleEntry(rule, n, label, currentName, rule.Attributes.RequiredLevel);
+
+                if (classMgr != null)
+                {
+                    if (!classGroupEntries.ContainsKey(classMgr))
+                        classGroupEntries[classMgr] = [];
+                    classGroupEntries[classMgr].Add(entry);
+                }
+                else if (RaceTypes.Contains(ruleType))
+                    raceEntries.Add(entry);
+                else if (ClassTypes.Contains(ruleType))
+                    classMainEntries.Add(entry);
+                else if (BackgroundTypes.Contains(ruleType))
+                    bgEntries.Add(entry);
+                else if (LanguageTypes.Contains(ruleType))
+                    languageEntries.Add(entry);
+                else if (ProficiencyTypes.Contains(ruleType))
+                    proficiencyEntries.Add(entry);
+                else if (!AsiTypes.Contains(ruleType))
+                {
+                    string typeName = ruleType;
+                    if (!overflowEntries.ContainsKey(typeName))
+                        overflowEntries[typeName] = [];
+                    overflowEntries[typeName].Add(entry);
+                }
+                // AsiTypes are excluded from all tabs — exposed via GetAsiEntries()
+            }
+        }
+
+        static List<SelectionRuleEntry> Sort(List<SelectionRuleEntry> l) =>
+            l.OrderBy(e => e.RequiredLevel).ThenBy(e => e.Label).ToList();
+
+        var tabs = new List<BuildTabGroup>();
+
+        // Race tab — always present
+        var raceGroups = raceEntries.Count > 0
+            ? new List<SelectionRuleGroup> { new("", Sort(raceEntries)) }
+            : new List<SelectionRuleGroup>();
+        tabs.Add(new BuildTabGroup("Race", raceGroups));
+
+        // Class tab — always present; initial Class rule first, then per-PM groups
+        var classGroups = new List<SelectionRuleGroup>();
+        if (classMainEntries.Count > 0)
+            classGroups.Add(new SelectionRuleGroup("", Sort(classMainEntries)));
+        foreach (var m in classMgrs)
+        {
+            if (!classGroupEntries.TryGetValue(m, out var entries) || entries.Count == 0) continue;
+            classGroups.Add(new SelectionRuleGroup(
+                m.ClassElement?.Name ?? "Class",
+                Sort(entries)));
+        }
+        tabs.Add(new BuildTabGroup("Class", classGroups));
+
+        // Background tab — always present
+        var bgGroups = bgEntries.Count > 0
+            ? new List<SelectionRuleGroup> { new("", Sort(bgEntries)) }
+            : new List<SelectionRuleGroup>();
+        tabs.Add(new BuildTabGroup("Background", bgGroups));
+
+        // Language tab — always present
+        var langGroups = languageEntries.Count > 0
+            ? new List<SelectionRuleGroup> { new("", Sort(languageEntries)) }
+            : new List<SelectionRuleGroup>();
+        tabs.Add(new BuildTabGroup("Languages", langGroups));
+
+        // Proficiency tab — always present
+        var profGroups = proficiencyEntries.Count > 0
+            ? new List<SelectionRuleGroup> { new("", Sort(proficiencyEntries)) }
+            : new List<SelectionRuleGroup>();
+        tabs.Add(new BuildTabGroup("Proficiencies", profGroups));
+
+        // Overflow tabs — one per unrecognised type, alphabetical
+        foreach (var (typeName, entries) in overflowEntries.OrderBy(kv => kv.Key))
+            tabs.Add(new BuildTabGroup(typeName, [new SelectionRuleGroup("", Sort(entries))]));
+
+        return tabs;
+    }
+
+    /// <summary>
+    /// Returns SelectionRule entries for Ability Score Improvement and Feat rules that are
+    /// not tied to a class progression manager. These are shown on the Ability Scores tab
+    /// rather than as separate overflow tabs.
+    /// </summary>
+    public static IReadOnlyList<SelectionRuleEntry> GetAsiEntries()
+    {
+        var cm      = CharacterManager.Current;
+        var handler = SelectionRuleExpanderContext.Current;
+        var classMgrs = cm.ClassProgressionManagers;
+        var result  = new List<SelectionRuleEntry>();
+
+        foreach (var rule in cm.SelectionRules)
+        {
+            string ruleType = rule.Attributes.Type ?? "Other";
+            if (!AsiTypes.Contains(ruleType)) continue;
+
+            var pm       = cm.GetProgressManager(rule);
+            var classMgr = classMgrs.FirstOrDefault(m => ReferenceEquals(m, pm));
+            if (classMgr != null) continue; // class-PM rules stay in Class tab
+
+            for (int n = 1; n <= rule.Attributes.Number; n++)
+            {
+                string? currentName = null;
+                try
+                {
+                    var current = handler?.GetRegisteredElement(rule, n);
+                    if (current != null)
+                        currentName = (string?)((dynamic)current).Name;
+                }
+                catch { }
+
+                string ruleName = rule.Attributes.Name ?? ruleType;
+                string label    = rule.Attributes.Number > 1 ? $"{ruleName} ({n})" : ruleName;
+                result.Add(new SelectionRuleEntry(rule, n, label, currentName, rule.Attributes.RequiredLevel));
+            }
+        }
+
+        return result.OrderBy(e => e.RequiredLevel).ThenBy(e => e.Label).ToList();
+    }
+
+    /// <summary>
+    /// Returns the tab label and rule label of the first unfilled required SelectionRule,
+    /// or null when everything is complete for the current level.
+    /// </summary>
+    public static (string TabLabel, string StepLabel)? GetNextRequiredStep()
+    {
+        foreach (var tab in GetBuildTabs())
+        {
+            foreach (var group in tab.RuleGroups)
+            {
+                foreach (var rule in group.Rules)
+                {
+                    if (rule.CurrentName == null)
+                        return (tab.Label, rule.Label);
+                }
+            }
+        }
+        // Check ASI entries last
+        foreach (var entry in GetAsiEntries())
+        {
+            if (entry.CurrentName == null)
+                return ("Ability Scores", entry.Label);
+        }
+        return null;
+    }
 }
+
+// ── Build tab group ───────────────────────────────────────────────────────────
+
+public sealed record BuildTabGroup(string Label, IReadOnlyList<SelectionRuleGroup> RuleGroups);
 
 // ── Value types ───────────────────────────────────────────────────────────────
 

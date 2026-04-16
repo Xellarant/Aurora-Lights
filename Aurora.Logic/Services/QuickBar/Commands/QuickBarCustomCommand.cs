@@ -6,8 +6,6 @@
 
 using Builder.Presentation.Services.Data;
 using Builder.Presentation.Services.QuickBar.Commands.Base;
-using System.Diagnostics;
-
 #nullable disable
 namespace Builder.Presentation.Services.QuickBar.Commands;
 
@@ -20,6 +18,6 @@ public sealed class QuickBarCustomCommand : QuickBarCommand
 
   public override void Execute(string parameter)
   {
-    Process.Start(DataManager.Current.UserDocumentsCustomElementsDirectory);
+    ExternalLauncherContext.Current?.OpenPath(DataManager.Current.UserDocumentsCustomElementsDirectory);
   }
 }

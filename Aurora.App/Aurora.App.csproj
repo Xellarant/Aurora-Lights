@@ -3,12 +3,13 @@
   <!--
     Aurora.App – Phase 3
     MAUI Blazor Hybrid: cross-platform UI shell powered by MudBlazor.
-    Windows desktop is the primary target for Phase 3.
-    macOS / iOS / Android targets can be added later by appending to TargetFrameworks.
+    Windows and macOS are the current desktop targets for Phase 3.
+    Mobile targets can be added later by appending to TargetFrameworks.
   -->
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks>net10.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>Aurora.App</RootNamespace>
     <AssemblyName>Aurora.App</AssemblyName>
@@ -24,6 +25,7 @@
     <EnableDefaultCssItems>false</EnableDefaultCssItems>
     <!-- Run as unpackaged Win32 exe — no MSIX packaging required -->
     <WindowsPackageType>None</WindowsPackageType>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
     <NoWarn>$(NoWarn);CS8618</NoWarn>

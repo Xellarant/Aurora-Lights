@@ -5,6 +5,19 @@
 @inject CharacterService Characters
 @inject ISnackbar Snackbar
 @inject UserPreferencesService Prefs
+@using Builder.Presentation
+@using Builder.Presentation.Models
+@using Builder.Presentation.Models.Collections
+
+@if (Tabs.ActiveTab?.IsLoading == true)
+{
+    <div class="char-loading-state">
+        <div class="char-loading-name">@(Tabs.ActiveTab.File.DisplayName ?? "Loading…")</div>
+        <MudProgressLinear Value="@Characters.LoadingPercent" Color="Color.Primary" Class="char-loading-bar" />
+        <div class="char-loading-status">@(string.IsNullOrEmpty(Characters.LoadingStatus) ? "Starting…" : Characters.LoadingStatus)</div>
+    </div>
+    return;
+}
 
 @if (_snap is null)
 {
@@ -14,6 +27,7 @@
     return;
 }
 
+@* ── Save / error bars ── *@
 @if (!Prefs.AutoSaveBuildChanges)
 {
     <div class="page-save-bar">
@@ -51,79 +65,458 @@
     </MudAlert>
 }
 
-@* ── Selections ── *@
-@foreach (var group in _ruleGroups)
+@* ── Guided creation banner ── *@
+@if (_nextStep != null)
 {
-    <div class="build-section">
-        <div class="section-label">@group.Label</div>
-        <div class="build-rule-list">
-            @foreach (var entry in group.Rules)
-            {
-                <div class="build-rule-row">
-                    <div class="build-rule-label">@entry.Label</div>
-                    <div class="build-rule-value @(entry.CurrentName == null ? "build-rule-empty" : "")">
-                        @(entry.CurrentName ?? "—")
-                    </div>
-                    <button class="build-rule-btn" @onclick="() => OpenPickerAsync(entry)">Change</button>
-                </div>
-            }
+    <div class="build-guide-banner">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Style="color: #f9e2af; font-size: 18px;" />
+            <span><b>Next step:</b> @_nextStep.Value.StepLabel</span>
+            <MudButton Size="Size.Small" Variant="Variant.Text"
+                       Style="color: #f9e2af; padding: 0 6px; min-width: 0;"
+                       OnClick="NavigateToNextStep">
+                → @_nextStep.Value.TabLabel tab
+            </MudButton>
         </div>
+        <MudText Typo="Typo.caption" Style="color: #a6adc8; margin-top: 2px;">
+            Complete all selections to finish building your character.
+        </MudText>
     </div>
 }
 
-@* ── Class features overview ── *@
-@if (_progressions is { Count: > 0 })
-{
-    foreach (var cls in _progressions)
+@* ── Level controls (outside tabs) ── *@
+<div class="build-level-strip">
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <MudButton StartIcon="@Icons.Material.Filled.Add"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   Disabled="@(!BuildService.CanLevelUp || _saving)"
+                   OnClick="LevelUpAsync">
+            Level Up
+        </MudButton>
+
+        <MudButton StartIcon="@Icons.Material.Filled.Remove"
+                   Variant="Variant.Outlined"
+                   Color="Color.Default"
+                   Size="Size.Small"
+                   Disabled="@(!BuildService.CanLevelDown || _saving)"
+                   OnClick="LevelDownAsync">
+            Level Down
+        </MudButton>
+
+        @if (BuildService.HasMainClass && BuildService.CanLevelUp)
+        {
+            <MudButton StartIcon="@Icons.Material.Filled.MergeType"
+                       Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       Size="Size.Small"
+                       Disabled="@_saving"
+                       OnClick="OpenMulticlassDialog">
+                Add Multiclass
+            </MudButton>
+        }
+
+        <div class="build-hp-toggle" title="How HP is assigned on each level-up">
+            <span class="build-hp-label">HP:</span>
+            <button class="build-hp-btn @(BuildService.IsUsingAverageHp ? "active" : "")"
+                    disabled="@_saving"
+                    @onclick="() => SetHpMethodAsync(HpMethod.Average)">Avg</button>
+            <button class="build-hp-btn @(!BuildService.IsUsingAverageHp ? "active" : "")"
+                    disabled="@_saving"
+                    @onclick="() => SetHpMethodAsync(HpMethod.Rolled)">Roll</button>
+        </div>
+
+        <MudText Typo="Typo.caption" Style="color: #6c7086;">
+            Level @(_snap.Level)
+            @if (!BuildService.CanLevelUp)   { <span> · Max level</span>   }
+            @if (!BuildService.CanLevelDown) { <span> · Level 1 min</span> }
+        </MudText>
+    </div>
+</div>
+
+@* ── Build tabs ── *@
+<MudTabs @ref="_tabs"
+         @bind-ActivePanelIndex="_activePanelIndex"
+         Elevation="0"
+         Rounded="false"
+         ApplyEffectsToContainer="false"
+         PanelClass="build-tab-panel"
+         Class="build-tabs mt-2">
+
+    @foreach (var tab in _buildTabs)
     {
-        <div class="build-section">
-            <div class="build-class-header">
-                <div class="build-primary-text">@cls.ClassName</div>
-                <div class="build-badges">
-                    <span class="build-badge">Level @cls.Level</span>
-                    @if (!string.IsNullOrEmpty(cls.HitDie))
-                    {
-                        <span class="build-badge">@cls.HitDie</span>
-                    }
-                    @if (!cls.IsMainClass)
-                    {
-                        <span class="build-badge build-badge-multi">Multiclass</span>
-                    }
-                </div>
-            </div>
-            @if (cls.Features.Count > 0)
+        <MudTabPanel Text="@tab.Label">
+            @if (tab.RuleGroups.Count == 0)
             {
-                <div class="section-label" style="margin-top: 14px;">Features</div>
-                <div class="build-feature-list">
-                    @foreach (var f in cls.Features)
-                    {
-                        <div class="build-feature-item">@f.Name</div>
-                    }
+                <MudText Color="Color.Secondary" Typo="Typo.body2" Class="mt-4">
+                    No selections available yet for @tab.Label.
+                </MudText>
+            }
+            else
+            {
+                @foreach (var group in tab.RuleGroups)
+                {
+                    <div class="build-section">
+                        @if (!string.IsNullOrEmpty(group.Label))
+                        {
+                            <div class="section-label">@group.Label</div>
+                        }
+                        <div class="build-rule-list">
+                            @foreach (var entry in group.Rules)
+                            {
+                                <div class="build-rule-row">
+                                    <div class="build-rule-label">@entry.Label</div>
+                                    <div class="build-rule-value @(entry.CurrentName == null ? "build-rule-empty" : "")">
+                                        @(entry.CurrentName ?? "—")
+                                    </div>
+                                    <button class="build-rule-btn" @onclick="() => OpenPickerAsync(entry)">Change</button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+
+            @* Class tab extras: class features *@
+            @if (tab.Label == "Class" && _progressions is { Count: > 0 })
+            {
+                foreach (var cls in _progressions)
+                {
+                    <div class="build-section">
+                        <div class="build-class-header">
+                            <div class="build-primary-text">@cls.ClassName</div>
+                            <div class="build-badges">
+                                <span class="build-badge">Level @cls.Level</span>
+                                @if (!string.IsNullOrEmpty(cls.HitDie))
+                                {
+                                    <span class="build-badge">@cls.HitDie</span>
+                                }
+                                @if (!cls.IsMainClass)
+                                {
+                                    <span class="build-badge build-badge-multi">Multiclass</span>
+                                }
+                            </div>
+                        </div>
+                        @if (cls.Features.Count > 0)
+                        {
+                            <div class="section-label" style="margin-top: 14px;">Features</div>
+                            <div class="build-feature-list">
+                                @foreach (var f in cls.Features)
+                                {
+                                    <div class="build-feature-item">@f.Name</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+
+            @* Background tab extras: narrative fields *@
+            @if (tab.Label == "Background" && _snap != null)
+            {
+                <div class="build-section">
+                    <div class="section-label">Story &amp; Personality</div>
+                    <div class="bg-narrative-grid">
+                        <NarrativeField Label="Personality Trait" Value="@_snap.Notes1"
+                                        ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Notes1 = f)" />
+                        <NarrativeField Label="Ideal" Value="@_snap.Notes2"
+                                        ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Notes2 = f)" />
+                        <NarrativeField Label="Bond" Value="@_snap.Allies"
+                                        ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Allies = f)" />
+                        <NarrativeField Label="Flaw" Value="@_snap.Organisation"
+                                        ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Organisation = f)" />
+                    </div>
+                    <NarrativeField Label="Backstory" Value="@_snap.Backstory" Lines="4"
+                                    ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Backstory = f)" />
+                    <NarrativeField Label="Deity / Faith" Value="@_snap.Deity"
+                                    ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Deity = f)" />
+                    <NarrativeField Label="Alignment" Value="@_snap.Alignment"
+                                    ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Alignment = f)" />
+                </div>
+
+                <div class="build-section">
+                    <div class="section-label">Appearance</div>
+                    <div class="bg-narrative-grid">
+                        <NarrativeField Label="Age"    Value="@_snap.Age"    ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Age    = f)" />
+                        <NarrativeField Label="Gender" Value="@_snap.Gender" ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Gender = f)" />
+                        <NarrativeField Label="Height" Value="@_snap.Height" ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Height = f)" />
+                        <NarrativeField Label="Weight" Value="@_snap.Weight" ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Weight = f)" />
+                        <NarrativeField Label="Eyes"   Value="@_snap.Eyes"   ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Eyes   = f)" />
+                        <NarrativeField Label="Hair"   Value="@_snap.Hair"   ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Hair   = f)" />
+                        <NarrativeField Label="Skin"   Value="@_snap.Skin"   ValueChanged="v => OnNarrativeChanged(v, f => _snap!.Skin   = f)" />
+                    </div>
                 </div>
             }
-        </div>
+        </MudTabPanel>
     }
-}
+
+    @* Ability Scores tab — always last *@
+    <MudTabPanel Text="Ability Scores">
+        @if (_abilities != null)
+        {
+            bool _hasAsi = _abilityRows.Any(r => r.Item.AdditionalScore != 0);
+
+            <div class="build-section">
+                @* Method selector *@
+                <div class="ability-method-tabs">
+                    @foreach (var m in _allMethods)
+                    {
+                        <button class="ability-method-btn @(_abilityMethod == m.Method ? "active" : "")"
+                                @onclick="() => SetAbilityMethod(m.Method)">
+                            @m.Label
+                        </button>
+                    }
+                </div>
+
+                @if (_abilityMethod == AbilityGenMethod.PointBuy)
+                {
+                    int remaining = _abilities.AvailablePoints;
+                    <div class="ability-points-bar @(remaining < 0 ? "ability-points-over" : "")" style="margin-top: 8px;">
+                        <span>Points spent: <b>@(27 - remaining) / 27</b></span>
+                        <span style="margin-left: 16px;">Remaining: <b>@remaining</b></span>
+                    </div>
+                    <MudText Typo="Typo.caption" Style="color: #6c7086; margin-top: 4px;">
+                        Scores range from 8 (free) to 15 (9 pts). Cost increases at 14 and 15.
+                    </MudText>
+                }
+                else if (_abilityMethod is AbilityGenMethod.Roll3d6 or AbilityGenMethod.Roll4d6)
+                {
+                    <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center;">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Casino"
+                                   OnClick="RollAllAsync">Roll All</MudButton>
+                        <MudText Typo="Typo.caption" Style="color: #6c7086;">
+                            Use the 🎲 button on each stat to reroll individually.
+                        </MudText>
+                    </div>
+                }
+                else if (_abilityMethod == AbilityGenMethod.StandardArray)
+                {
+                    <div style="margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                        <MudText Typo="Typo.caption" Style="color: #a6adc8;">Array:</MudText>
+                        @foreach (var v in _standardArray)
+                        {
+                            bool used = _arrayAssignments.Values.Any(a => a == v);
+                            <span class="ability-array-chip @(used ? "used" : "")">@v</span>
+                        }
+                    </div>
+                    <MudText Typo="Typo.caption" Style="color: #6c7086; margin-top: 2px;">
+                        Assign each value to exactly one ability score.
+                    </MudText>
+                }
+
+                @* ── Ability score table ── *@
+                <div class="ability-stats-table">
+
+                    @* Row 1: abbreviation + name *@
+                    <div class="ability-stats-row ability-row-header">
+                        @foreach (var row in _abilityRows)
+                        {
+                            <div class="ability-stats-cell">
+                                <div class="ability-abbrev-lbl">@row.Abbrev</div>
+                                <div class="ability-name-lbl">@row.Name</div>
+                            </div>
+                        }
+                    </div>
+
+                    @* Row 2: base score input *@
+                    <div class="ability-stats-row ability-row-base">
+                        @foreach (var row in _abilityRows)
+                        {
+                            <div class="ability-stats-cell">
+                                @if (_abilityMethod == AbilityGenMethod.Manual)
+                                {
+                                    <input class="ability-manual-input"
+                                           type="number" min="1" max="30"
+                                           value="@row.Item.BaseScore"
+                                           @onchange="e => OnManualScoreChanged(row.Item, int.TryParse(e.Value?.ToString(), out var v) ? v : row.Item.BaseScore)" />
+                                }
+                                else if (_abilityMethod == AbilityGenMethod.PointBuy)
+                                {
+                                    <div class="ability-score-adj">
+                                        <button class="ability-adj-btn-sm"
+                                                disabled="@(!CanDecrement(row.Item))"
+                                                @onclick="() => DecrementScore(row.Item)">−</button>
+                                        <span class="ability-score-num">@row.Item.BaseScore</span>
+                                        <button class="ability-adj-btn-sm"
+                                                disabled="@(!CanIncrement(row.Item))"
+                                                @onclick="() => IncrementScore(row.Item)">+</button>
+                                    </div>
+                                }
+                                else if (_abilityMethod is AbilityGenMethod.Roll3d6 or AbilityGenMethod.Roll4d6)
+                                {
+                                    <div class="ability-score-adj">
+                                        <span class="ability-score-num">@row.Item.BaseScore</span>
+                                        <button class="ability-roll-btn-sm" title="Reroll @row.Name"
+                                                @onclick="() => RollStatAsync(row.Item)">🎲</button>
+                                    </div>
+                                }
+                                else if (_abilityMethod == AbilityGenMethod.StandardArray)
+                                {
+                                    <select class="ability-array-select-sm"
+                                            @onchange="e => AssignArrayValue(row.Item, row.Abbrev, int.TryParse(e.Value?.ToString(), out var v) ? v : 0)">
+                                        <option value="0">—</option>
+                                        @foreach (var v in GetAvailableArrayValues(row.Abbrev))
+                                        {
+                                            <option value="@v" selected="@(_arrayAssignments.TryGetValue(row.Abbrev, out var cur) && cur == v)">@v</option>
+                                        }
+                                    </select>
+                                }
+                                <div class="ability-sublabel">base</div>
+                            </div>
+                        }
+                    </div>
+
+                    @* Row 3: ASI bonuses — only shown when at least one ability has a bonus *@
+                    @if (_hasAsi)
+                    {
+                        <div class="ability-stats-row ability-row-asi">
+                            @foreach (var row in _abilityRows)
+                            {
+                                <div class="ability-stats-cell">
+                                    @if (row.Item.AdditionalScore != 0)
+                                    {
+                                        <div class="ability-asi-badge" title="@row.Item.AdditionalSummery">
+                                            <span class="ability-asi-val">@(row.Item.AdditionalScore > 0 ? "+" : "")@row.Item.AdditionalScore</span>
+                                            <span class="ability-asi-src">@row.Item.AdditionalSummery</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @* Row 4: total (final) score *@
+                    <div class="ability-stats-row ability-row-total">
+                        @foreach (var row in _abilityRows)
+                        {
+                            <div class="ability-stats-cell">
+                                <div class="ability-total-val">@row.Item.FinalScore</div>
+                                @if (_hasAsi) { <div class="ability-sublabel">total</div> }
+                            </div>
+                        }
+                    </div>
+
+                    @* Row 5: modifier *@
+                    <div class="ability-stats-row ability-row-mod">
+                        @foreach (var row in _abilityRows)
+                        {
+                            <div class="ability-stats-cell">
+                                <div class="ability-mod-badge">@row.Item.ModifierString</div>
+                                <div class="ability-sublabel">modifier</div>
+                            </div>
+                        }
+                    </div>
+
+                </div>@* end ability-stats-table *@
+            </div>
+
+            @* ASI / Feat selections — below the score table *@
+            @if (_asiEntries.Count > 0)
+            {
+                <div class="build-section">
+                    <div class="section-label">Ability Score Improvements</div>
+                    <div class="build-rule-list">
+                        @foreach (var entry in _asiEntries)
+                        {
+                            <div class="build-rule-row">
+                                <div class="build-rule-label">@entry.Label</div>
+                                <div class="build-rule-value @(entry.CurrentName == null ? "build-rule-empty" : "")">
+                                    @(entry.CurrentName ?? "—")
+                                </div>
+                                <button class="build-rule-btn" @onclick="() => OpenPickerAsync(entry)">Change</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </MudTabPanel>
+</MudTabs>
 
 @code {
-    private CharacterSnapshot?                        _snap;
-    private IReadOnlyList<ClassProgressionSnapshot>?  _progressions;
-    private IReadOnlyList<SelectionRuleGroup>         _ruleGroups  = [];
-    private List<string>                              _invalidated = [];
-    private string?                                   _saveError;
-    private bool                                      _saving;
+    // ── Shared state ─────────────────────────────────────────────────────────────
+    private CharacterSnapshot?                               _snap;
+    private IReadOnlyList<ClassProgressionSnapshot>?         _progressions;
+    private IReadOnlyList<BuildTabGroup>                     _buildTabs   = [];
+    private List<string>                                     _invalidated = [];
+    private string?                                          _saveError;
+    private bool                                             _saving;
+    private (string TabLabel, string StepLabel)?             _nextStep;
+
+    // ── Tab navigation ────────────────────────────────────────────────────────────
+    private MudTabs?  _tabs;
+    private int       _activePanelIndex;
+
+    // ── Ability score state ──────────────────────────────────────────────────────
+    private sealed record AbilityRow(string Name, string Abbrev, AbilityItem Item);
+    private enum AbilityGenMethod { Manual, Roll4d6, Roll3d6, StandardArray, PointBuy }
+    private sealed record MethodOption(AbilityGenMethod Method, string Label);
+
+    private static readonly MethodOption[] _allMethods =
+    [
+        new(AbilityGenMethod.Manual,        "Manual"),
+        new(AbilityGenMethod.Roll4d6,       "Roll 4d6"),
+        new(AbilityGenMethod.Roll3d6,       "Roll 3d6"),
+        new(AbilityGenMethod.StandardArray, "Standard Array"),
+        new(AbilityGenMethod.PointBuy,      "Point Buy"),
+    ];
+
+    private static readonly int[]    _standardArray = [15, 14, 13, 12, 10, 8];
+    private static readonly Random   _rng           = Random.Shared;
+
+    private AbilitiesCollection?             _abilities;
+    private AbilityRow[]                     _abilityRows      = [];
+    private AbilityGenMethod                 _abilityMethod    = AbilityGenMethod.Manual;
+    private readonly Dictionary<string, int> _arrayAssignments = new();
+    private IReadOnlyList<SelectionRuleEntry> _asiEntries      = [];
+
+    // ── Lifecycle ────────────────────────────────────────────────────────────────
 
     protected override void OnInitialized()
     {
         Tabs.TabsChanged += OnTabsChanged;
+        Characters.LoadingProgressChanged += OnLoadingProgress;
         LoadFromActiveTab();
     }
+
+    private void OnLoadingProgress() => InvokeAsync(StateHasChanged);
 
     private void LoadFromActiveTab()
     {
         _snap         = Tabs.ActiveTab?.Snapshot;
         _progressions = Tabs.ActiveTab?.ProgressionSnapshots;
-        _ruleGroups   = _snap != null ? BuildService.GetRuleGroups() : [];
+        _buildTabs    = _snap != null ? BuildService.GetBuildTabs() : [];
+        _asiEntries   = _snap != null ? BuildService.GetAsiEntries() : [];
+        _nextStep     = _snap != null ? BuildService.GetNextRequiredStep() : null;
+        LoadAbilityRows();
+    }
+
+    private void LoadAbilityRows()
+    {
+        var character = CharacterManager.Current?.Character;
+        if (character == null) { _abilities = null; _abilityRows = []; return; }
+
+        _abilities = character.Abilities;
+
+        _abilityRows =
+        [
+            new("Strength",     "STR", _abilities.Strength),
+            new("Dexterity",    "DEX", _abilities.Dexterity),
+            new("Constitution", "CON", _abilities.Constitution),
+            new("Intelligence", "INT", _abilities.Intelligence),
+            new("Wisdom",       "WIS", _abilities.Wisdom),
+            new("Charisma",     "CHA", _abilities.Charisma),
+        ];
+
+        var currentScores = _abilityRows.Select(r => r.Item.BaseScore).OrderBy(x => x).ToList();
+        bool isValidArrayAssignment = currentScores.SequenceEqual(_standardArray.OrderBy(x => x));
+        foreach (var row in _abilityRows)
+        {
+            if (!_arrayAssignments.ContainsKey(row.Abbrev))
+                _arrayAssignments[row.Abbrev] = isValidArrayAssignment ? row.Item.BaseScore : 0;
+        }
     }
 
     private void OnTabsChanged() => InvokeAsync(() =>
@@ -132,7 +525,25 @@
         StateHasChanged();
     });
 
-    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+    public void Dispose()
+    {
+        Tabs.TabsChanged -= OnTabsChanged;
+        Characters.LoadingProgressChanged -= OnLoadingProgress;
+        if (_abilities != null)
+            _abilities.DisablePointsCalculation = true;
+    }
+
+    // ── Tab navigation ────────────────────────────────────────────────────────────
+
+    private void NavigateToNextStep()
+    {
+        if (_nextStep == null) return;
+        var idx = _buildTabs.ToList().FindIndex(t => t.Label == _nextStep.Value.TabLabel);
+        if (idx >= 0)
+            _activePanelIndex = idx;
+    }
+
+    // ── Manual save ──────────────────────────────────────────────────────────────
 
     private async Task ManualSaveAsync()
     {
@@ -154,13 +565,14 @@
         StateHasChanged();
     }
 
+    // ── Selection picker ─────────────────────────────────────────────────────────
+
     private async Task OpenPickerAsync(SelectionRuleEntry entry)
     {
         var tab  = Tabs.ActiveTab;
         var file = Characters.CurrentCharacterFile;
         if (tab == null || file == null) return;
 
-        // Load options on a background thread — may scan thousands of elements.
         var options = await Task.Run(() => BuildService.GetOptions(entry.Rule));
 
         var parameters = new DialogParameters
@@ -217,5 +629,294 @@
             LoadFromActiveTab();
             StateHasChanged();
         }
+    }
+
+    // ── Narrative fields ─────────────────────────────────────────────────────────
+
+    private async Task OnNarrativeChanged(string value, Action<string> setter)
+    {
+        setter(value);
+        var tab = Tabs.ActiveTab;
+        if (tab == null) return;
+
+        if (Prefs.AutoSaveBuildChanges)
+        {
+            _saving = true;
+            StateHasChanged();
+            var error = await BuildService.SaveTabAsync(tab);
+            _saving = false;
+            if (error != null) _saveError = error;
+        }
+        else
+        {
+            Tabs.MarkDirty(tab);
+        }
+        StateHasChanged();
+    }
+
+    // ── Level up ─────────────────────────────────────────────────────────────────
+
+    private async Task LevelUpAsync()
+    {
+        var tab = Tabs.ActiveTab;
+        if (tab == null) return;
+        _saving = true;
+        StateHasChanged();
+        var (error, hpGained, isAverage) = await BuildService.LevelUpMainAsync(tab);
+        _saving = false;
+        if (error == null)
+        {
+            tab.IsNew = false;
+            Tabs.MarkClean(tab);
+            int newLevel = _snap?.Level + 1 ?? 0;
+            string hpNote = hpGained > 0
+                ? $" · +{hpGained} HP ({(isAverage ? "avg" : "rolled")})"
+                : "";
+            Snackbar.Add($"Level {newLevel}{hpNote}", Severity.Success,
+                cfg => cfg.VisibleStateDuration = 5000);
+        }
+        else
+        {
+            _saveError = error;
+        }
+        LoadFromActiveTab();
+        StateHasChanged();
+    }
+
+    // ── HP method toggle ──────────────────────────────────────────────────────────
+
+    private async Task SetHpMethodAsync(HpMethod method)
+    {
+        var tab = Tabs.ActiveTab;
+        if (tab == null) return;
+        _saving = true;
+        StateHasChanged();
+        var error = await BuildService.SetHpMethodAsync(tab, method);
+        _saving = false;
+        if (error == null)
+        {
+            Tabs.MarkClean(tab);
+            Snackbar.Add($"HP method set to {(method == HpMethod.Average ? "average" : "rolled")}.",
+                Severity.Info, cfg => cfg.VisibleStateDuration = 3000);
+        }
+        else
+        {
+            _saveError = error;
+        }
+        LoadFromActiveTab();
+        StateHasChanged();
+    }
+
+    // ── Level down ───────────────────────────────────────────────────────────────
+
+    private async Task LevelDownAsync()
+    {
+        var tab = Tabs.ActiveTab;
+        if (tab == null) return;
+        _saving = true;
+        StateHasChanged();
+        var error = await BuildService.LevelDownAsync(tab);
+        _saving = false;
+        if (error == null)
+        {
+            Tabs.MarkClean(tab);
+            Snackbar.Add("Level removed.", Severity.Info, cfg => cfg.VisibleStateDuration = 2000);
+        }
+        else
+        {
+            _saveError = error;
+        }
+        LoadFromActiveTab();
+        StateHasChanged();
+    }
+
+    // ── Multiclass ────────────────────────────────────────────────────────────────
+
+    private async Task OpenMulticlassDialog()
+    {
+        var tab = Tabs.ActiveTab;
+        if (tab == null) return;
+
+        var options = await Task.Run(() => BuildService.GetMulticlassOptions());
+        if (options.Count == 0)
+        {
+            Snackbar.Add("No multiclass options available in loaded content.", Severity.Warning);
+            return;
+        }
+
+        var fakeEntry = new SelectionRuleEntry(
+            Rule: null!,
+            Number: 1,
+            Label: "Add Multiclass",
+            CurrentName: null,
+            RequiredLevel: 0);
+
+        var parameters = new DialogParameters
+        {
+            [nameof(SelectionPickerDialog.Entry)]   = fakeEntry,
+            [nameof(SelectionPickerDialog.Options)] = options,
+        };
+        var dialogOptions = new DialogOptions
+        {
+            MaxWidth         = MaxWidth.Large,
+            FullWidth        = true,
+            CloseOnEscapeKey = true,
+        };
+
+        var dialog = await DialogService.ShowAsync<SelectionPickerDialog>("Add Multiclass", parameters, dialogOptions);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: string selectedId })
+        {
+            _saving = true;
+            _saveError = null;
+            StateHasChanged();
+            var error = await BuildService.AddMulticlassLevelAsync(tab, selectedId);
+            _saving = false;
+            if (error == null)
+            {
+                Tabs.MarkClean(tab);
+                Snackbar.Add("Multiclass added.", Severity.Success, cfg => cfg.VisibleStateDuration = 2000);
+            }
+            else
+            {
+                _saveError = error;
+            }
+            LoadFromActiveTab();
+            StateHasChanged();
+        }
+    }
+
+    // ── Ability scores: method switching ─────────────────────────────────────────
+
+    private void SetAbilityMethod(AbilityGenMethod method)
+    {
+        _abilityMethod = method;
+        if (_abilities == null) return;
+        if (method == AbilityGenMethod.PointBuy)
+        {
+            foreach (var row in _abilityRows)
+                row.Item.BaseScore = Math.Clamp(row.Item.BaseScore, 8, 15);
+            _abilities.DisablePointsCalculation = false;
+            _abilities.CalculateAvailablePoints();
+        }
+        else
+        {
+            _abilities.DisablePointsCalculation = true;
+        }
+    }
+
+    // ── Ability scores: manual ────────────────────────────────────────────────────
+
+    private async Task OnManualScoreChanged(AbilityItem item, int newScore)
+    {
+        if (newScore < 1 || newScore > 30) return;
+        item.BaseScore = newScore;
+        await ApplyAbilityChangesAsync();
+    }
+
+    // ── Ability scores: point buy ─────────────────────────────────────────────────
+
+    private bool CanIncrement(AbilityItem item)
+    {
+        if (item.BaseScore >= 15) return false;
+        int cost = item.BaseScore >= 13 ? 2 : 1;
+        return (_abilities?.AvailablePoints ?? 0) >= cost;
+    }
+
+    private bool CanDecrement(AbilityItem item) => item.BaseScore > 8;
+
+    private async Task IncrementScore(AbilityItem item)
+    {
+        if (!CanIncrement(item)) return;
+        item.BaseScore++;
+        _abilities?.CalculateAvailablePoints();
+        await ApplyAbilityChangesAsync();
+    }
+
+    private async Task DecrementScore(AbilityItem item)
+    {
+        if (!CanDecrement(item)) return;
+        item.BaseScore--;
+        _abilities?.CalculateAvailablePoints();
+        await ApplyAbilityChangesAsync();
+    }
+
+    // ── Ability scores: dice rolling ──────────────────────────────────────────────
+
+    private int RollStat()
+    {
+        if (_abilityMethod == AbilityGenMethod.Roll3d6)
+            return _rng.Next(1, 7) + _rng.Next(1, 7) + _rng.Next(1, 7);
+        int a = _rng.Next(1, 7), b = _rng.Next(1, 7), c = _rng.Next(1, 7), d = _rng.Next(1, 7);
+        return a + b + c + d - Math.Min(Math.Min(a, b), Math.Min(c, d));
+    }
+
+    private async Task RollStatAsync(AbilityItem item)
+    {
+        item.BaseScore = RollStat();
+        await ApplyAbilityChangesAsync();
+    }
+
+    private async Task RollAllAsync()
+    {
+        foreach (var row in _abilityRows)
+            row.Item.BaseScore = RollStat();
+        await ApplyAbilityChangesAsync();
+    }
+
+    // ── Ability scores: standard array ────────────────────────────────────────────
+
+    private IEnumerable<int> GetAvailableArrayValues(string abbrev)
+    {
+        var usedElsewhere = _abilityRows
+            .Where(r => r.Abbrev != abbrev && _arrayAssignments.TryGetValue(r.Abbrev, out var v) && v != 0)
+            .Select(r => _arrayAssignments[r.Abbrev])
+            .ToHashSet();
+        return _standardArray.Where(v => !usedElsewhere.Contains(v));
+    }
+
+    private async Task AssignArrayValue(AbilityItem item, string abbrev, int value)
+    {
+        _arrayAssignments[abbrev] = value;
+        if (value == 0) return;
+        item.BaseScore = value;
+        await ApplyAbilityChangesAsync();
+    }
+
+    // ── Ability scores: save ──────────────────────────────────────────────────────
+
+    private async Task ApplyAbilityChangesAsync()
+    {
+        var tab       = Tabs.ActiveTab;
+        var character = CharacterManager.Current?.Character;
+        if (tab == null || character == null) return;
+
+        _abilities?.CalculateAvailablePoints();
+
+        if (Prefs.AutoSaveBuildChanges)
+        {
+            _saving = true;
+            StateHasChanged();
+            var error = await BuildService.SaveTabAsync(tab);
+            _saving = false;
+            if (error == null)
+            {
+                tab.Snapshot = CharacterSnapshot.From(character);
+                _snap = tab.Snapshot;
+                Tabs.MarkClean(tab);
+            }
+            else
+            {
+                _saveError = error;
+            }
+        }
+        else
+        {
+            tab.Snapshot = CharacterSnapshot.From(character);
+            _snap = tab.Snapshot;
+            Tabs.MarkDirty(tab);
+        }
+        StateHasChanged();
     }
 }

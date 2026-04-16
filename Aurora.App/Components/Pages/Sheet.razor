@@ -2,6 +2,7 @@
 @implements IDisposable
 @inject CharacterTabService Tabs
 @inject ISnackbar Snackbar
+@inject UserPreferencesService Prefs
 @using Builder.Presentation
 @using Builder.Presentation.Services.Data
 
@@ -51,16 +52,66 @@
 }
 
 <div class="sheet-actions">
+    <MudButton StartIcon="@Icons.Material.Filled.Visibility"
+               Color="Color.Default"
+               Variant="Variant.Outlined"
+               Disabled="_generating"
+               OnClick="PreviewPdfAsync">
+        Preview
+    </MudButton>
     <MudButton StartIcon="@Icons.Material.Filled.PictureAsPdf"
                Color="Color.Primary"
                Variant="Variant.Filled"
                Disabled="_generating"
-               OnClick="GeneratePdfAsync">
-        Generate PDF
+               OnClick="GeneratePdfAsync"
+               Style="margin-left: 8px;">
+        Save PDF
     </MudButton>
     <MudText Typo="Typo.caption" Color="Color.Secondary" Style="margin-left: 12px; align-self: center;">
-        Saves to your Documents folder
+        Saves to 5e Character Builder
     </MudText>
+</div>
+
+<div class="sheet-options" style="margin-top: 20px;">
+    <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Style="margin-bottom: 8px;">Card Pages</MudText>
+    <div class="sheet-options-row">
+        <MudTooltip Text="Add a page of spell cards to the PDF">
+            <MudChip T="string"
+                     Icon="@(Prefs.IncludeSpellCards ? Icons.Material.Filled.CheckBox : Icons.Material.Filled.CheckBoxOutlineBlank)"
+                     Color="@(Prefs.IncludeSpellCards ? Color.Primary : Color.Default)"
+                     Variant="Variant.Outlined"
+                     OnClick="@(() => Prefs.IncludeSpellCards = !Prefs.IncludeSpellCards)">
+                Spell Cards
+            </MudChip>
+        </MudTooltip>
+        <MudTooltip Text="Add a page of item cards to the PDF">
+            <MudChip T="string"
+                     Icon="@(Prefs.IncludeItemCards ? Icons.Material.Filled.CheckBox : Icons.Material.Filled.CheckBoxOutlineBlank)"
+                     Color="@(Prefs.IncludeItemCards ? Color.Primary : Color.Default)"
+                     Variant="Variant.Outlined"
+                     OnClick="@(() => Prefs.IncludeItemCards = !Prefs.IncludeItemCards)">
+                Item Cards
+            </MudChip>
+        </MudTooltip>
+        <MudTooltip Text="Add a page of attack cards to the PDF">
+            <MudChip T="string"
+                     Icon="@(Prefs.IncludeAttackCards ? Icons.Material.Filled.CheckBox : Icons.Material.Filled.CheckBoxOutlineBlank)"
+                     Color="@(Prefs.IncludeAttackCards ? Color.Primary : Color.Default)"
+                     Variant="Variant.Outlined"
+                     OnClick="@(() => Prefs.IncludeAttackCards = !Prefs.IncludeAttackCards)">
+                Attack Cards
+            </MudChip>
+        </MudTooltip>
+        <MudTooltip Text="Add a page of feature cards to the PDF">
+            <MudChip T="string"
+                     Icon="@(Prefs.IncludeFeatureCards ? Icons.Material.Filled.CheckBox : Icons.Material.Filled.CheckBoxOutlineBlank)"
+                     Color="@(Prefs.IncludeFeatureCards ? Color.Primary : Color.Default)"
+                     Variant="Variant.Outlined"
+                     OnClick="@(() => Prefs.IncludeFeatureCards = !Prefs.IncludeFeatureCards)">
+                Feature Cards
+            </MudChip>
+        </MudTooltip>
+    </div>
 </div>
 
 @* Character summary card *@
@@ -124,6 +175,68 @@
 
     public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
 
+    private async Task PreviewPdfAsync()
+    {
+        if (_snap is null) return;
+        _generating = true;
+        _error      = null;
+        StateHasChanged();
+
+        try
+        {
+            // Generate to a temp file on a background thread.
+            // Keep the file alive so the WebView can load it; PdfPreviewPage deletes it on close.
+            var (tempPath, snapCopy) = await Task.Run(() =>
+            {
+                var path = Path.Combine(Path.GetTempPath(), $"aurora_preview_{Guid.NewGuid():N}.pdf");
+                CharacterSheetGeneratorContext.Current!.GenerateNewSheet(path, isPreview: true);
+                return (path, _snap);
+            });
+
+            // Open a native MAUI window on the UI thread.
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                var page = new PdfPreviewPage(tempPath, snapCopy?.Name ?? "Character",
+                    saveToDocuments: async () =>
+                    {
+                        var savedPath = await Task.Run(() =>
+                        {
+                            var folder   = DataManager.Current.UserDocumentsRootDirectory
+                                           ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "5e Character Builder");
+                            var safeName = string.Concat((snapCopy?.Name ?? "Character")
+                                .Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
+                            var fullPath = Path.Combine(folder, $"{safeName}.pdf");
+                            CharacterSheetGeneratorContext.Current!.GenerateNewSheet(fullPath, isPreview: false);
+                            return fullPath;
+                        });
+                        await InvokeAsync(() =>
+                        {
+                            _lastSavedPath = savedPath;
+                            StateHasChanged();
+                        });
+                        return savedPath;
+                    });
+
+                Application.Current!.OpenWindow(new Window(page)
+                {
+                    Title  = $"Character Sheet Preview — {snapCopy?.Name}",
+                    Width  = 840,
+                    Height = 1000,
+                });
+            });
+        }
+        catch (Exception ex)
+        {
+            _error = $"{ex.GetType().Name}: {ex.Message}";
+            DebugLogService.Instance.LogException(ex, "PDF preview");
+        }
+        finally
+        {
+            _generating = false;
+            StateHasChanged();
+        }
+    }
+
     private async Task GeneratePdfAsync()
     {
         if (_snap is null) return;
@@ -137,7 +250,7 @@
             string outputPath = await Task.Run(() =>
             {
                 string folder   = DataManager.Current.UserDocumentsRootDirectory
-                                  ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                                  ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "5e Character Builder");
                 string safeName = string.Concat((_snap.Name ?? "Character")
                     .Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
                 string fullPath = Path.Combine(folder, $"{safeName}.pdf");
@@ -149,6 +262,7 @@
         catch (Exception ex)
         {
             _error = ex.Message;
+            DebugLogService.Instance.LogException(ex, "PDF generation");
         }
         finally
         {
@@ -163,7 +277,7 @@
         {
             string? folder = Path.GetDirectoryName(filePath);
             if (folder != null)
-                System.Diagnostics.Process.Start("explorer.exe", folder);
+                ExternalLauncherContext.Current?.OpenPath(folder);
         }
         catch { }
     }

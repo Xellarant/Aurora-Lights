@@ -1,0 +1,28 @@
+@inject DebugLogService DebugLog
+@inherits ErrorBoundaryBase
+
+@if (CurrentException is null)
+{
+    @ChildContent
+}
+else
+{
+    <div class="page-error-box">
+        <div class="page-error-title">An error occurred on this page.</div>
+        <pre class="page-error-detail">@CurrentException.GetType().Name: @CurrentException.Message</pre>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                       OnClick="Recover">Dismiss</MudButton>
+            <MudButton Variant="Variant.Text" Color="Color.Default" Size="Size.Small"
+                       Href="/console">View Console</MudButton>
+        </div>
+    </div>
+}
+
+@code {
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        DebugLog.LogException(exception, "Page render");
+        return Task.CompletedTask;
+    }
+}

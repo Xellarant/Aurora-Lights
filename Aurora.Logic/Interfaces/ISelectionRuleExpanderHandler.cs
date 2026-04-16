@@ -16,6 +16,7 @@ public interface ISelectionRuleExpanderHandler
     bool HasExpander(string uniqueIdentifier, int number);
     object GetRegisteredElement(SelectRule selectionRule, int number = 1);
     void SetRegisteredElement(SelectRule selectionRule, string id, int number = 1);
+    void ClearRegisteredElement(SelectRule selectionRule, int number = 1) { }
     int GetExpandersCount();
     void FocusExpander(SelectRule rule, int number = 1);
     void RetrainSpellExpander(SelectRule rule, int number, int retrainLevel);

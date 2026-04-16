@@ -247,7 +247,8 @@ public sealed class CharacterSnapshot
                 spellInfo?.InitialSupportedSpellsExpression?.Supports ?? "",
                 GetPreparedIds(spellInfo?.Name ?? ""),
                 isSpellbookCaster: (spellInfo?.Prepare ?? false)
-                    && cm.SelectionRules.Any(r => r.Attributes.Type == "Spell")),
+                    && cm.SelectionRules.Any(r => r.Attributes.Type == "Spell")
+                    && string.IsNullOrEmpty(spellInfo?.InitialSupportedSpellsExpression?.Supports)),
 
             Languages           = CollectLanguages(),
             ArmorProficiencies  = CollectArmorProficiencies(),
@@ -445,13 +446,9 @@ public sealed class CharacterSnapshot
             .ToList();
     }
 
-    /// <summary>Gets prepared spell IDs from the MAUI spellcasting handler (set during XML load).</summary>
+    /// <summary>Gets prepared spell IDs captured by the active client during XML load.</summary>
     private static IReadOnlyCollection<string> GetPreparedIds(string spellcastingName)
-    {
-        if (SpellcastingSectionContext.Current is MauiSpellcastingSectionHandler h)
-            return h.GetPreparedIds(spellcastingName);
-        return Array.Empty<string>();
-    }
+        => SpellcastingSectionContext.Current?.GetPreparedIds(spellcastingName) ?? Array.Empty<string>();
 
     /// <summary>
     /// Collects cantrips from the character's registered elements.
@@ -472,7 +469,7 @@ public sealed class CharacterSnapshot
     /// Collects leveled spells grouped by level.
     /// - Prepared casters (Cleric/Druid/Wizard/Paladin/Artificer): full class spell list from
     ///   DataManager filtered by the class supports expression; IsPrepared reflects the state
-    ///   loaded from the character XML via MauiSpellcastingSectionHandler.
+    ///   loaded from the character XML via the active spellcasting handler.
     /// - Known casters (Sorcerer/Bard/Ranger/Warlock): only spells the character actually has
     ///   registered; all are considered prepared (always available).
     /// </summary>
@@ -500,8 +497,16 @@ public sealed class CharacterSnapshot
         int maxSlot = 0;
         for (int n = 9; n >= 1; n--) { if (totalSlots[n] > 0) { maxSlot = n; break; } }
 
+        // Spellbook casters (Wizard): supportsExpr is empty (no class-list filtering), spells come
+        // from selection rules. Use the prepared-caster path with the spellbook flag so that only
+        // registered spells are shown with individual prepare checkboxes.
+        if (isPreparedCaster && isSpellbookCaster)
+            return CollectPreparedCasterSpellLevels("", preparedIds, totalSlots, maxSlot, isSpellbookCaster: true);
+
+        // Full-list prepared casters (Cleric, Druid, Paladin, Artificer, etc.): filter the entire
+        // class spell list by the supports expression and show all of them with prepare checkboxes.
         if (isPreparedCaster && !string.IsNullOrEmpty(supportsExpr))
-            return CollectPreparedCasterSpellLevels(supportsExpr, preparedIds, totalSlots, maxSlot, isSpellbookCaster);
+            return CollectPreparedCasterSpellLevels(supportsExpr, preparedIds, totalSlots, maxSlot, isSpellbookCaster: false);
 
         // Known caster: spells the character has selected/been granted — all always available.
         var spellsByLevel = CharacterManager.Current.GetElements()

@@ -1,6 +1,9 @@
 @page "/manage"
 @implements IDisposable
 @inject CharacterTabService Tabs
+@inject UserPreferencesService Prefs
+@using Builder.Presentation
+@using Builder.Presentation.Models.Sources
 
 @if (_snap is null)
 {
@@ -10,126 +13,187 @@
     return;
 }
 
-@* ── Player Info ── *@
-<div class="build-section">
-    <div class="section-label">Player</div>
-    <div class="edit-grid">
-        <div class="edit-row">
-            <span class="edit-label">Character</span>
-            <MudTextField @bind-Value="_snap.Name" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Player</span>
-            <MudTextField @bind-Value="_snap.PlayerName" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">XP</span>
-            <MudNumericField @bind-Value="_snap.Experience" @bind-Value:after="MarkDirty"
-                             Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Deity</span>
-            <MudTextField Value="_snap.Deity" ReadOnly="true"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Alignment</span>
-            <MudTextField Value="_snap.Alignment" ReadOnly="true"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-    </div>
-</div>
+<MudTabs Elevation="0" ApplyEffectsToContainer="true" PanelClass="pa-0 pt-4">
 
-@* ── Appearance ── *@
-<div class="build-section">
-    <div class="section-label">Appearance</div>
-    <div class="edit-grid edit-grid-2col">
-        <div class="edit-row">
-            <span class="edit-label">Age</span>
-            <MudTextField @bind-Value="_snap.Age" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Gender</span>
-            <MudTextField @bind-Value="_snap.Gender" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Height</span>
-            <MudTextField @bind-Value="_snap.Height" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Weight</span>
-            <MudTextField @bind-Value="_snap.Weight" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Eyes</span>
-            <MudTextField @bind-Value="_snap.Eyes" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Hair</span>
-            <MudTextField @bind-Value="_snap.Hair" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Skin</span>
-            <MudTextField @bind-Value="_snap.Skin" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-    </div>
-</div>
+    @* ══════════════════════════ INFO TAB ══════════════════════════ *@
+    <MudTabPanel Text="Info">
 
-@* ── Backstory ── *@
-<div class="build-section">
-    <div class="section-label">Backstory</div>
-    <MudTextField @bind-Value="_snap.Backstory" @bind-Value:after="MarkDirty"
-                  Variant="Variant.Outlined" Lines="6" AutoGrow="true"
-                  Style="width: 100%; font-size: 13px;" />
-</div>
-
-@* ── Affiliations ── *@
-<div class="build-section">
-    <div class="section-label">Affiliations</div>
-    <div class="edit-grid">
-        <div class="edit-row">
-            <span class="edit-label">Organisation</span>
-            <MudTextField @bind-Value="_snap.Organisation" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+        @* ── Player Info ── *@
+        <div class="build-section">
+            <div class="section-label">Player</div>
+            <div class="edit-grid">
+                <div class="edit-row">
+                    <span class="edit-label">Character</span>
+                    <MudTextField @bind-Value="_snap.Name" @bind-Value:after="MarkDirty"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+                <div class="edit-row">
+                    <span class="edit-label">Player</span>
+                    <MudTextField @bind-Value="_snap.PlayerName" @bind-Value:after="MarkDirty"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+                <div class="edit-row">
+                    <span class="edit-label">XP</span>
+                    <MudNumericField @bind-Value="_snap.Experience" @bind-Value:after="MarkDirty"
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" Class="edit-field" />
+                </div>
+                <div class="edit-row">
+                    <span class="edit-label">Deity</span>
+                    <MudTextField Value="_snap.Deity" ReadOnly="true"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+                <div class="edit-row">
+                    <span class="edit-label">Alignment</span>
+                    <MudTextField Value="_snap.Alignment" ReadOnly="true"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+            </div>
         </div>
-        <div class="edit-row">
-            <span class="edit-label">Allies</span>
-            <MudTextField @bind-Value="_snap.Allies" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+
+        @* ── Appearance ── *@
+        <div class="build-section">
+            <div class="section-label">Appearance</div>
+            <div class="edit-grid edit-grid-2col">
+                <div class="edit-row">
+                    <span class="edit-label">Age</span>
+                    <MudTextField @bind-Value="_snap.Age" @bind-Value:after="MarkDirty"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+                <div class="edit-row">
+                    <span class="edit-label">Gender</span>
+                    <MudTextField @bind-Value="_snap.Gender" @bind-Value:after="MarkDirty"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+                <div class="edit-row">
+                    <span class="edit-label">Height</span>
+                    <MudTextField @bind-Value="_snap.Height" @bind-Value:after="MarkDirty"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+                <div class="edit-row">
+                    <span class="edit-label">Weight</span>
+                    <MudTextField @bind-Value="_snap.Weight" @bind-Value:after="MarkDirty"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+                <div class="edit-row">
+                    <span class="edit-label">Eyes</span>
+                    <MudTextField @bind-Value="_snap.Eyes" @bind-Value:after="MarkDirty"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+                <div class="edit-row">
+                    <span class="edit-label">Hair</span>
+                    <MudTextField @bind-Value="_snap.Hair" @bind-Value:after="MarkDirty"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+                <div class="edit-row">
+                    <span class="edit-label">Skin</span>
+                    <MudTextField @bind-Value="_snap.Skin" @bind-Value:after="MarkDirty"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
-@* ── Trinket ── *@
-<div class="build-section">
-    <div class="section-label">Trinket</div>
-    <MudTextField @bind-Value="_snap.Trinket" @bind-Value:after="MarkDirty"
-                  Variant="Variant.Outlined" Lines="2" AutoGrow="true"
-                  Style="width: 100%; font-size: 13px;" />
-</div>
+        @* ── Backstory ── *@
+        <div class="build-section">
+            <div class="section-label">Backstory</div>
+            <MudTextField @bind-Value="_snap.Backstory" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Lines="6" AutoGrow="true"
+                          Style="width: 100%; font-size: 13px;" />
+        </div>
 
-@* ── Notes ── *@
-<div class="build-section">
-    <div class="section-label">Notes</div>
-    <MudTextField @bind-Value="_snap.Notes1" @bind-Value:after="MarkDirty"
-                  Variant="Variant.Outlined" Lines="4" AutoGrow="true"
-                  Style="width: 100%; font-size: 13px; margin-bottom: 10px;" />
-    <MudTextField @bind-Value="_snap.Notes2" @bind-Value:after="MarkDirty"
-                  Variant="Variant.Outlined" Lines="4" AutoGrow="true"
-                  Style="width: 100%; font-size: 13px;" />
-</div>
+        @* ── Affiliations ── *@
+        <div class="build-section">
+            <div class="section-label">Affiliations</div>
+            <div class="edit-grid">
+                <div class="edit-row">
+                    <span class="edit-label">Organisation</span>
+                    <MudTextField @bind-Value="_snap.Organisation" @bind-Value:after="MarkDirty"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+                <div class="edit-row">
+                    <span class="edit-label">Allies</span>
+                    <MudTextField @bind-Value="_snap.Allies" @bind-Value:after="MarkDirty"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
+                </div>
+            </div>
+        </div>
+
+        @* ── Trinket ── *@
+        <div class="build-section">
+            <div class="section-label">Trinket</div>
+            <MudTextField @bind-Value="_snap.Trinket" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Lines="2" AutoGrow="true"
+                          Style="width: 100%; font-size: 13px;" />
+        </div>
+
+        @* ── Notes ── *@
+        <div class="build-section">
+            <div class="section-label">Notes</div>
+            <MudTextField @bind-Value="_snap.Notes1" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Lines="4" AutoGrow="true"
+                          Style="width: 100%; font-size: 13px; margin-bottom: 10px;" />
+            <MudTextField @bind-Value="_snap.Notes2" @bind-Value:after="MarkDirty"
+                          Variant="Variant.Outlined" Lines="4" AutoGrow="true"
+                          Style="width: 100%; font-size: 13px;" />
+        </div>
+
+    </MudTabPanel>
+
+    @* ══════════════════════════ SOURCES TAB ══════════════════════════ *@
+    <MudTabPanel Text="Sources">
+
+        <div class="sources-toolbar">
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Default"
+                       OnClick="LoadDefault">Load Default</MudButton>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary"
+                       OnClick="SaveAsDefault">Save as Default</MudButton>
+        </div>
+
+        @foreach (var group in CharacterManager.Current.SourcesManager.SourceGroups)
+        {
+            <div class="build-section source-group">
+                <div class="source-group-header">
+                    <MudCheckBox T="bool?"
+                                 Value="group.IsChecked"
+                                 ValueChanged="@((bool? v) => ToggleGroup(group, v))"
+                                 Disabled="!group.AllowUnchecking"
+                                 Color="Color.Primary"
+                                 Size="Size.Small" />
+                    <div class="source-group-label">
+                        <div class="section-label" style="font-size: 12px; margin-bottom: 2px;">@group.Name</div>
+                        <div class="source-group-summary">@group.Underline</div>
+                    </div>
+                </div>
+
+                <div class="source-items">
+                    @foreach (var item in group.Sources)
+                    {
+                        <div class="source-item-row">
+                            <MudCheckBox T="bool?"
+                                         Value="item.IsChecked"
+                                         ValueChanged="@((bool? v) => ToggleSource(item, v))"
+                                         Disabled="!item.AllowUnchecking"
+                                         Color="Color.Primary"
+                                         Size="Size.Small" />
+                            <span class="source-item-name @(item.AllowUnchecking ? "" : "source-locked")">
+                                @item.Source.Name
+                                @if (!item.AllowUnchecking)
+                                {
+                                    <span class="source-core-badge">core</span>
+                                }
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+    </MudTabPanel>
+
+</MudTabs>
 
 @code {
     private CharacterSnapshot? _snap;
+    private CharacterTab?      _tab;
 
     protected override void OnInitialized()
     {
@@ -137,7 +201,11 @@
         LoadFromActiveTab();
     }
 
-    private void LoadFromActiveTab() => _snap = Tabs.ActiveTab?.Snapshot;
+    private void LoadFromActiveTab()
+    {
+        _tab  = Tabs.ActiveTab;
+        _snap = _tab?.Snapshot;
+    }
 
     private void OnTabsChanged() => InvokeAsync(() =>
     {
@@ -149,7 +217,47 @@
 
     private void MarkDirty()
     {
-        if (Tabs.ActiveTab is { } tab)
+        if (_tab is { } tab)
             Tabs.MarkDirty(tab);
+    }
+
+    // ── Sources ──────────────────────────────────────────────────────────────
+
+    private void ToggleGroup(SourcesGroup group, bool? _)
+    {
+        if (!group.AllowUnchecking) return;
+        // Flip: all-checked → uncheck all, otherwise check all.
+        group.SetIsChecked(group.IsChecked == true ? false : (bool?)true, updateChildren: true);
+        ApplyAndPersistRestrictions();
+    }
+
+    private void ToggleSource(SourceItem item, bool? _)
+    {
+        if (!item.AllowUnchecking) return;
+        item.SetIsChecked(item.IsChecked != true, updateChildren: true, updateParent: true);
+        ApplyAndPersistRestrictions();
+    }
+
+    private void ApplyAndPersistRestrictions()
+    {
+        CharacterManager.Current.SourcesManager.ApplyRestrictions(reprocess: true);
+        MarkDirty();
+        if (_tab is { } tab)
+            tab.File.SaveSourceRestrictions();
+        StateHasChanged();
+    }
+
+    private void SaveAsDefault()
+    {
+        CharacterManager.Current.SourcesManager.StoreDefaults();
+    }
+
+    private void LoadDefault()
+    {
+        CharacterManager.Current.SourcesManager.LoadDefaults();
+        MarkDirty();
+        if (_tab is { } tab)
+            tab.File.SaveSourceRestrictions();
+        StateHasChanged();
     }
 }

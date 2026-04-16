@@ -29,7 +29,6 @@ using iTextSharp.text.pdf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -144,7 +143,7 @@ public class CharacterSheetEx
             this.ReplaceField(stamper, "details_features", this.ExportContent.Features, 8f);
             this.ReplaceField(stamper, "details_additional_notes", this.ExportContent.TemporaryRacialTraits, 8f);
             this.ReplaceField(stamper, "background_feature", this.ExportContent.BackgroundContent.FeatureDescription, dynamic: false);
-            this.ReplaceField(stamper, "background_traits", this.ExportContent.BackgroundContent.PersonalityTrait.Replace(Environment.NewLine, "<br>"), dynamic: false);
+            this.ReplaceField(stamper, "background_traits", (this.ExportContent.BackgroundContent.PersonalityTrait ?? "").Replace(Environment.NewLine, "<br>"), dynamic: false);
             this.ReplaceField(stamper, "background_ideals", this.ExportContent.BackgroundContent.Ideal, dynamic: false);
             this.ReplaceField(stamper, "background_bonds", this.ExportContent.BackgroundContent.Bond, dynamic: false);
             this.ReplaceField(stamper, "background_flaws", this.ExportContent.BackgroundContent.Flaw, dynamic: false);
@@ -1476,6 +1475,7 @@ label_47:
   {
     if (!stamper.AcroFields.Fields.ContainsKey(name))
       return;
+    htmlContent ??= "";
     name.Contains("features");
     Rectangle position = stamper.AcroFields.GetFieldPositions(name)[0].position;
     int page = stamper.AcroFields.GetFieldPositions(name)[0].page;
@@ -4445,6 +4445,6 @@ label_47:
     pdfStamper.Close();
     reader.Close();
     File.WriteAllBytes(str, os2.ToArray());
-    Process.Start(str);
+    ExternalLauncherContext.Current?.OpenPath(str);
   }
 }

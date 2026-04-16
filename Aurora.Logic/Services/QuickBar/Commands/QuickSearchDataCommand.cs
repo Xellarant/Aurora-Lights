@@ -6,8 +6,6 @@
 
 using Builder.Presentation.Services.Data;
 using Builder.Presentation.Services.QuickBar.Commands.Base;
-using System.Diagnostics;
-
 #nullable disable
 namespace Builder.Presentation.Services.QuickBar.Commands;
 
@@ -23,16 +21,16 @@ public sealed class QuickSearchDataCommand : QuickBarCommand
     switch (parameter)
     {
       case "custom":
-        Process.Start(DataManager.Current.UserDocumentsCustomElementsDirectory);
+        ExternalLauncherContext.Current?.OpenPath(DataManager.Current.UserDocumentsCustomElementsDirectory);
         break;
       case "portraits":
-        Process.Start(DataManager.Current.UserDocumentsPortraitsDirectory);
+        ExternalLauncherContext.Current?.OpenPath(DataManager.Current.UserDocumentsPortraitsDirectory);
         break;
       case "local":
-        Process.Start(DataManager.Current.LocalAppDataRootDirectory);
+        ExternalLauncherContext.Current?.OpenPath(DataManager.Current.LocalAppDataRootDirectory);
         break;
       case "logs":
-        Process.Start(DataManager.Current.LocalAppDataLogsDirectory);
+        ExternalLauncherContext.Current?.OpenPath(DataManager.Current.LocalAppDataLogsDirectory);
         break;
     }
   }

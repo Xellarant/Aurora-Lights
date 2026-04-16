@@ -74,6 +74,43 @@ public sealed class CharacterTabService
     }
 
     /// <summary>
+    /// Opens a placeholder tab immediately so the user can navigate to the character
+    /// pages before loading completes. Set <see cref="CharacterTab.IsLoading"/> = false
+    /// and call <see cref="NotifyChanged"/> once the load finishes.
+    /// </summary>
+    public CharacterTab OpenLoadingTab(CharacterFile file)
+    {
+        var existing = FindTab(file);
+        if (existing != null)
+        {
+            existing.IsLoading = true;
+            ActiveTab = existing;
+            TabsChanged?.Invoke();
+            return existing;
+        }
+
+        var tab = new CharacterTab(file) { IsLoading = true };
+        _tabs.Add(tab);
+        ActiveTab = tab;
+        TabsChanged?.Invoke();
+        return tab;
+    }
+
+    /// <summary>Fires <see cref="TabsChanged"/> without changing any state.</summary>
+    public void NotifyChanged() => TabsChanged?.Invoke();
+
+    /// <summary>
+    /// Closes all open tabs. Used before reloading content so stale character
+    /// objects don't reference the old element collection.
+    /// </summary>
+    public void CloseAllTabs()
+    {
+        _tabs.Clear();
+        ActiveTab = null;
+        TabsChanged?.Invoke();
+    }
+
+    /// <summary>
     /// Closes a tab. If it was active, the nearest remaining tab becomes active
     /// (or null if no tabs remain).
     /// </summary>
