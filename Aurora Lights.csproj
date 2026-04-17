@@ -22,6 +22,7 @@
     <LangVersion>latest</LangVersion>
     <NoWarn>$(NoWarn);CS8618;CS0618;CS0612</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <BuildInParallel>false</BuildInParallel>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -62,15 +63,27 @@
   <ItemGroup>
     <Compile Remove="Aurora.Logic\**\*.cs" />
     <Compile Remove="Aurora.App\**\*.cs" />
+    <Compile Remove="Aurora.Components\**\*.cs" />
+    <Compile Remove="Aurora.Web\**\*.cs" />
     <Compile Remove="tools\**\*.cs" />
     <EmbeddedResource Remove="Aurora.Logic\**" />
     <EmbeddedResource Remove="Aurora.App\**" />
+    <EmbeddedResource Remove="Aurora.Components\**" />
+    <EmbeddedResource Remove="Aurora.Web\**" />
     <None Remove="Aurora.Logic\**" />
     <None Remove="Aurora.App\**" />
+    <None Remove="Aurora.Components\**" />
+    <None Remove="Aurora.Web\**" />
     <!-- Exclude MAUI XAML files from WPF XAML compiler -->
     <Page Remove="Aurora.App\**\*.xaml" />
+    <Page Remove="Aurora.Components\**\*.razor" />
+    <Page Remove="Aurora.Web\**\*.razor" />
     <ApplicationDefinition Remove="Aurora.App\**\*.xaml" />
+    <ApplicationDefinition Remove="Aurora.Components\**" />
+    <ApplicationDefinition Remove="Aurora.Web\**" />
     <Content Remove="Aurora.App\**" />
+    <Content Remove="Aurora.Components\**" />
+    <Content Remove="Aurora.Web\**" />
     <MauiXaml Remove="Aurora.App\**\*.xaml" />
   </ItemGroup>
 
