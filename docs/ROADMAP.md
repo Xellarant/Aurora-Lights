@@ -43,6 +43,18 @@ Target model:
 - no long-term persistence of uploaded non-SRD content
 - export/download of `.dnd5e` files and generated PDFs
 
+Current status:
+
+- `Aurora.Web` now exists as an ASP.NET Core Blazor host in the solution
+- anonymous session workspaces can accept `.xml`, `.zip`, and `.dnd5e` uploads
+- uploaded XML is indexed into lightweight in-memory element summaries
+- a first merged compendium page now combines embedded baseline content with the current session overlay
+- imported characters can now be opened into the current browser session
+- new temporary characters can now be created and downloaded back out as `.dnd5e`
+- a lightweight PDF summary export is now available for the active session character
+- stale temporary workspaces are cleaned up automatically
+- the shared UI/component extraction work is still ahead
+
 Planned implementation shape:
 
 1. Add a web host project.

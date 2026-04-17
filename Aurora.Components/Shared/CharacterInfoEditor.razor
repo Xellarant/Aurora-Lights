@@ -1,0 +1,109 @@
+<div class="character-info-editor">
+    <section class="character-info-section">
+        <h3>Player</h3>
+        <div class="character-info-grid">
+            <label class="character-info-field">
+                <span>Character</span>
+                <input @bind="Model.Name" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+            <label class="character-info-field">
+                <span>Player</span>
+                <input @bind="Model.PlayerName" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+            <label class="character-info-field">
+                <span>XP</span>
+                <input type="number" min="0" @bind="Model.Experience" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+            <label class="character-info-field">
+                <span>Deity</span>
+                <input value="@Model.Deity" readonly />
+            </label>
+            <label class="character-info-field">
+                <span>Alignment</span>
+                <input value="@Model.Alignment" readonly />
+            </label>
+        </div>
+    </section>
+
+    <section class="character-info-section">
+        <h3>Appearance</h3>
+        <div class="character-info-grid two-column">
+            <label class="character-info-field">
+                <span>Age</span>
+                <input @bind="Model.Age" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+            <label class="character-info-field">
+                <span>Gender</span>
+                <input @bind="Model.Gender" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+            <label class="character-info-field">
+                <span>Height</span>
+                <input @bind="Model.Height" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+            <label class="character-info-field">
+                <span>Weight</span>
+                <input @bind="Model.Weight" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+            <label class="character-info-field">
+                <span>Eyes</span>
+                <input @bind="Model.Eyes" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+            <label class="character-info-field">
+                <span>Hair</span>
+                <input @bind="Model.Hair" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+            <label class="character-info-field">
+                <span>Skin</span>
+                <input @bind="Model.Skin" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+        </div>
+    </section>
+
+    <section class="character-info-section">
+        <h3>Backstory</h3>
+        <label class="character-info-field">
+            <textarea rows="6" @bind="Model.Backstory" @bind:event="oninput" @bind:after="NotifyChangedAsync"></textarea>
+        </label>
+    </section>
+
+    <section class="character-info-section">
+        <h3>Affiliations</h3>
+        <div class="character-info-grid">
+            <label class="character-info-field">
+                <span>Organisation</span>
+                <input @bind="Model.Organisation" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+            <label class="character-info-field">
+                <span>Allies</span>
+                <input @bind="Model.Allies" @bind:event="oninput" @bind:after="NotifyChangedAsync" />
+            </label>
+        </div>
+    </section>
+
+    <section class="character-info-section">
+        <h3>Trinket</h3>
+        <label class="character-info-field">
+            <textarea rows="2" @bind="Model.Trinket" @bind:event="oninput" @bind:after="NotifyChangedAsync"></textarea>
+        </label>
+    </section>
+
+    <section class="character-info-section">
+        <h3>Notes</h3>
+        <label class="character-info-field">
+            <textarea rows="4" @bind="Model.Notes1" @bind:event="oninput" @bind:after="NotifyChangedAsync"></textarea>
+        </label>
+        <label class="character-info-field">
+            <textarea rows="4" @bind="Model.Notes2" @bind:event="oninput" @bind:after="NotifyChangedAsync"></textarea>
+        </label>
+    </section>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public EditableCharacterInfoModel Model { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+
+    private Task NotifyChangedAsync() => OnChanged.InvokeAsync();
+}

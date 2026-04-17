@@ -1,0 +1,300 @@
+<div class="character-equipment-workspace">
+    @if (Model.Attacks.Count > 0)
+    {
+        <section class="equipment-section">
+            <div class="equipment-section-label">Attacks</div>
+            <div class="equipment-attack-table">
+                <div class="equipment-attack-row equipment-attack-header">
+                    <span>Name</span>
+                    <span>Attack</span>
+                    <span>Damage</span>
+                    <span>Range</span>
+                </div>
+                @foreach (EquipmentAttackModel attack in Model.Attacks)
+                {
+                    <div class="equipment-attack-row">
+                        <span>@attack.Name</span>
+                        <span>@attack.Attack</span>
+                        <span>@attack.Damage</span>
+                        <span>@attack.Range</span>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    <section class="equipment-section">
+        <div class="equipment-section-label">Equipped Gear</div>
+        <div class="equipment-gear-slots">
+            @foreach (EquipmentGearSlotModel slot in Model.GearSlots)
+            {
+                <div class="equipment-gear-row">
+                    <div class="equipment-gear-label">@slot.Label</div>
+                    <div class="@(slot.EquippedName is null ? "equipment-gear-empty" : "equipment-gear-item")">
+                        @(slot.EquippedName ?? "- None -")
+                    </div>
+                    @if (OnOpenGearSlot.HasDelegate || OnUnequipGearSlot.HasDelegate)
+                    {
+                        <div class="equipment-gear-actions">
+                            @if (OnOpenGearSlot.HasDelegate)
+                            {
+                                <button type="button"
+                                        class="equipment-action-button"
+                                        disabled="@Busy"
+                                        @onclick="() => OnOpenGearSlot.InvokeAsync(slot.Id)">
+                                    @(slot.EquippedName is null ? "Equip" : "Change")
+                                </button>
+                            }
+                            @if (slot.EquippedName is not null && OnUnequipGearSlot.HasDelegate)
+                            {
+                                <button type="button"
+                                        class="equipment-action-button secondary"
+                                        disabled="@Busy"
+                                        @onclick="() => OnUnequipGearSlot.InvokeAsync(slot.Id)">
+                                    Unequip
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="equipment-section">
+        <div class="equipment-section-label">Currency</div>
+        <div class="equipment-currency-strip">
+            @CoinField("cp", "CP", Model.Copper)
+            @CoinField("sp", "SP", Model.Silver)
+            @CoinField("ep", "EP", Model.Electrum)
+            @CoinField("gp", "GP", Model.Gold)
+            @CoinField("pp", "PP", Model.Platinum)
+        </div>
+    </section>
+
+    <section class="equipment-section">
+        <div class="equipment-inventory-header">
+            <div class="equipment-inventory-title">
+                <div class="equipment-section-label">Inventory</div>
+                @if (Model.AttunedMax > 0)
+                {
+                    <span class="equipment-attuned-summary">Attuned: @Model.AttunedCount / @Model.AttunedMax</span>
+                }
+            </div>
+
+            @if (OnAddItem.HasDelegate)
+            {
+                <button type="button"
+                        class="equipment-action-button primary"
+                        disabled="@Busy"
+                        @onclick="() => OnAddItem.InvokeAsync()">
+                    Add Item
+                </button>
+            }
+        </div>
+
+        @if (Model.InventoryItems.Count == 0)
+        {
+            <p class="equipment-empty">No items in inventory.</p>
+        }
+        else
+        {
+            <div class="equipment-inventory-table">
+                <div class="equipment-inventory-row equipment-inventory-header-row">
+                    <span>Item</span>
+                    <span></span>
+                    <span>Qty</span>
+                    <span>Weight</span>
+                    <span>Value</span>
+                    <span></span>
+                </div>
+                @foreach (EquipmentInventoryItemModel item in Model.InventoryItems)
+                {
+                    <div class="equipment-inventory-row">
+                        <span>@item.Name</span>
+                        <span class="equipment-tag-strip">
+                            @if (item.IsEquippable)
+                            {
+                                <button type="button"
+                                        class="equipment-tag @(item.IsEquipped ? "active" : string.Empty)"
+                                        disabled="@(!OnToggleEquipped.HasDelegate || Busy)"
+                                        title="@(item.IsEquipped ? $"Equipped: {item.EquippedLocation}" : "Equip item")"
+                                        @onclick="() => OnToggleEquipped.InvokeAsync(item.Identifier)">
+                                    E
+                                </button>
+                            }
+                            @if (item.IsAttunable)
+                            {
+                                <button type="button"
+                                        class="equipment-tag attunement @(item.IsAttuned ? "active" : string.Empty)"
+                                        disabled="@(!OnToggleAttuned.HasDelegate || Busy)"
+                                        title="@(item.IsAttuned ? "Attuned" : "Requires attunement")"
+                                        @onclick="() => OnToggleAttuned.InvokeAsync(item.Identifier)">
+                                    @(item.IsAttuned ? "A" : "◇")
+                                </button>
+                            }
+                        </span>
+                        <span>
+                            @if (item.IsStackable && OnChangeAmount.HasDelegate)
+                            {
+                                <input class="equipment-qty-input"
+                                       type="number"
+                                       min="1"
+                                       max="999"
+                                       value="@item.Amount"
+                                       disabled="@Busy"
+                                       @onchange="args => ChangeAmountAsync(item.Identifier, args)" />
+                            }
+                            else
+                            {
+                                <span class="equipment-static-qty">@item.Amount</span>
+                            }
+                        </span>
+                        <span>@item.DisplayWeight</span>
+                        <span>@item.DisplayPrice</span>
+                        <span>
+                            @if (OnRemoveItem.HasDelegate)
+                            {
+                                <button type="button"
+                                        class="equipment-remove-button"
+                                        disabled="@Busy"
+                                        @onclick="() => OnRemoveItem.InvokeAsync(item.Identifier)">
+                                    ×
+                                </button>
+                            }
+                        </span>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="equipment-section">
+        <div class="equipment-section-label">Equipment Notes</div>
+        <textarea class="equipment-notes-area"
+                  rows="3"
+                  value="@Model.EquipmentNotes"
+                  disabled="@(!OnNoteChanged.HasDelegate || Busy)"
+                  @oninput='args => ChangeNoteAsync("equipment", args)'></textarea>
+    </section>
+
+    <section class="equipment-section">
+        <div class="equipment-section-label">Treasure</div>
+        <textarea class="equipment-notes-area"
+                  rows="3"
+                  value="@Model.TreasureNotes"
+                  disabled="@(!OnNoteChanged.HasDelegate || Busy)"
+                  @oninput='args => ChangeNoteAsync("treasure", args)'></textarea>
+    </section>
+
+    <section class="equipment-section">
+        <div class="equipment-section-label">Quest Items</div>
+        <textarea class="equipment-notes-area"
+                  rows="3"
+                  value="@Model.QuestNotes"
+                  disabled="@(!OnNoteChanged.HasDelegate || Busy)"
+                  @oninput='args => ChangeNoteAsync("quest", args)'></textarea>
+    </section>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public EquipmentOverviewModel Model { get; set; } = new();
+
+    [Parameter]
+    public bool Busy { get; set; }
+
+    [Parameter]
+    public EventCallback OnAddItem { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnOpenGearSlot { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnUnequipGearSlot { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnRemoveItem { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnToggleEquipped { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnToggleAttuned { get; set; }
+
+    [Parameter]
+    public EventCallback<EquipmentAmountChangeModel> OnChangeAmount { get; set; }
+
+    [Parameter]
+    public EventCallback<EquipmentCoinChangeModel> OnCoinChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<EquipmentNoteChangeModel> OnNoteChanged { get; set; }
+
+    private RenderFragment CoinField(string coinId, string label, long value) => builder =>
+    {
+        builder.OpenElement(0, "label");
+        builder.AddAttribute(1, "class", "equipment-currency-cell");
+
+        builder.OpenElement(2, "input");
+        builder.AddAttribute(3, "class", "equipment-currency-input");
+        builder.AddAttribute(4, "type", "number");
+        builder.AddAttribute(5, "min", "0");
+        builder.AddAttribute(6, "value", BindConverter.FormatValue(value));
+        builder.AddAttribute(7, "disabled", !OnCoinChanged.HasDelegate || Busy);
+        builder.AddAttribute(8, "onchange", EventCallback.Factory.CreateBinder<string>(
+            this,
+            updated => _ = ChangeCoinAsync(coinId, updated),
+            value.ToString()));
+        builder.CloseElement();
+
+        builder.OpenElement(9, "span");
+        builder.AddAttribute(10, "class", "equipment-currency-label");
+        builder.AddContent(11, label);
+        builder.CloseElement();
+
+        builder.CloseElement();
+    };
+
+    private Task ChangeAmountAsync(string identifier, ChangeEventArgs args)
+    {
+        if (!OnChangeAmount.HasDelegate)
+        {
+            return Task.CompletedTask;
+        }
+
+        int amount = 1;
+        if (args.Value is not null && int.TryParse(args.Value.ToString(), out int parsed))
+        {
+            amount = Math.Max(1, parsed);
+        }
+
+        return OnChangeAmount.InvokeAsync(new EquipmentAmountChangeModel(identifier, amount));
+    }
+
+    private Task ChangeCoinAsync(string coinId, string? rawValue)
+    {
+        if (!OnCoinChanged.HasDelegate)
+        {
+            return Task.CompletedTask;
+        }
+
+        long value = 0;
+        if (!string.IsNullOrWhiteSpace(rawValue) && long.TryParse(rawValue, out long parsed))
+        {
+            value = Math.Max(0, parsed);
+        }
+
+        return OnCoinChanged.InvokeAsync(new EquipmentCoinChangeModel(coinId, value));
+    }
+
+    private Task ChangeNoteAsync(string noteId, ChangeEventArgs args)
+    {
+        if (!OnNoteChanged.HasDelegate)
+        {
+            return Task.CompletedTask;
+        }
+
+        return OnNoteChanged.InvokeAsync(new EquipmentNoteChangeModel(noteId, args.Value?.ToString() ?? string.Empty));
+    }
+}

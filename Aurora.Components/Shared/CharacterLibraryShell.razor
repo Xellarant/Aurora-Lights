@@ -1,0 +1,87 @@
+<div class="character-library-shell">
+    @if (!string.IsNullOrWhiteSpace(Title) || !string.IsNullOrWhiteSpace(IntroText))
+    {
+        <header class="character-library-header">
+            @if (!string.IsNullOrWhiteSpace(Title))
+            {
+                <h1 class="character-library-title">@Title</h1>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(IntroText))
+            {
+                <p class="character-library-intro">@IntroText</p>
+            }
+        </header>
+    }
+
+    @if (CreationContent is not null)
+    {
+        <section class="character-library-panel">
+            @CreationContent
+        </section>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(StatusMessage))
+    {
+        <div class="@GetStatusClass()">@StatusMessage</div>
+    }
+
+    <div class="@GetLayoutClass()">
+        <section class="character-library-panel">
+            @BrowserContent
+        </section>
+
+        @if (DetailContent is not null)
+        {
+            <section class="character-library-panel">
+                @DetailContent
+            </section>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? IntroText { get; set; }
+
+    [Parameter]
+    public string? StatusMessage { get; set; }
+
+    [Parameter]
+    public bool StatusIsError { get; set; }
+
+    [Parameter]
+    public bool StatusIsWarning { get; set; }
+
+    [Parameter]
+    public RenderFragment? CreationContent { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment BrowserContent { get; set; } = null!;
+
+    [Parameter]
+    public RenderFragment? DetailContent { get; set; }
+
+    private string GetLayoutClass() =>
+        DetailContent is null
+            ? "character-library-layout single-column"
+            : "character-library-layout";
+
+    private string GetStatusClass()
+    {
+        if (StatusIsError)
+        {
+            return "character-library-status error";
+        }
+
+        if (StatusIsWarning)
+        {
+            return "character-library-status warning";
+        }
+
+        return "character-library-status success";
+    }
+}

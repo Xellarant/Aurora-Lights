@@ -1,0 +1,82 @@
+<div class="character-manage-workspace">
+    @if (InfoModel is null && SourceGroups.Count == 0)
+    {
+        <p class="character-manage-empty">@EmptyMessage</p>
+    }
+
+    @if (InfoModel is not null)
+    {
+        <section class="character-manage-section">
+            <header class="character-manage-header">
+                <div>
+                    <h2>Identity</h2>
+                    <p>Edit the current character's narrative profile, notes, and presentation details.</p>
+                </div>
+            </header>
+
+            <CharacterInfoEditor Model="InfoModel" OnChanged="OnInfoChanged" />
+        </section>
+
+        @if (Actions is not null)
+        {
+            <div class="character-manage-actions">
+                @Actions
+            </div>
+        }
+    }
+
+    @if (SourceGroups.Count > 0)
+    {
+        <section class="character-manage-section">
+            <header class="character-manage-header">
+                <div>
+                    <h2>Sources</h2>
+                    <p>Review which source groups and books are currently enabled for the active character.</p>
+                </div>
+            </header>
+
+            <SourceRestrictionsEditor Groups="SourceGroups"
+                                      Busy="Busy"
+                                      ShowDefaultActions="ShowDefaultActions"
+                                      OnToggleGroup="OnToggleGroup"
+                                      OnToggleItem="OnToggleItem"
+                                      OnLoadDefaults="OnLoadDefaults"
+                                      OnSaveDefaults="OnSaveDefaults" />
+        </section>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string EmptyMessage { get; set; } = "No character is available.";
+
+    [Parameter]
+    public EditableCharacterInfoModel? InfoModel { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<SourceRestrictionGroupModel> SourceGroups { get; set; } = [];
+
+    [Parameter]
+    public bool Busy { get; set; }
+
+    [Parameter]
+    public bool ShowDefaultActions { get; set; }
+
+    [Parameter]
+    public EventCallback OnInfoChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnToggleGroup { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnToggleItem { get; set; }
+
+    [Parameter]
+    public EventCallback OnLoadDefaults { get; set; }
+
+    [Parameter]
+    public EventCallback OnSaveDefaults { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+}

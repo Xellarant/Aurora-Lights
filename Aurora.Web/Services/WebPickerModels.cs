@@ -1,0 +1,19 @@
+namespace Aurora.Web.Services;
+
+public sealed record WebEquipmentSearchResult(
+    string ElementId,
+    string Name,
+    string Type,
+    string Source,
+    string Description);
+
+public sealed record WebEquipmentInventoryOption(
+    string Identifier,
+    string Name);
+
+public sealed record WebMagicSelectionOption(
+    string Id,
+    string Name,
+    string Source,
+    string Description,
+    string Requirements);

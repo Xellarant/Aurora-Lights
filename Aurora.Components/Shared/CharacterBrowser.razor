@@ -1,0 +1,209 @@
+@using System.Linq
+
+<div class="character-browser-shell">
+    @if (!string.IsNullOrWhiteSpace(Title) || !string.IsNullOrWhiteSpace(DirectoryCaption) || ShowCreateButton)
+    {
+        <div class="character-browser-header">
+            <div>
+                @if (!string.IsNullOrWhiteSpace(Title))
+                {
+                    <h2 class="character-browser-title">@Title</h2>
+                }
+                @if (!string.IsNullOrWhiteSpace(DirectoryCaption))
+                {
+                    <p class="character-browser-caption">@DirectoryCaption</p>
+                }
+            </div>
+
+            @if (ShowCreateButton)
+            {
+                <button class="character-browser-create"
+                        type="button"
+                        @onclick="OnCreate"
+                        disabled="@DisableCreateButton">
+                    @CreateButtonText
+                </button>
+            }
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(BusyMessage))
+    {
+        <div class="character-browser-status">@BusyMessage</div>
+    }
+
+    @if (Characters.Count == 0)
+    {
+        <p class="character-browser-empty">@EmptyMessage</p>
+    }
+    else
+    {
+        @if (_favorites.Count > 0)
+        {
+            <section class="character-browser-section">
+                <h3 class="character-browser-section-title">Favorites</h3>
+                <div class="character-browser-grid">
+                    @foreach (CharacterBrowserEntry character in _favorites)
+                    {
+                        <button class="@GetCardClass(character)"
+                                type="button"
+                                @onclick="() => OnSelected.InvokeAsync(character)">
+                            <div class="character-browser-portrait">
+                                @if (!string.IsNullOrWhiteSpace(character.PortraitDataUrl))
+                                {
+                                    <img src="@character.PortraitDataUrl" alt="@character.DisplayName" />
+                                }
+                                else
+                                {
+                                    <span>@GetInitials(character.DisplayName)</span>
+                                }
+                            </div>
+
+                            <div class="character-browser-card-body">
+                                <div class="character-browser-name-row">
+                                    <span class="character-browser-name">@character.DisplayName</span>
+                                    @if (character.IsFavorite)
+                                    {
+                                        <span class="character-browser-star" aria-hidden="true">★</span>
+                                    }
+                                </div>
+
+                                <div class="character-browser-primary">@character.PrimaryText</div>
+
+                                @if (!string.IsNullOrWhiteSpace(character.SecondaryText))
+                                {
+                                    <div class="character-browser-secondary">@character.SecondaryText</div>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(character.CaptionText))
+                                {
+                                    <div class="character-browser-tertiary">@character.CaptionText</div>
+                                }
+                            </div>
+                        </button>
+                    }
+                </div>
+            </section>
+        }
+
+        @foreach (IGrouping<string, CharacterBrowserEntry> group in _groups)
+        {
+            <section class="character-browser-section">
+                <h3 class="character-browser-section-title">@group.Key</h3>
+                <div class="character-browser-grid">
+                    @foreach (CharacterBrowserEntry character in group)
+                    {
+                        <button class="@GetCardClass(character)"
+                                type="button"
+                                @onclick="() => OnSelected.InvokeAsync(character)">
+                            <div class="character-browser-portrait">
+                                @if (!string.IsNullOrWhiteSpace(character.PortraitDataUrl))
+                                {
+                                    <img src="@character.PortraitDataUrl" alt="@character.DisplayName" />
+                                }
+                                else
+                                {
+                                    <span>@GetInitials(character.DisplayName)</span>
+                                }
+                            </div>
+
+                            <div class="character-browser-card-body">
+                                <div class="character-browser-name-row">
+                                    <span class="character-browser-name">@character.DisplayName</span>
+                                    @if (character.IsFavorite)
+                                    {
+                                        <span class="character-browser-star" aria-hidden="true">★</span>
+                                    }
+                                </div>
+
+                                <div class="character-browser-primary">@character.PrimaryText</div>
+
+                                @if (!string.IsNullOrWhiteSpace(character.SecondaryText))
+                                {
+                                    <div class="character-browser-secondary">@character.SecondaryText</div>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(character.CaptionText))
+                                {
+                                    <div class="character-browser-tertiary">@character.CaptionText</div>
+                                }
+                            </div>
+                        </button>
+                    }
+                </div>
+            </section>
+        }
+    }
+</div>
+
+@code {
+    private IReadOnlyList<CharacterBrowserEntry> _favorites = [];
+    private IReadOnlyList<IGrouping<string, CharacterBrowserEntry>> _groups = [];
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<CharacterBrowserEntry> Characters { get; set; } = [];
+
+    [Parameter]
+    public string Title { get; set; } = "Characters";
+
+    [Parameter]
+    public string DirectoryCaption { get; set; } = string.Empty;
+
+    [Parameter]
+    public string EmptyMessage { get; set; } = "No characters are available yet.";
+
+    [Parameter]
+    public string? BusyMessage { get; set; }
+
+    [Parameter]
+    public bool ShowCreateButton { get; set; }
+
+    [Parameter]
+    public string CreateButtonText { get; set; } = "New Character";
+
+    [Parameter]
+    public bool DisableCreateButton { get; set; }
+
+    [Parameter]
+    public string? SelectedId { get; set; }
+
+    [Parameter]
+    public EventCallback<CharacterBrowserEntry> OnSelected { get; set; }
+
+    [Parameter]
+    public EventCallback OnCreate { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        _favorites = Characters.Where(character => character.IsFavorite).ToList();
+        _groups = Characters
+            .Where(character => !character.IsFavorite)
+            .GroupBy(character => string.IsNullOrWhiteSpace(character.GroupName) ? "Characters" : character.GroupName!)
+            .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private string GetCardClass(CharacterBrowserEntry character)
+    {
+        bool isSelected = string.Equals(character.Id, SelectedId, StringComparison.Ordinal);
+        return isSelected
+            ? "character-browser-card selected"
+            : "character-browser-card";
+    }
+
+    private static string GetInitials(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "?";
+        }
+
+        string[] parts = value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length == 1)
+        {
+            return parts[0][0].ToString().ToUpperInvariant();
+        }
+
+        return string.Concat(parts.Take(2).Select(part => char.ToUpperInvariant(part[0])));
+    }
+}

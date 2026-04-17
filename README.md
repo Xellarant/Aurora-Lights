@@ -19,6 +19,9 @@ This repository includes decompiled legacy code, new cross-platform work, and in
 - `Aurora.App`
   MAUI Blazor Hybrid client. This is the active modernization target and now supports Windows and Mac Catalyst build targets.
 
+- `Aurora.Web`
+  ASP.NET Core Blazor web host for the browser experience. Phase 0 currently focuses on anonymous, session-scoped uploads over embedded core + SRD content.
+
 - `Aurora.Logic`
   Shared logic layer consumed by both clients. This project contains domain models, services, content loading, sheet generation, and most of the migration target for client-neutral behavior.
 
@@ -65,6 +68,7 @@ Useful project-level build commands:
 ```powershell
 dotnet build .\Aurora.Logic\Aurora.Logic.csproj -v minimal
 dotnet build .\Aurora.App\Aurora.App.csproj -v minimal
+dotnet build .\Aurora.Web\Aurora.Web.csproj -v minimal
 dotnet build '.\Aurora Lights.csproj' -v minimal
 ```
 

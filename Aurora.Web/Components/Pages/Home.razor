@@ -1,0 +1,80 @@
+@page "/"
+@rendermode InteractiveServer
+@inject PhaseZeroSessionWorkspaceService SessionWorkspace
+
+<PageTitle>Aurora.Web</PageTitle>
+
+<div class="hero-card">
+    <div class="hero-copy">
+        <div class="hero-kicker">Aurora.Web</div>
+        <h1>Phase 0 browser host</h1>
+        <p>
+            This host starts with embedded core + SRD data and lets a user bring
+            private XML and character files into the current session without any
+            long-term server-side persistence.
+        </p>
+        <div class="hero-actions">
+            <a class="action-link primary" href="/import">Import Session Content</a>
+            <a class="action-link" href="/compendium">Browse Compendium</a>
+            <a class="action-link" href="/characters">Open Characters</a>
+            <a class="action-link" href="/studio">Open Studio</a>
+        </div>
+    </div>
+    <div class="hero-panel">
+        <div class="stat-label">Session Summary</div>
+        @if (_workspace is null)
+        {
+            <div class="stat-value">Loading...</div>
+        }
+        else
+        {
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-number">@_workspace.ImportedFiles.Count</div>
+                    <div class="summary-caption">Imported files</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number">@_workspace.Index.TotalElements</div>
+                    <div class="summary-caption">Discovered elements</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number">@_workspace.XmlFileCount</div>
+                    <div class="summary-caption">XML overlays</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number">@_workspace.CharacterFileCount</div>
+                    <div class="summary-caption">Character files</div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<section class="content-card">
+    <h2>What this first slice does</h2>
+    <ul class="feature-list">
+        <li>Creates a temporary server-side workspace for the current browser session.</li>
+        <li>Accepts `.xml`, `.zip`, and `.dnd5e` uploads.</li>
+        <li>Extracts XML element headers into an in-memory session index for future compendium and search flows.</li>
+        <li>Merges embedded baseline content with the session overlay in a browser compendium view.</li>
+        <li>Automatically expires stale workspaces without keeping a durable user library.</li>
+    </ul>
+</section>
+
+<section class="content-card">
+    <h2>What comes next</h2>
+    <ul class="feature-list">
+        <li>Wire the session overlay into character creation and load flows.</li>
+        <li>Reuse the existing Aurora build UI through a shared component layer.</li>
+        <li>Add download/export paths for `.dnd5e` files and generated PDFs.</li>
+    </ul>
+</section>
+
+@code {
+    private PhaseZeroSessionWorkspace? _workspace;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _workspace = await SessionWorkspace.GetWorkspaceAsync();
+    }
+}

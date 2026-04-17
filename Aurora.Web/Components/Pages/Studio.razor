@@ -1,0 +1,162 @@
+@page "/studio"
+@rendermode InteractiveServer
+@inject PhaseZeroSessionWorkspaceService SessionWorkspace
+@inject WebCharacterSessionService CharacterSession
+@inject IJSRuntime JS
+
+<PageTitle>Studio</PageTitle>
+
+<div class="content-card">
+    <h1>Studio</h1>
+    <p class="page-intro">
+        This page is the Phase 0 placeholder for the future browser builder
+        experience. It now understands the current session overlay and active
+        character selection so Phase 0 can create, open, and export character
+        files without server-side persistence.
+    </p>
+
+    @if (!string.IsNullOrWhiteSpace(_statusMessage))
+    {
+        <div class="status-banner success">@_statusMessage</div>
+    }
+</div>
+
+@if (_workspace is not null)
+{
+    <div class="content-card">
+        <h2>Current Character</h2>
+        @if (_currentCharacter is null)
+        {
+            <p class="empty-state">No character is currently active for this browser session. Open one from the <a href="/characters">Characters</a> page.</p>
+        }
+        else
+        {
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Name</span>
+                    <strong>@_currentCharacter.DisplayName</strong>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Build</span>
+                    <strong>@_currentCharacter.DisplayBuild</strong>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Player</span>
+                    <strong>@ValueOrDash(_currentCharacter.PlayerName)</strong>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Source File</span>
+                    <strong>@_currentCharacter.FileName</strong>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <a class="action-link" href="/manage">Manage Character</a>
+                <a class="action-link" href="/equipment">Equipment</a>
+                <a class="action-link" href="/magic">Magic</a>
+                <button class="action-link primary" @onclick="DownloadCharacterAsync" disabled="@_busy">Download .dnd5e</button>
+                <button class="action-link" @onclick="DownloadPdfAsync" disabled="@_busy">Download PDF</button>
+                <a class="action-link" href="/characters">Switch Character</a>
+            </div>
+        }
+    </div>
+
+    <div class="content-card">
+        <h2>Current Session</h2>
+        <div class="summary-grid compact">
+            <div class="summary-item">
+                <div class="summary-number">@_workspace.XmlFileCount</div>
+                <div class="summary-caption">XML files</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">@_workspace.CharacterFileCount</div>
+                <div class="summary-caption">Character files</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">@_workspace.Index.TotalElements</div>
+                <div class="summary-caption">Indexed elements</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">@_workspace.Index.Sources.Count</div>
+                <div class="summary-caption">Sources</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <h2>Next Integration Targets</h2>
+        <ul class="feature-list">
+            <li>Bind the session overlay into full character editing flows.</li>
+            <li>Expose type-indexed collections for compendium, equipment, and spell views.</li>
+            <li>Reuse the Aurora build UI through a shared component assembly.</li>
+            <li>Add PDF export and richer `.dnd5e` round-trip editing with no long-term server storage.</li>
+        </ul>
+    </div>
+}
+
+@code {
+    private PhaseZeroSessionWorkspace? _workspace;
+    private ImportedCharacterSummary? _currentCharacter;
+    private string? _statusMessage;
+    private bool _busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _workspace = await SessionWorkspace.GetWorkspaceAsync();
+        WebCharacterRuntimeState? runtimeState = await CharacterSession.GetCurrentRuntimeStateAsync();
+        _currentCharacter = runtimeState?.Summary;
+        _statusMessage = runtimeState?.StatusMessage;
+    }
+
+    private static string ValueOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private async Task DownloadCharacterAsync()
+    {
+        if (_currentCharacter is null)
+            return;
+
+        _busy = true;
+        try
+        {
+            byte[] bytes = await CharacterSession.DownloadCurrentCharacterFileAsync();
+            string fileName = string.IsNullOrWhiteSpace(_currentCharacter.FileName)
+                ? "character.dnd5e"
+                : _currentCharacter.FileName;
+
+            await JS.InvokeVoidAsync(
+                "auroraDownloads.downloadFile",
+                fileName,
+                "application/xml",
+                Convert.ToBase64String(bytes));
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task DownloadPdfAsync()
+    {
+        if (_currentCharacter is null)
+            return;
+
+        _busy = true;
+        try
+        {
+            byte[] bytes = await CharacterSession.DownloadCurrentCharacterPdfAsync();
+            string fileStem = Path.GetFileNameWithoutExtension(_currentCharacter.FileName);
+            string fileName = string.IsNullOrWhiteSpace(fileStem) ? "character-sheet.pdf" : $"{fileStem}.pdf";
+
+            await JS.InvokeVoidAsync(
+                "auroraDownloads.downloadFile",
+                fileName,
+                "application/pdf",
+                Convert.ToBase64String(bytes));
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

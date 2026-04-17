@@ -427,7 +427,7 @@ public static class BuildService
 
             // 6. Full save — rebuilds entire XML from CharacterManager.Current state.
             if (saveToFile)
-                file.Save();
+                SaveCharacterFile(tab, file);
             }
             catch (Exception ex)
             {
@@ -465,9 +465,7 @@ public static class BuildService
         {
             try
             {
-                if (tab.Snapshot != null && tab.Character != null)
-                    FlushSnapshotToCharacter(tab.Snapshot, tab.Character);
-                tab.File.Save();
+                SaveCharacterFile(tab);
             }
             catch (Exception ex)
             {
@@ -510,6 +508,23 @@ public static class BuildService
         character.Inventory.Treasure   = snap.InventoryTreasureText;
         character.Inventory.QuestItems = snap.InventoryQuestText;
         character.Inventory.Coins.Set(snap.CoinCopper, snap.CoinSilver, snap.CoinElectrum, snap.CoinGold, snap.CoinPlatinum);
+    }
+
+    private static void SaveCharacterFile(
+        CharacterTab tab,
+        Builder.Presentation.Models.CharacterFile? explicitFile = null)
+    {
+        Builder.Presentation.Models.CharacterFile? targetFile = explicitFile ?? tab.File;
+        if (targetFile is null)
+            throw new InvalidOperationException("No file associated with this tab.");
+
+        if (tab.Snapshot != null && tab.Character != null)
+            FlushSnapshotToCharacter(tab.Snapshot, tab.Character);
+
+        targetFile.Save();
+
+        if (tab.Snapshot != null && !targetFile.SaveTextEdits(tab.Snapshot))
+            throw new InvalidOperationException("Character save completed, but snapshot-backed edits could not be patched into the file.");
     }
 
     // ── Re-snapshot ──────────────────────────────────────────────────────────
@@ -742,7 +757,7 @@ public static class BuildService
 
                 cm.ReprocessCharacter();
                 ResnapTab(tab);
-                tab.File.Save();
+                SaveCharacterFile(tab);
                 return (string?)null;
             }
             catch (Exception ex) { return DebugLogService.Catch(ex, "BuildService.SetHpMethodAsync"); }
@@ -779,7 +794,7 @@ public static class BuildService
                 bool isAverage = cm.ContainsAverageHitPointsOption();
 
                 ResnapTab(tab);
-                tab.File.Save();
+                SaveCharacterFile(tab);
                 return ((string?)null, hpGained, isAverage);
             }
             catch (Exception ex) { DebugLogService.Instance.LogException(ex, "BuildService.LevelUpMainAsync"); return (ex.Message, 0, false); }
@@ -797,7 +812,7 @@ public static class BuildService
             {
                 CharacterManager.Current.LevelDown();
                 ResnapTab(tab);
-                tab.File.Save();
+                SaveCharacterFile(tab);
                 return (string?)null;
             }
             catch (Exception ex) { return DebugLogService.Catch(ex, "BuildService.LevelDownAsync"); }
@@ -857,7 +872,7 @@ public static class BuildService
                 }
 
                 ResnapTab(tab);
-                tab.File.Save();
+                SaveCharacterFile(tab);
                 return (string?)null;
             }
             catch (Exception ex) { return DebugLogService.Catch(ex, "BuildService.AddMulticlassLevelAsync"); }

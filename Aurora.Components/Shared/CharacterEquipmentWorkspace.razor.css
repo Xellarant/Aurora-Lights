@@ -1,0 +1,230 @@
+.character-equipment-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.equipment-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.equipment-section-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #526071;
+}
+
+.equipment-attack-table,
+.equipment-inventory-table,
+.equipment-gear-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.equipment-attack-row,
+.equipment-inventory-row {
+    display: grid;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.equipment-attack-row {
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+}
+
+.equipment-attack-header,
+.equipment-inventory-header-row {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.equipment-attack-row:not(.equipment-attack-header),
+.equipment-inventory-row:not(.equipment-inventory-header-row),
+.equipment-gear-row {
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #dbe1e8;
+    border-radius: 0.85rem;
+    background: #fbfcfd;
+}
+
+.equipment-gear-row {
+    display: grid;
+    grid-template-columns: minmax(0, 120px) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.equipment-gear-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #526071;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.equipment-gear-item,
+.equipment-gear-empty {
+    min-width: 0;
+    font-size: 0.96rem;
+}
+
+.equipment-gear-empty,
+.equipment-empty,
+.equipment-static-qty {
+    color: #6b7785;
+}
+
+.equipment-gear-actions,
+.equipment-inventory-header,
+.equipment-inventory-title,
+.equipment-tag-strip,
+.equipment-currency-strip {
+    display: flex;
+    align-items: center;
+}
+
+.equipment-gear-actions,
+.equipment-tag-strip,
+.equipment-currency-strip {
+    gap: 0.5rem;
+}
+
+.equipment-inventory-header {
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.equipment-inventory-title {
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.equipment-attuned-summary {
+    font-size: 0.76rem;
+    color: #6b7785;
+}
+
+.equipment-action-button,
+.equipment-remove-button,
+.equipment-tag {
+    border: 1px solid #cdd6df;
+    background: white;
+    color: #233447;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.equipment-action-button {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.equipment-action-button.primary,
+.equipment-tag.active {
+    background: #1f6feb;
+    border-color: #1f6feb;
+    color: white;
+}
+
+.equipment-action-button.secondary {
+    color: #58677a;
+}
+
+.equipment-action-button:disabled,
+.equipment-remove-button:disabled,
+.equipment-tag:disabled {
+    cursor: default;
+    opacity: 0.55;
+}
+
+.equipment-currency-strip {
+    flex-wrap: wrap;
+}
+
+.equipment-currency-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 70px;
+}
+
+.equipment-currency-input,
+.equipment-qty-input,
+.equipment-notes-area {
+    width: 100%;
+    border: 1px solid #d3dbe4;
+    border-radius: 0.75rem;
+    background: white;
+    color: #1f2d3d;
+    font: inherit;
+}
+
+.equipment-currency-input,
+.equipment-qty-input {
+    padding: 0.55rem 0.7rem;
+}
+
+.equipment-qty-input {
+    max-width: 64px;
+}
+
+.equipment-currency-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b7785;
+}
+
+.equipment-inventory-row {
+    grid-template-columns: minmax(0, 2.2fr) minmax(70px, 0.9fr) minmax(60px, 0.7fr) minmax(70px, 0.8fr) minmax(70px, 0.8fr) 40px;
+}
+
+.equipment-tag {
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.equipment-tag.attunement.active {
+    background: #0f8b8d;
+    border-color: #0f8b8d;
+}
+
+.equipment-remove-button {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+}
+
+.equipment-notes-area {
+    min-height: 96px;
+    padding: 0.85rem 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+@media (max-width: 900px) {
+    .equipment-attack-row,
+    .equipment-inventory-row,
+    .equipment-gear-row {
+        grid-template-columns: 1fr;
+    }
+
+    .equipment-inventory-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
