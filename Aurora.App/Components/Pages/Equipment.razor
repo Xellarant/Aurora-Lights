@@ -150,10 +150,9 @@
         await OpenGearSlotDialog(ParseSlot(slotId));
     }
 
-    private Task UnequipGearAsync(string slotId)
+    private async Task UnequipGearAsync(string slotId)
     {
-        UnequipGear(ParseSlot(slotId));
-        return Task.CompletedTask;
+        await UnequipGear(ParseSlot(slotId));
     }
 
     private async Task OpenGearSlotDialog(GearSlot slot)
@@ -172,6 +171,10 @@
 
         if (result is { Canceled: false, Data: GearPickerResult pick })
         {
+            var tab = Tabs.ActiveTab;
+            if (tab is null) return;
+            using var scope = await CharacterContext.EnterAsync(tab);
+
             bool ok = pick.IsNew
                 ? EquipmentService.AddAndEquipToSlot(character, slot, pick.ElementId!)
                 : EquipmentService.EquipToSlot(character, slot, pick.Identifier!);
@@ -191,9 +194,11 @@
         }
     }
 
-    private void UnequipGear(GearSlot slot)
+    private async Task UnequipGear(GearSlot slot)
     {
-        if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap }) return;
+        var tab = Tabs.ActiveTab;
+        if (tab is not { Character: { } character, File: { } file, Snapshot: { } snap }) return;
+        using var scope = await CharacterContext.EnterAsync(tab);
 
         EquipmentService.UnequipSlot(character, slot);
         snap.RefreshEquipmentFromCharacter(character);
@@ -211,8 +216,10 @@
 
         if (result is { Canceled: false, Data: ItemPickerResult pick })
         {
-            if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap })
+            var tab = Tabs.ActiveTab;
+            if (tab is not { Character: { } character, File: { } file, Snapshot: { } snap })
                 return;
+            using var scope = await CharacterContext.EnterAsync(tab);
 
             var added = EquipmentService.AddItem(character, pick.ElementId, pick.Amount);
             if (!added)
@@ -231,10 +238,12 @@
         }
     }
 
-    private Task RemoveItemAsync(string identifier)
+    private async Task RemoveItemAsync(string identifier)
     {
-        if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap })
-            return Task.CompletedTask;
+        var tab = Tabs.ActiveTab;
+        if (tab is not { Character: { } character, File: { } file, Snapshot: { } snap })
+            return;
+        using var scope = await CharacterContext.EnterAsync(tab);
 
         EquipmentService.RemoveItem(character, identifier);
         snap.RefreshEquipmentFromCharacter(character);
@@ -243,13 +252,14 @@
 
         file.SaveInventoryItems(character);
         MarkDirty();
-        return Task.CompletedTask;
     }
 
-    private Task ChangeAmountAsync(EquipmentAmountChangeModel change)
+    private async Task ChangeAmountAsync(EquipmentAmountChangeModel change)
     {
-        if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap })
-            return Task.CompletedTask;
+        var tab = Tabs.ActiveTab;
+        if (tab is not { Character: { } character, File: { } file, Snapshot: { } snap })
+            return;
+        using var scope = await CharacterContext.EnterAsync(tab);
 
         EquipmentService.SetAmount(character, change.Identifier, change.Amount);
         snap.RefreshEquipmentFromCharacter(character);
@@ -257,13 +267,16 @@
 
         file.SaveInventoryItems(character);
         MarkDirty();
-        return Task.CompletedTask;
     }
 
-    private Task ToggleEquippedAsync(string identifier)
+    private async Task ToggleEquippedAsync(string identifier)
     {
+        var tab = Tabs.ActiveTab;
+        if (tab is null) return;
+        using var scope = await CharacterContext.EnterAsync(tab);
+
         var item = FindLiveItem(identifier);
-        if (item is null) return Task.CompletedTask;
+        if (item is null) return;
 
         if (item.IsEquipped)
             item.Deactivate();
@@ -272,13 +285,16 @@
 
         RefreshEquipment();
         MarkDirty();
-        return Task.CompletedTask;
     }
 
-    private Task ToggleAttunedAsync(string identifier)
+    private async Task ToggleAttunedAsync(string identifier)
     {
+        var tab = Tabs.ActiveTab;
+        if (tab is null) return;
+        using var scope = await CharacterContext.EnterAsync(tab);
+
         var item = FindLiveItem(identifier);
-        if (item is null) return Task.CompletedTask;
+        if (item is null) return;
 
         if (item.IsAttuned)
             item.DeactivateAttunement();
@@ -287,7 +303,6 @@
 
         RefreshEquipment();
         MarkDirty();
-        return Task.CompletedTask;
     }
 
     private RefactoredEquipmentItem? FindLiveItem(string identifier) =>

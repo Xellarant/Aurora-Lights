@@ -350,6 +350,8 @@ public static class BuildService
         Builder.Presentation.Models.CharacterFile file,
         bool saveToFile = true)
     {
+        using var scope = await CharacterContext.EnterAsync(tab);
+
         var invalidated = new List<string>();
 
         string? taskError = null;
@@ -460,6 +462,7 @@ public static class BuildService
     public static async Task<string?> SaveTabAsync(CharacterTab tab)
     {
         if (tab.File == null) return "No file associated with this tab.";
+        using var scope = await CharacterContext.EnterAsync(tab);
         string? error = null;
         await Task.Run(() =>
         {
@@ -732,6 +735,7 @@ public static class BuildService
     /// </summary>
     public static async Task<string?> SetHpMethodAsync(CharacterTab tab, HpMethod method)
     {
+        using var scope = await CharacterContext.EnterAsync(tab);
         return await Task.Run(() =>
         {
             try
@@ -771,6 +775,7 @@ public static class BuildService
     /// </summary>
     public static async Task<(string? Error, int HpGained, bool IsAverage)> LevelUpMainAsync(CharacterTab tab)
     {
+        using var scope = await CharacterContext.EnterAsync(tab);
         return await Task.Run(() =>
         {
             try
@@ -806,6 +811,7 @@ public static class BuildService
     /// </summary>
     public static async Task<string?> LevelDownAsync(CharacterTab tab)
     {
+        using var scope = await CharacterContext.EnterAsync(tab);
         return await Task.Run(() =>
         {
             try
@@ -844,6 +850,7 @@ public static class BuildService
     /// </summary>
     public static async Task<string?> AddMulticlassLevelAsync(CharacterTab tab, string multiclassElementId)
     {
+        using var scope = await CharacterContext.EnterAsync(tab);
         return await Task.Run(() =>
         {
             try

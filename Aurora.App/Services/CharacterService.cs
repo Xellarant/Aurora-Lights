@@ -23,8 +23,9 @@ public sealed class CharacterService :
     private bool _directoriesInitialized;
     private bool _elementsInitialized;
     private readonly SemaphoreSlim _elementLock  = new(1, 1);
-    // Prevents concurrent character loads from corrupting the CharacterManager singleton.
-    private readonly SemaphoreSlim _characterLock = new(1, 1);
+    // Serialized access to CharacterManager.Current is owned by CharacterContext; callers that
+    // perform full-file loads acquire it via CharacterContext.EnterForLoadAsync().
+    private volatile bool _isCharacterLoading;
 
     public Character? CurrentCharacter { get; private set; }
     public CharacterFile? CurrentCharacterFile { get; private set; }
@@ -132,8 +133,8 @@ public sealed class CharacterService :
             .ToList();
     }
 
-    /// <summary>True while a character is being loaded (lock is held).</summary>
-    public bool IsCharacterLoading => _characterLock.CurrentCount == 0;
+    /// <summary>True while a character is being loaded.</summary>
+    public bool IsCharacterLoading => _isCharacterLoading;
 
     /// <summary>
     /// Returns true if <paramref name="file"/> is already loaded into
@@ -153,9 +154,11 @@ public sealed class CharacterService :
 
     public async Task<(bool Success, string Message)> LoadCharacterAsync(CharacterFile file)
     {
-        // Serialize all character loads — CharacterManager.Current is a singleton and
-        // cannot handle concurrent LoadCharacterAsync calls safely.
-        await _characterLock.WaitAsync();
+        // Acquire the CharacterContext lock for the whole load — this captures the active tab's
+        // state, drops the active-tab reference, and serializes against any mutation sites that
+        // might otherwise call EnterAsync mid-load.
+        using var scope = await CharacterContext.EnterForLoadAsync();
+        _isCharacterLoading = true;
         try
         {
             await EnsureElementsLoadedAsync();
@@ -196,7 +199,7 @@ public sealed class CharacterService :
         }
         finally
         {
-            _characterLock.Release();
+            _isCharacterLoading = false;
         }
     }
 
@@ -210,6 +213,9 @@ public sealed class CharacterService :
     public async Task<(CharacterFile? File, string? Error)> CreateNewCharacterAsync(
         string name, string playerName, HpMethod hpMethod)
     {
+        // Capture the active tab's state and hold the context lock while we stomp
+        // the singleton with New() + Save.
+        using var scope = await CharacterContext.EnterForLoadAsync();
         await EnsureElementsLoadedAsync();
         try
         {

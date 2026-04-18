@@ -318,19 +318,45 @@ public class CharacterFile : ObservableObject
 
     public bool Save(Character character)
     {
+        BuildDocument(character);
+        using (XmlTextWriter w = new XmlTextWriter(this._filepath, Encoding.UTF8))
+        {
+            w.Formatting = Formatting.Indented;
+            w.IndentChar = '\t';
+            w.Indentation = 1;
+            this._document.Save((XmlWriter)w);
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Serializes <paramref name="character"/> into the same XML form that <see cref="Save(Character)"/>
+    /// writes to disk, and returns the bytes. Used by CharacterContext to capture in-memory tab state
+    /// before swapping the CharacterManager singleton to a different tab's character.
+    /// </summary>
+    public byte[] SerializeCharacter(Character character)
+    {
+        BuildDocument(character);
+        using var ms = new MemoryStream();
+        using (XmlTextWriter w = new XmlTextWriter(ms, Encoding.UTF8))
+        {
+            w.Formatting = Formatting.Indented;
+            w.IndentChar = '\t';
+            w.Indentation = 1;
+            this._document.Save((XmlWriter)w);
+        }
+        return ms.ToArray();
+    }
+
+    private void BuildDocument(Character character)
+    {
         this._document = new XmlDocument();
         XmlNode parentNode = this._document.AppendChild(this._document.CreateNode(XmlNodeType.Element, nameof(character), (string)null));
         Dictionary<string, string> attributesDictionary = new Dictionary<string, string>()
-    {
-      {
-        "version",
-        "1.0.166.7407"
-      },
-      {
-        "preview",
-        "false"
-      }
-    };
+        {
+            { "version", "1.0.166.7407" },
+            { "preview", "false" },
+        };
         parentNode.AppendAttributes(attributesDictionary);
         parentNode.AppendChild((XmlNode)this._document.CreateComment(" Aurora - https://www.aurorabuilder.com "));
         parentNode.AppendChild((XmlNode)this._document.CreateComment(" information "));
@@ -341,15 +367,6 @@ public class CharacterFile : ObservableObject
         parentNode.AppendChild(this.CreateBuildNode(character));
         parentNode.AppendChild((XmlNode)this._document.CreateComment(" restricted sources "));
         parentNode.AppendChild(this.CreateRestrictedSourcesNode());
-        string.IsNullOrWhiteSpace(this._filepath);
-        using (XmlTextWriter w = new XmlTextWriter(this._filepath, Encoding.UTF8))
-        {
-            w.Formatting = Formatting.Indented;
-            w.IndentChar = '\t';
-            w.Indentation = 1;
-            this._document.Save((XmlWriter)w);
-            return true;
-        }
     }
 
     public async Task<CharacterFile.LoadResult> Load() => await this.Load(this._filepath);

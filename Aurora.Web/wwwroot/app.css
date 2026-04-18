@@ -38,20 +38,31 @@ h1:focus {
 }
 
 :root {
-    color-scheme: light;
-    --aurora-ink: #1d2430;
-    --aurora-muted: #5c6878;
-    --aurora-border: #d7dfeb;
-    --aurora-panel: #ffffff;
-    --aurora-panel-soft: #f5f7fb;
-    --aurora-primary: #2557a7;
-    --aurora-primary-strong: #163b74;
-    --aurora-accent: #cc7a00;
-    --aurora-success: #1f7a49;
-    --aurora-warning: #9b6700;
-    --aurora-danger: #ad2e24;
-    --aurora-bg: linear-gradient(180deg, #edf2f8 0%, #f9fbfd 100%);
-    --aurora-shadow: 0 20px 45px rgba(32, 50, 89, 0.08);
+    color-scheme: dark;
+    --aurora-ink: #cdd6f4;
+    --aurora-ink-soft: #a6adc8;
+    --aurora-muted: #a6adc8;
+    --aurora-border: #313244;
+    --aurora-panel: #313244;
+    --aurora-panel-soft: #181825;
+    --aurora-primary: #89b4fa;
+    --aurora-primary-strong: #b4bef7;
+    --aurora-accent: #f9e2af;
+    --aurora-success: #a6e3a1;
+    --aurora-warning: #f9e2af;
+    --aurora-danger: #f38ba8;
+    --aurora-bg: #1e1e2e;
+    --aurora-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+
+    /* Mirror into MudBlazor palette vars so shared components (authored for Aurora.App's MudBlazor dark theme) pick the matching dark values. */
+    --mud-palette-text-primary: #cdd6f4;
+    --mud-palette-text-secondary: #a6adc8;
+    --mud-palette-surface: #313244;
+    --mud-palette-background: #1e1e2e;
+    --mud-palette-background-gray: #181825;
+    --mud-palette-lines-default: #313244;
+    --mud-palette-primary: #89b4fa;
+    --mud-palette-primary-hover: rgba(137, 180, 250, 0.2);
 }
 
 html,
@@ -218,7 +229,7 @@ a {
 .summary-item {
     padding: 1rem;
     border-radius: 16px;
-    background: #ffffff;
+    background: var(--aurora-panel);
     border: 1px solid var(--aurora-border);
 }
 
@@ -251,7 +262,7 @@ button.action-link {
     padding: 0.7rem 1.05rem;
     border-radius: 999px;
     border: 1px solid var(--aurora-border);
-    background: #fff;
+    background: var(--aurora-panel);
     color: var(--aurora-ink);
     text-decoration: none;
     font-weight: 600;
@@ -393,7 +404,7 @@ button.action-link:disabled {
     padding: 0.75rem 0.85rem;
     border-radius: 14px;
     border: 1px solid var(--aurora-border);
-    background: #fff;
+    background: var(--aurora-panel-soft);
     color: var(--aurora-ink);
 }
 
@@ -479,7 +490,7 @@ button.action-link:disabled {
     padding: 1rem;
     border-radius: 18px;
     border: 1px solid var(--aurora-border);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 247, 250, 0.98));
+    background: var(--aurora-panel);
     display: grid;
     gap: 1rem;
 }
@@ -546,7 +557,7 @@ button.action-link:disabled {
     padding: 0.9rem 1rem;
     border-radius: 16px;
     border: 1px solid var(--aurora-border);
-    background: #fff;
+    background: var(--aurora-panel-soft);
 }
 
 .picker-result-card.compact {

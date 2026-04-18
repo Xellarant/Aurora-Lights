@@ -59,10 +59,7 @@ public class FillableContentGenerator
 
   public static iTextSharp.text.Font GetFont(string fontName, string filename, float size = 0.0f)
   {
-    string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
-    if (!FontFactory.IsRegistered(filename))
-      FontFactory.Register(Path.Combine(folderPath, filename));
-    return FontFactory.GetFont(fontName, "Identity-H", true, size);
+    return FontsHelper.GetFont(fontName, filename, size) ?? FontFactory.GetFont("Helvetica", size);
   }
 
   public iTextSharp.text.Font GetCurrentAsFont(float size) => new iTextSharp.text.Font(this._currentFont, size);

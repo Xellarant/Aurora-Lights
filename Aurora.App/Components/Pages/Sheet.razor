@@ -68,7 +68,7 @@
         Save PDF
     </MudButton>
     <MudText Typo="Typo.caption" Color="Color.Secondary" Style="margin-left: 12px; align-self: center;">
-        Saves to 5e Character Builder
+        Saves to @GetExportLocationLabel()
     </MudText>
 </div>
 
@@ -178,6 +178,8 @@
     private async Task PreviewPdfAsync()
     {
         if (_snap is null) return;
+        var tab = Tabs.ActiveTab;
+        if (tab is null) return;
         _generating = true;
         _error      = null;
         StateHasChanged();
@@ -186,12 +188,7 @@
         {
             // Generate to a temp file on a background thread.
             // Keep the file alive so the WebView can load it; PdfPreviewPage deletes it on close.
-            var (tempPath, snapCopy) = await Task.Run(() =>
-            {
-                var path = Path.Combine(Path.GetTempPath(), $"aurora_preview_{Guid.NewGuid():N}.pdf");
-                CharacterSheetGeneratorContext.Current!.GenerateNewSheet(path, isPreview: true);
-                return (path, _snap);
-            });
+            var (tempPath, snapCopy) = await GenerateWithContextAsync(tab, isPreview: true);
 
             // Open a native MAUI window on the UI thread.
             await MainThread.InvokeOnMainThreadAsync(() =>
@@ -199,22 +196,25 @@
                 var page = new PdfPreviewPage(tempPath, snapCopy?.Name ?? "Character",
                     saveToDocuments: async () =>
                     {
-                        var savedPath = await Task.Run(() =>
+                        var safeName = string.Concat((snapCopy?.Name ?? "Character")
+                            .Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
+                        var chosenPath = await FileSaveService.PickSaveLocationAsync(
+                            $"{safeName}.pdf",
+                            new[] { new FileSaveService.FileTypeChoice("PDF document", ".pdf") },
+                            GetPreferredExportDirectory());
+                        if (chosenPath is null) return null;
+
+                        using var saveScope = await CharacterContext.EnterAsync(tab);
+                        await Task.Run(() =>
                         {
-                            var folder   = DataManager.Current.UserDocumentsRootDirectory
-                                           ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "5e Character Builder");
-                            var safeName = string.Concat((snapCopy?.Name ?? "Character")
-                                .Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
-                            var fullPath = Path.Combine(folder, $"{safeName}.pdf");
-                            CharacterSheetGeneratorContext.Current!.GenerateNewSheet(fullPath, isPreview: false);
-                            return fullPath;
+                            CharacterSheetGeneratorContext.Current!.GenerateNewSheet(chosenPath, isPreview: false);
                         });
                         await InvokeAsync(() =>
                         {
-                            _lastSavedPath = savedPath;
+                            _lastSavedPath = chosenPath;
                             StateHasChanged();
                         });
-                        return savedPath;
+                        return chosenPath;
                     });
 
                 Application.Current!.OpenWindow(new Window(page)
@@ -240,24 +240,31 @@
     private async Task GeneratePdfAsync()
     {
         if (_snap is null) return;
-        _generating   = true;
-        _error        = null;
-        _lastSavedPath= null;
+        var tab = Tabs.ActiveTab;
+        if (tab is null) return;
+
+        string safeName = string.Concat((_snap.Name ?? "Character")
+            .Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
+        string? chosenPath = await FileSaveService.PickSaveLocationAsync(
+            $"{safeName}.pdf",
+            new[] { new FileSaveService.FileTypeChoice("PDF document", ".pdf") },
+            GetPreferredExportDirectory());
+
+        if (chosenPath is null) return; // user cancelled
+
+        _generating    = true;
+        _error         = null;
+        _lastSavedPath = null;
         StateHasChanged();
 
         try
         {
-            string outputPath = await Task.Run(() =>
+            using var scope = await CharacterContext.EnterAsync(tab);
+            await Task.Run(() =>
             {
-                string folder   = DataManager.Current.UserDocumentsRootDirectory
-                                  ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "5e Character Builder");
-                string safeName = string.Concat((_snap.Name ?? "Character")
-                    .Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
-                string fullPath = Path.Combine(folder, $"{safeName}.pdf");
-                CharacterSheetGeneratorContext.Current!.GenerateNewSheet(fullPath, isPreview: false);
-                return fullPath;
+                CharacterSheetGeneratorContext.Current!.GenerateNewSheet(chosenPath, isPreview: false);
             });
-            _lastSavedPath = outputPath;
+            _lastSavedPath = chosenPath;
         }
         catch (Exception ex)
         {
@@ -271,6 +278,17 @@
         }
     }
 
+    private async Task<(string Path, CharacterSnapshot? Snap)> GenerateWithContextAsync(CharacterTab tab, bool isPreview)
+    {
+        using var scope = await CharacterContext.EnterAsync(tab);
+        return await Task.Run(() =>
+        {
+            var path = Path.Combine(Path.GetTempPath(), $"aurora_preview_{Guid.NewGuid():N}.pdf");
+            CharacterSheetGeneratorContext.Current!.GenerateNewSheet(path, isPreview: isPreview);
+            return (path, _snap);
+        });
+    }
+
     private static void OpenContainingFolder(string filePath)
     {
         try
@@ -280,5 +298,29 @@
                 ExternalLauncherContext.Current?.OpenPath(folder);
         }
         catch { }
+    }
+
+    private static string GetPreferredExportDirectory()
+    {
+        if (string.IsNullOrWhiteSpace(DataManager.Current.UserDocumentsRootDirectory))
+            DataManager.Current.InitializeDirectories();
+
+        string? folder = DataManager.Current.UserDocumentsRootDirectory;
+        if (string.IsNullOrWhiteSpace(folder))
+        {
+            string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            folder = !string.IsNullOrWhiteSpace(documents)
+                ? Path.Combine(documents, "Aurora Reflections")
+                : Path.Combine(FileSystem.Current.AppDataDirectory, "Exports");
+        }
+
+        Directory.CreateDirectory(folder);
+        return folder;
+    }
+
+    private static string GetExportLocationLabel()
+    {
+        string folder = GetPreferredExportDirectory();
+        return Path.GetFileName(folder) is { Length: > 0 } leaf ? leaf : folder;
     }
 }

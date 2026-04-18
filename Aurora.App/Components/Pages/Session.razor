@@ -247,11 +247,12 @@
                Style="margin-left: 10px;">
         Long Rest
     </MudButton>
-    <MudIconButton Icon="@Icons.Material.Filled.Save"
-                   Size="Size.Small"
-                   OnClick="SaveSession"
-                   Style="margin-left: auto; color: #6c7086;"
-                   title="Save session" />
+    <MudTooltip Text="Save session">
+        <MudIconButton Icon="@Icons.Material.Filled.Save"
+                       Size="Size.Small"
+                       OnClick="SaveSession"
+                       Style="margin-left: auto; color: #6c7086;" />
+    </MudTooltip>
 </div>
 
 @code {

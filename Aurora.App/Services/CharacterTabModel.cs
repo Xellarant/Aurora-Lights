@@ -41,6 +41,13 @@ public sealed class CharacterTab
     /// </summary>
     public bool IsNew { get; set; }
 
+    /// <summary>
+    /// In-memory XML representation of this tab's latest state. Captured by
+    /// <see cref="CharacterContext"/> before swapping the CharacterManager singleton to a different
+    /// tab. Null until first captured or until the tab is hydrated from a file path.
+    /// </summary>
+    public byte[]? StateXml { get; set; }
+
     public CharacterTab(CharacterFile file) => File = file;
 }
 

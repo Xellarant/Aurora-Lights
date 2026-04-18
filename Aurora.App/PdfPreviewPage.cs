@@ -53,7 +53,8 @@ internal sealed class PdfPreviewPage : ContentPage
                 }
                 else
                 {
-                    saveBtn.Text      = "Save failed";
+                    // null = user cancelled the save dialog; restore the button.
+                    saveBtn.Text      = "Save to Documents";
                     saveBtn.IsEnabled = true;
                 }
             }

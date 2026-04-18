@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurora Lights", "Aurora Lights.csproj", "{1452F300-6B85-46E2-9262-AC19BA5BBF9F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurora.Lights", "Aurora.Lights.csproj", "{1452F300-6B85-46E2-9262-AC19BA5BBF9F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurora.Logic", "Aurora.Logic\Aurora.Logic.csproj", "{57719405-4860-4995-B845-1DE22BD8F675}"
 EndProject
