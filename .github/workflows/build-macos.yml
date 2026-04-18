@@ -22,10 +22,10 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '10.0.202'
+          dotnet-version: '10.0.101'
 
       - name: Install MAUI workloads
-        run: dotnet workload install maui --skip-manifest-update
+        run: dotnet workload install maui --version 10.0.101.1
 
       - name: Show SDK toolchain
         run: |
