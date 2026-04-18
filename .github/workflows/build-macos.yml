@@ -5,12 +5,16 @@ on:
 
 jobs:
   build-mac:
-    runs-on: macos-latest
     env:
       PROJECT: Aurora.App/Aurora.App.csproj   # <-- update if different
     strategy:
       matrix:
-        runtime: [maccatalyst-arm64, maccatalyst-x64]
+        include:
+          - runtime: maccatalyst-arm64
+            runner: macos-26
+          - runtime: maccatalyst-x64
+            runner: macos-26-intel
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - uses: actions/checkout@v4
@@ -18,10 +22,15 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '10.0.202'
 
       - name: Install MAUI workloads
-        run: dotnet workload install maui
+        run: dotnet workload install maui --skip-manifest-update
+
+      - name: Show SDK toolchain
+        run: |
+          dotnet --info
+          xcodebuild -version
 
       - name: Restore
         run: dotnet restore "$PROJECT"
@@ -44,7 +53,7 @@ jobs:
           path: publish/${{ matrix.runtime }}
 
   create-universal:
-    runs-on: macos-latest
+    runs-on: macos-26
     needs: build-mac
     env:
       PROJECT: Aurora.App/Aurora.App.csproj   # <-- update if different
