@@ -6,7 +6,6 @@
 
 using Builder.Core;
 using System;
-using System.Diagnostics;
 using System.Windows.Input;
 using System.Xml.Serialization;
 
@@ -68,8 +67,8 @@ public class Post : ObservableObject
     {
       return (ICommand) new RelayCommand((Action) (() =>
       {
-        Process.Start(this.Url);
-        this.MarkAsRead();
+        if (ExternalLauncherContext.Current?.OpenUri(this.Url) == true)
+          this.MarkAsRead();
       }));
     }
   }

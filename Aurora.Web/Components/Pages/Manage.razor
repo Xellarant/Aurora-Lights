@@ -1,0 +1,173 @@
+@page "/manage"
+@rendermode InteractiveServer
+@inject WebCharacterSessionService CharacterSession
+
+<PageTitle>Manage</PageTitle>
+
+<CharacterLibraryShell Title="Manage Character"
+                       IntroText="Edit the active character's narrative and identity fields in the current browser session. Changes stay session-scoped until you download the updated `.dnd5e` file."
+                       StatusMessage="@_statusMessage"
+                       StatusIsError="@_failed">
+    <BrowserContent>
+        @if (_loading)
+        {
+            <p class="empty-state">Loading active character...</p>
+        }
+        else if (_currentCharacter is null || _info is null)
+        {
+            <p class="empty-state">No character is currently active. Open one from the <a href="/characters">Characters</a> page first.</p>
+        }
+        else
+        {
+            <CharacterManageWorkspace InfoModel="_info"
+                                      SourceGroups="_sourceGroups"
+                                      Busy="_busy"
+                                      ShowDefaultActions="false"
+                                      OnInfoChanged="MarkDirty"
+                                      OnToggleGroup="ToggleGroupAsync"
+                                      OnToggleItem="ToggleItemAsync">
+                <Actions>
+                    <button class="action-link primary" @onclick="SaveAsync" disabled="@(!_dirty || _busy)">Save Session Changes</button>
+                    <a class="action-link" href="/studio">Return to Studio</a>
+                </Actions>
+            </CharacterManageWorkspace>
+        }
+    </BrowserContent>
+
+    <DetailContent>
+        <CharacterDetailPanel Title="Current Character"
+                              EmptyMessage="No active character is available."
+                              Fields="@DetailFields" />
+    </DetailContent>
+</CharacterLibraryShell>
+
+@code {
+    private ImportedCharacterSummary? _currentCharacter;
+    private EditableCharacterInfoModel? _info;
+    private bool _loading = true;
+    private bool _busy;
+    private bool _dirty;
+    private bool _failed;
+    private string? _statusMessage;
+    private IReadOnlyList<SourceRestrictionGroupModel> _sourceGroups = [];
+
+    private IReadOnlyList<CharacterDetailField> DetailFields =>
+        _currentCharacter is null
+            ? []
+            : [
+                new("Name", _currentCharacter.DisplayName),
+                new("Build", _currentCharacter.DisplayBuild),
+                new("Player", ValueOrDash(_currentCharacter.PlayerName)),
+                new("File", _currentCharacter.FileName)
+            ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+
+        try
+        {
+            WebCharacterInfoState? state = await CharacterSession.GetCurrentCharacterInfoAsync();
+            WebCharacterSourceState? sourceState = await CharacterSession.GetCurrentSourceStateAsync();
+            _currentCharacter = state?.Summary;
+            _info = state?.Info;
+            _statusMessage = state?.StatusMessage;
+            _sourceGroups = sourceState?.Groups ?? [];
+            _dirty = false;
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _statusMessage = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private Task MarkDirty()
+    {
+        _dirty = true;
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_info is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _failed = false;
+        try
+        {
+            WebCharacterInfoState state = await CharacterSession.UpdateCurrentCharacterInfoAsync(_info);
+            _currentCharacter = state.Summary;
+            _info = state.Info;
+            _statusMessage = state.StatusMessage;
+            _dirty = false;
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _statusMessage = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ToggleGroupAsync(string groupId)
+    {
+        _busy = true;
+        _failed = false;
+        try
+        {
+            WebCharacterSourceState state = await CharacterSession.ToggleCurrentSourceGroupAsync(groupId);
+            _sourceGroups = state.Groups;
+            _statusMessage = state.StatusMessage;
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _statusMessage = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ToggleItemAsync(string sourceId)
+    {
+        _busy = true;
+        _failed = false;
+        try
+        {
+            WebCharacterSourceState state = await CharacterSession.ToggleCurrentSourceItemAsync(sourceId);
+            _sourceGroups = state.Groups;
+            _statusMessage = state.StatusMessage;
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _statusMessage = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static string ValueOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

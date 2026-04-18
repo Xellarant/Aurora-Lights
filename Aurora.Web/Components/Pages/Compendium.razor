@@ -1,0 +1,174 @@
+@page "/compendium"
+@rendermode InteractiveServer
+@inject WebContentCatalogService CatalogService
+
+<PageTitle>Compendium</PageTitle>
+
+<div class="content-card">
+    <h1>Compendium</h1>
+    <p class="page-intro">
+        This Phase 0 compendium proves the web host can merge embedded baseline
+        content with the current session overlay. Session uploads override
+        baseline entries when they share the same element id.
+    </p>
+
+    @if (_loading)
+    {
+        <div class="status-banner info">Loading merged content catalog...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="status-banner error">@_error</div>
+    }
+    else if (_catalog is not null)
+    {
+        <div class="summary-grid compact">
+            <div class="summary-item">
+                <div class="summary-number">@_catalog.TotalElements</div>
+                <div class="summary-caption">Merged elements</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">@_catalog.BaselineElementCount</div>
+                <div class="summary-caption">Baseline entries</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">@_catalog.SessionElementCount</div>
+                <div class="summary-caption">Session overrides/additions</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">@_filteredElements.Count</div>
+                <div class="summary-caption">Visible rows</div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (_catalog is not null)
+{
+    <div class="content-card">
+        <h2>Filters</h2>
+        <div class="filter-grid">
+            <div class="filter-field">
+                <label for="compendium-search">Search</label>
+                <input id="compendium-search"
+                       class="text-filter"
+                       type="search"
+                       @bind="_searchText"
+                       @bind:event="oninput"
+                       placeholder="Name, id, source, or file" />
+            </div>
+
+            <div class="filter-field">
+                <label for="compendium-type">Type</label>
+                <select id="compendium-type" class="select-filter" @bind="_selectedType">
+                    <option value="">All types</option>
+                    @foreach (string type in _catalog.ElementTypes.Keys.OrderBy(type => type, StringComparer.OrdinalIgnoreCase))
+                    {
+                        <option value="@type">@type (@_catalog.ElementTypes[type])</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="compendium-origin">Origin</label>
+                <select id="compendium-origin" class="select-filter" @bind="_selectedOrigin">
+                    <option value="">All origins</option>
+                    <option value="@ContentCatalogOrigin.Baseline">Baseline</option>
+                    <option value="@ContentCatalogOrigin.Session">Session</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <h2>Entries</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Source</th>
+                    <th>Origin</th>
+                    <th>File</th>
+                    <th>Id</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (ContentCatalogEntry entry in _filteredElements.Take(250))
+                {
+                    <tr>
+                        <td>@entry.Name</td>
+                        <td>@entry.Type</td>
+                        <td>@entry.Source</td>
+                        <td>
+                            <span class="origin-pill @(entry.Origin == ContentCatalogOrigin.Session ? "session" : "baseline")">
+                                @entry.Origin
+                            </span>
+                        </td>
+                        <td>@entry.FileName</td>
+                        <td><code>@entry.Id</code></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (_filteredElements.Count > 250)
+        {
+            <p class="empty-state">Showing the first 250 filtered entries. Narrow the filters to inspect more precisely.</p>
+        }
+    </div>
+}
+
+@code {
+    private MergedContentCatalog? _catalog;
+    private bool _loading = true;
+    private string? _error;
+    private string _searchText = string.Empty;
+    private string _selectedType = string.Empty;
+    private string _selectedOrigin = string.Empty;
+
+    private IReadOnlyList<ContentCatalogEntry> _filteredElements =>
+        _catalog?.Elements
+                .Where(MatchesFilters)
+                .ToList()
+        ?? [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _catalog = await CatalogService.GetCatalogAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private bool MatchesFilters(ContentCatalogEntry entry)
+    {
+        if (!string.IsNullOrWhiteSpace(_selectedType)
+            && !string.Equals(entry.Type, _selectedType, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_selectedOrigin)
+            && !string.Equals(entry.Origin.ToString(), _selectedOrigin, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_searchText))
+            return true;
+
+        return entry.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
+            || entry.Id.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
+            || entry.Source.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
+            || entry.FileName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
+    }
+}

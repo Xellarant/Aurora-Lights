@@ -1,0 +1,280 @@
+@page "/magic"
+@rendermode InteractiveServer
+@inject WebCharacterSessionService CharacterSession
+
+<PageTitle>Magic</PageTitle>
+
+<CharacterLibraryShell Title="Magic"
+                       IntroText="Inspect the active character's spellcasting profile, manage prepared spells, and change known-spell selections in the current browser session."
+                       StatusMessage="@_statusMessage"
+                       StatusIsError="@_failed">
+    <BrowserContent>
+        @if (_loading)
+        {
+            <p class="empty-state">Loading active character magic...</p>
+        }
+        else if (_state is null)
+        {
+            <p class="empty-state">No character is currently active. Open one from the <a href="/characters">Characters</a> page first.</p>
+        }
+        else
+        {
+            <CharacterMagicWorkspace Model="_state.Magic"
+                                     Busy="_busy"
+                                     SelectedSpellId="_selectedSpellId"
+                                     SelectedSpell="_selectedSpell"
+                                     OnSelectSpell="SelectSpellAsync"
+                                     OnChangeKnownSpell="OpenSpellPickerByKeyAsync"
+                                     OnPreparedChanged="TogglePreparedAsync"
+                                     OnToggleSlot="ToggleSlotAsync" />
+
+            @if (_knownSpellPickerKey is not null)
+            {
+                <section class="picker-panel">
+                    <div class="picker-header">
+                        <div>
+                            <div class="picker-title">@_knownSpellPickerTitle</div>
+                            <div class="picker-subtitle">@_knownSpellPickerSubtitle</div>
+                        </div>
+                        <button type="button"
+                                class="equipment-action-button secondary"
+                                disabled="@_busy"
+                                @onclick="CloseKnownSpellPicker">
+                            Done
+                        </button>
+                    </div>
+
+                    <div class="picker-toolbar">
+                        <label class="filter-field picker-field">
+                            <span>Search</span>
+                            <input class="text-filter"
+                                   placeholder="Search spell name or source"
+                                   @bind="_knownSpellQuery" />
+                        </label>
+                        <div class="picker-toolbar-actions">
+                            <button type="button"
+                                    class="equipment-action-button primary"
+                                    disabled="@_busy"
+                                    @onclick="SearchKnownSpellOptionsAsync">
+                                Search
+                            </button>
+                        </div>
+                    </div>
+
+                    @if (_knownSpellOptions.Count == 0)
+                    {
+                        <p class="picker-empty">No matching spell options found.</p>
+                    }
+                    else
+                    {
+                        <div class="picker-list">
+                            @foreach (WebMagicSelectionOption option in _knownSpellOptions)
+                            {
+                                <div class="picker-result-card">
+                                    <div class="picker-result-body">
+                                        <div class="picker-result-title">@option.Name</div>
+                                        <div class="picker-result-meta">@ValueOrDash(option.Source)</div>
+                                        @if (!string.IsNullOrWhiteSpace(option.Requirements))
+                                        {
+                                            <div class="picker-result-requirements">Requires: @option.Requirements</div>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(option.Description))
+                                        {
+                                            <div class="picker-result-description">@option.Description</div>
+                                        }
+                                    </div>
+                                    <button type="button"
+                                            class="equipment-action-button primary"
+                                            disabled="@_busy"
+                                            @onclick="() => ApplyKnownSpellAsync(option.Id)">
+                                        Choose
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </section>
+            }
+        }
+    </BrowserContent>
+
+    <DetailContent>
+        <CharacterDetailPanel Title="Current Character"
+                              EmptyMessage="No active character is available."
+                              Fields="@DetailFields" />
+    </DetailContent>
+</CharacterLibraryShell>
+
+@code {
+    private WebCharacterMagicState? _state;
+    private MagicSpellDetailModel? _selectedSpell;
+    private string? _selectedSpellId;
+    private bool _loading = true;
+    private bool _busy;
+    private bool _failed;
+    private string? _statusMessage;
+
+    private string? _knownSpellPickerKey;
+    private string _knownSpellPickerTitle = string.Empty;
+    private string _knownSpellPickerSubtitle = string.Empty;
+    private string _knownSpellQuery = string.Empty;
+    private IReadOnlyList<WebMagicSelectionOption> _knownSpellOptions = [];
+
+    private IReadOnlyList<CharacterDetailField> DetailFields =>
+        _state is null
+            ? []
+            : [
+                new("Name", _state.Summary.DisplayName),
+                new("Build", _state.Summary.DisplayBuild),
+                new("Player", ValueOrDash(_state.Summary.PlayerName)),
+                new("File", _state.Summary.FileName)
+            ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        _failed = false;
+        try
+        {
+            _state = await CharacterSession.GetCurrentMagicStateAsync();
+            _statusMessage = _state?.StatusMessage;
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _statusMessage = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SelectSpellAsync(string spellId)
+    {
+        _selectedSpellId = spellId;
+        _selectedSpell = await CharacterSession.GetCurrentMagicSpellDetailAsync(spellId);
+    }
+
+    private async Task OpenSpellPickerByKeyAsync(string key)
+    {
+        if (_state is null)
+        {
+            return;
+        }
+
+        MagicKnownSpellEntryModel? entry = _state.Magic.KnownSpellGroups
+            .SelectMany(group => group.Entries)
+            .FirstOrDefault(candidate => string.Equals(candidate.Id, key, StringComparison.Ordinal));
+        if (entry is null)
+        {
+            return;
+        }
+
+        _knownSpellPickerKey = key;
+        _knownSpellPickerTitle = entry.Label;
+        _knownSpellPickerSubtitle = string.IsNullOrWhiteSpace(entry.CurrentName)
+            ? "Choose a spell for this selection."
+            : $"Currently selected: {entry.CurrentName}";
+        _knownSpellQuery = string.Empty;
+        await SearchKnownSpellOptionsAsync();
+    }
+
+    private void CloseKnownSpellPicker()
+    {
+        _knownSpellPickerKey = null;
+        _knownSpellPickerTitle = string.Empty;
+        _knownSpellPickerSubtitle = string.Empty;
+        _knownSpellQuery = string.Empty;
+        _knownSpellOptions = [];
+    }
+
+    private async Task SearchKnownSpellOptionsAsync()
+    {
+        if (_knownSpellPickerKey is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _knownSpellOptions = await CharacterSession.SearchCurrentMagicSelectionOptionsAsync(_knownSpellPickerKey, _knownSpellQuery);
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _statusMessage = ex.Message;
+        }
+    }
+
+    private async Task ApplyKnownSpellAsync(string optionId)
+    {
+        if (_knownSpellPickerKey is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _failed = false;
+        try
+        {
+            _state = await CharacterSession.ChangeCurrentMagicSelectionAsync(_knownSpellPickerKey, optionId);
+            _statusMessage = _state.StatusMessage;
+            _selectedSpellId = optionId;
+            _selectedSpell = await CharacterSession.GetCurrentMagicSpellDetailAsync(optionId);
+            CloseKnownSpellPicker();
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _statusMessage = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task TogglePreparedAsync(MagicPreparedChangeModel change)
+    {
+        _busy = true;
+        _failed = false;
+        try
+        {
+            _state = await CharacterSession.ToggleCurrentMagicPreparedAsync(change);
+            _statusMessage = _state.StatusMessage;
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _statusMessage = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ToggleSlotAsync(MagicSlotToggleModel change)
+    {
+        _busy = true;
+        _failed = false;
+        try
+        {
+            _state = await CharacterSession.ToggleCurrentMagicSlotAsync(change);
+            _statusMessage = _state.StatusMessage;
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _statusMessage = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static string ValueOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+}

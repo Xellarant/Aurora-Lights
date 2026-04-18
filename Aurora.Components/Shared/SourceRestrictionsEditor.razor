@@ -1,0 +1,92 @@
+<div class="source-restrictions-editor">
+    @if (ShowDefaultActions)
+    {
+        <div class="source-restrictions-toolbar">
+            <button type="button"
+                    class="source-restrictions-button"
+                    @onclick="OnLoadDefaults"
+                    disabled="@Busy">
+                Load Default
+            </button>
+            <button type="button"
+                    class="source-restrictions-button primary"
+                    @onclick="OnSaveDefaults"
+                    disabled="@Busy">
+                Save as Default
+            </button>
+        </div>
+    }
+
+    @foreach (SourceRestrictionGroupModel group in Groups)
+    {
+        <section class="source-restrictions-group">
+            <div class="source-restrictions-group-header">
+                <button type="button"
+                        class="source-restrictions-toggle"
+                        @onclick="() => OnToggleGroup.InvokeAsync(group.Id)"
+                        disabled="@Busy || !group.AllowUnchecking">
+                    <span class="source-restrictions-checkbox @(GetCheckClass(group.IsChecked, group.AllowUnchecking))"></span>
+                    <span>
+                        <strong>@group.Name</strong>
+                        <span class="source-restrictions-summary">@group.Summary</span>
+                    </span>
+                </button>
+            </div>
+
+            <div class="source-restrictions-items">
+                @foreach (SourceRestrictionItemModel item in group.Sources)
+                {
+                    <button type="button"
+                            class="source-restrictions-item @(item.AllowUnchecking ? string.Empty : "locked")"
+                            @onclick="() => OnToggleItem.InvokeAsync(item.Id)"
+                            disabled="@Busy || !item.AllowUnchecking">
+                        <span class="source-restrictions-checkbox @(GetCheckClass(item.IsChecked, item.AllowUnchecking))"></span>
+                        <span class="source-restrictions-item-name">@item.Name</span>
+                        @if (item.IsCore)
+                        {
+                            <span class="source-restrictions-core">core</span>
+                        }
+                    </button>
+                }
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<SourceRestrictionGroupModel> Groups { get; set; } = [];
+
+    [Parameter]
+    public bool Busy { get; set; }
+
+    [Parameter]
+    public bool ShowDefaultActions { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnToggleGroup { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnToggleItem { get; set; }
+
+    [Parameter]
+    public EventCallback OnLoadDefaults { get; set; }
+
+    [Parameter]
+    public EventCallback OnSaveDefaults { get; set; }
+
+    private static string GetCheckClass(bool? value, bool allowUnchecking)
+    {
+        if (!allowUnchecking)
+        {
+            return "checked locked";
+        }
+
+        if (!value.HasValue)
+        {
+            return "mixed";
+        }
+
+        return value.Value ? "checked" : "unchecked";
+    }
+}

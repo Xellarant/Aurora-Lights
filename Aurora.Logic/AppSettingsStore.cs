@@ -82,6 +82,12 @@ public sealed class AppSettingsStore
     public bool StartupLoadCustomFiles { get; set; } = false;
     public string DocumentsRootDirectory { get; set; } = string.Empty;
     public string AdditionalCustomDirectory { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Additional directories scanned for custom/homebrew XML content.
+    /// Extends <see cref="AdditionalCustomDirectory"/> to support multiple paths.
+    /// </summary>
+    public List<string> AdditionalCustomDirectories { get; set; } = [];
     public int CharactersCollectionSize { get; set; } = 150;
     public bool CharacterPanelAbilityScoresExpanded { get; set; } = true;
     public bool CharacterPanelStatisticsExpanded { get; set; } = false;
@@ -190,6 +196,7 @@ public sealed class AppSettingsStore
         StartupCheckForContentUpdated = fresh.StartupCheckForContentUpdated;
         ConfigurationUpgradeRequired = fresh.ConfigurationUpgradeRequired;
         SelectionExpanderGridRowSize = fresh.SelectionExpanderGridRowSize;
+        AdditionalCustomDirectories  = [..fresh.AdditionalCustomDirectories];
     }
 
     /// <summary>

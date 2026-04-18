@@ -2,10 +2,13 @@ using Builder.Core.Events;
 using Builder.Presentation;
 using Builder.Presentation.Events.Shell;
 using Builder.Presentation.Models;
+using Builder.Presentation.Services;
 using Builder.Presentation.Services.Data;
 using Builder.Presentation.Views.Sliders;
 
 namespace Aurora.App.Services;
+
+public sealed record NewCharacterInfo(string Name, string PlayerName);
 
 /// <summary>
 /// Wraps DataManager to provide character file listing and full character loading.
@@ -19,7 +22,9 @@ public sealed class CharacterService :
 {
     private bool _directoriesInitialized;
     private bool _elementsInitialized;
-    private readonly SemaphoreSlim _elementLock = new(1, 1);
+    private readonly SemaphoreSlim _elementLock  = new(1, 1);
+    // Prevents concurrent character loads from corrupting the CharacterManager singleton.
+    private readonly SemaphoreSlim _characterLock = new(1, 1);
 
     public Character? CurrentCharacter { get; private set; }
     public CharacterFile? CurrentCharacterFile { get; private set; }
@@ -93,6 +98,27 @@ public sealed class CharacterService :
     /// </summary>
     public Task PreloadAsync() => EnsureElementsLoadedAsync();
 
+    /// <summary>
+    /// Forces element data to be reloaded from disk on the next call to
+    /// <see cref="PreloadAsync"/> or any character load. Call this after
+    /// adding or updating custom content directories / index files.
+    /// Callers must close all character tabs before invoking this.
+    /// </summary>
+    public async Task ReloadElementsAsync()
+    {
+        await _elementLock.WaitAsync();
+        try
+        {
+            _elementsInitialized = false;
+            _initDiagnostic = null;
+        }
+        finally
+        {
+            _elementLock.Release();
+        }
+        await PreloadAsync();
+    }
+
     public int ElementCount => _elementsInitialized ? DataManager.Current.ElementsCollection.Count : -1;
 
     public string CustomElementsDirectory => DataManager.Current.UserDocumentsCustomElementsDirectory ?? "(not initialized)";
@@ -106,33 +132,123 @@ public sealed class CharacterService :
             .ToList();
     }
 
+    /// <summary>True while a character is being loaded (lock is held).</summary>
+    public bool IsCharacterLoading => _characterLock.CurrentCount == 0;
+
+    /// <summary>
+    /// Returns true if <paramref name="file"/> is already loaded into
+    /// <see cref="CurrentCharacter"/> and no other load has since overwritten it.
+    /// </summary>
+    public bool IsPreloaded(CharacterFile file) =>
+        CurrentCharacterFile?.FilePath == file.FilePath && CurrentCharacter != null;
+
+    /// <summary>
+    /// Starts loading <paramref name="file"/> on a background thread without blocking
+    /// the caller. Safe to call speculatively — errors are swallowed. The caller can
+    /// check <see cref="IsPreloaded"/> later to see whether it finished.
+    /// </summary>
+    public void BeginPreload(CharacterFile file) =>
+        // LoadCharacterAsync catches all exceptions internally, so fire-and-forget is safe.
+        _ = LoadCharacterAsync(file);
+
     public async Task<(bool Success, string Message)> LoadCharacterAsync(CharacterFile file)
     {
-        await EnsureElementsLoadedAsync();
-        LoadingPercent = 0;
-        LoadingStatus  = "";
+        // Serialize all character loads — CharacterManager.Current is a singleton and
+        // cannot handle concurrent LoadCharacterAsync calls safely.
+        await _characterLock.WaitAsync();
         try
         {
-            // Clear prepared spell state from any previous character load.
-            if (SpellcastingSectionContext.Current is MauiSpellcastingSectionHandler spellHandler)
-                spellHandler.Reset();
-
-            var result = await Task.Run(async () => await file.Load());
-            var character = CharacterManager.Current?.Character;
-            if (character != null)
+            await EnsureElementsLoadedAsync();
+            LoadingPercent = 0;
+            LoadingStatus  = "";
+            try
             {
-                CurrentCharacter     = character;
-                CurrentCharacterFile = file;
+                // Clear prepared spell state from any previous character load.
+                CharacterLoadCompatibilityService.PrepareForCharacterLoad();
+
+                var result    = await Task.Run(async () => await file.Load());
+                var character = CharacterManager.Current?.Character;
+                if (character != null)
+                {
+                    // CharacterManager sets IsEquipped/EquippedLocation on item objects but does NOT
+                    // call the inventory slot methods (EquipArmor/EquipPrimary/EquipSecondary) during
+                    // load — that was handled by the WPF InventoryViewModel. Do it here so that the
+                    // EquippedArmor/EquippedPrimary/EquippedSecondary references are non-null and
+                    // equipped state round-trips correctly between the two apps.
+                    CharacterLoadCompatibilityService.RestoreEquippedSlots(character);
+
+                    CurrentCharacter     = character;
+                    CurrentCharacterFile = file;
+
+                    // Remember this as the MRU character so the next app launch can preload it.
+                    if (!string.IsNullOrEmpty(file.FilePath))
+                        Preferences.Default.Set("app.mru_character", file.FilePath);
+                }
+                return (result.Success || CurrentCharacter != null,
+                        result.Success ? string.Empty
+                            : $"⚠ Partial load: {result.Message}\n\nElements loaded: {ElementCount}\n{_initDiagnostic}\nCustom dir: {CustomElementsDirectory}");
             }
-            return (result.Success || CurrentCharacter != null,
-                    result.Success ? string.Empty
-                        : $"⚠ Partial load: {result.Message}\n\nElements loaded: {ElementCount}\n{_initDiagnostic}\nCustom dir: {CustomElementsDirectory}");
+            catch (Exception ex)
+            {
+                DebugLogService.Instance.LogException(ex, "CharacterService.LoadCharacterAsync");
+                return (false, $"{ex.GetType().Name}: {ex.Message}\n\n{ex.StackTrace}");
+            }
         }
-        catch (Exception ex)
+        finally
         {
-            return (false, $"{ex.GetType().Name}: {ex.Message}\n\n{ex.StackTrace}");
+            _characterLock.Release();
         }
     }
 
     public string CharactersDirectory => DataManager.Current.UserDocumentsRootDirectory;
+
+    /// <summary>
+    /// Creates a new Level-1 character, saves it to disk, and returns the CharacterFile.
+    /// Applies the DefaultHpMethod preference — registering the average HP option element
+    /// if Average is selected. Callers should immediately open a tab and navigate to /build.
+    /// </summary>
+    public async Task<(CharacterFile? File, string? Error)> CreateNewCharacterAsync(
+        string name, string playerName, HpMethod hpMethod)
+    {
+        await EnsureElementsLoadedAsync();
+        try
+        {
+            var character = await CharacterManager.Current.New(initializeFirstLevel: true);
+            character.Name       = string.IsNullOrWhiteSpace(name) ? "New Character" : name.Trim();
+            character.PlayerName = playerName.Trim();
+
+            // Apply HP method preference
+            if (hpMethod == HpMethod.Average)
+            {
+                var optionId = Builder.Data.Strings.InternalOptions.AllowAverageHitPoints;
+                var element  = DataManager.Current.ElementsCollection.FirstOrDefault(e => e.Id == optionId);
+                if (element != null)
+                    CharacterManager.Current.RegisterElement(element);
+            }
+
+            string safeName = string.Concat(character.Name
+                .Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
+            string path = DataManager.Current.GetCombinedCharacterFilePath(safeName);
+
+            // Avoid clobbering an existing file.
+            if (File.Exists(path))
+            {
+                string ts = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                path = DataManager.Current.GetCombinedCharacterFilePath($"{safeName}_{ts}");
+            }
+
+            var file = new CharacterFile(path);
+            file.Save(character);
+
+            CurrentCharacter     = character;
+            CurrentCharacterFile = file;
+            return (file, null);
+        }
+        catch (Exception ex)
+        {
+            DebugLogService.Instance.LogException(ex, "CharacterService.CreateNewCharacterAsync");
+            return (null, $"{ex.GetType().Name}: {ex.Message}");
+        }
+    }
+
 }

@@ -1,0 +1,203 @@
+@page "/import"
+@rendermode InteractiveServer
+@inject PhaseZeroSessionWorkspaceService SessionWorkspace
+
+<PageTitle>Import</PageTitle>
+
+<div class="content-card">
+    <h1>Import Session Content</h1>
+    <p class="page-intro">
+        Upload XML content packs, a ZIP containing Aurora XML, or a `.dnd5e`
+        character file. Files are stored only in a temporary workspace for this
+        browser session and cleaned up automatically later.
+    </p>
+
+    <div class="upload-panel">
+        <label class="upload-label" for="phase0-upload">Select files</label>
+        <InputFile id="phase0-upload"
+                   OnChange="ImportFilesAsync"
+                   multiple
+                   accept=".xml,.zip,.dnd5e" />
+        <div class="upload-hint">Supported: `.xml`, `.zip`, `.dnd5e`</div>
+    </div>
+
+    <div class="action-row">
+        <button class="action-link danger" @onclick="ClearSessionAsync" disabled="@_busy">Clear Session Imports</button>
+    </div>
+
+    @if (_busy)
+    {
+        <div class="status-banner info">Importing files and indexing element headers...</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_message))
+    {
+        <div class="status-banner @(_failed ? "error" : "success")">@_message</div>
+    }
+
+    @if (_warnings.Count > 0)
+    {
+        <div class="status-banner warning">
+            <strong>Warnings</strong>
+            <ul class="warning-list">
+                @foreach (var warning in _warnings)
+                {
+                    <li>@warning</li>
+                }
+            </ul>
+        </div>
+    }
+</div>
+
+@if (_workspace is not null)
+{
+    <div class="content-card">
+        <h2>Session Overlay</h2>
+        <div class="summary-grid compact">
+            <div class="summary-item">
+                <div class="summary-number">@_workspace.ImportedFiles.Count</div>
+                <div class="summary-caption">Imported files</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">@_workspace.Index.TotalElements</div>
+                <div class="summary-caption">Element headers</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">@_workspace.Index.ElementTypes.Count</div>
+                <div class="summary-caption">Distinct types</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number">@_workspace.CharacterFileCount</div>
+                <div class="summary-caption">Characters</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <h2>Imported Files</h2>
+        @if (_workspace.ImportedFiles.Count == 0)
+        {
+            <p class="empty-state">No session files imported yet.</p>
+        }
+        else
+        {
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Kind</th>
+                        <th>Size</th>
+                        <th>Elements</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var file in _workspace.ImportedFiles.OrderBy(f => f.FileName))
+                    {
+                        <tr>
+                            <td>@file.FileName</td>
+                            <td>@file.Kind</td>
+                            <td>@FormatBytes(file.SizeBytes)</td>
+                            <td>@file.ElementCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <div class="content-card">
+        <h2>Discovered Element Types</h2>
+        @if (_workspace.Index.ElementTypes.Count == 0)
+        {
+            <p class="empty-state">No XML element headers indexed yet.</p>
+        }
+        else
+        {
+            <div class="chip-grid">
+                @foreach (var pair in _workspace.Index.ElementTypes.OrderByDescending(p => p.Value).ThenBy(p => p.Key))
+                {
+                    <div class="type-chip">
+                        <span>@pair.Key</span>
+                        <strong>@pair.Value</strong>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private PhaseZeroSessionWorkspace? _workspace;
+    private bool _busy;
+    private bool _failed;
+    private string? _message;
+    private List<string> _warnings = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _workspace = await SessionWorkspace.GetWorkspaceAsync();
+    }
+
+    private async Task ImportFilesAsync(InputFileChangeEventArgs args)
+    {
+        _busy = true;
+        _failed = false;
+        _message = null;
+        _warnings = [];
+
+        try
+        {
+            var result = await SessionWorkspace.ImportFilesAsync(args.GetMultipleFiles());
+            _workspace = result.Workspace;
+            _warnings = result.Warnings.ToList();
+            _message = $"Imported {result.ImportedFiles} file(s), discovered {result.DiscoveredElements} element header(s), and indexed {result.DistinctElementTypes} element type(s).";
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _message = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ClearSessionAsync()
+    {
+        _busy = true;
+        _failed = false;
+        _message = null;
+        _warnings = [];
+
+        try
+        {
+            await SessionWorkspace.ClearAsync();
+            _workspace = await SessionWorkspace.GetWorkspaceAsync();
+            _message = "Session workspace cleared.";
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _message = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static string FormatBytes(long size)
+    {
+        string[] suffixes = ["B", "KB", "MB", "GB"];
+        double value = size;
+        int index = 0;
+        while (value >= 1024 && index < suffixes.Length - 1)
+        {
+            value /= 1024;
+            index++;
+        }
+
+        return $"{value:0.#} {suffixes[index]}";
+    }
+}

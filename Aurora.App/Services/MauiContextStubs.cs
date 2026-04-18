@@ -19,6 +19,7 @@ using Builder.Presentation.Utilities;
 using Builder.Presentation.ViewModels.Shell.Items;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace Aurora.App.Services;
@@ -54,7 +55,7 @@ internal sealed class MauiSelectionRuleExpanderHandler : ISelectionRuleExpanderH
     /// that CharacterManager routes it to the correct ProgressionManager.
     /// </summary>
     /// <summary>Clears the registry entry for a slot without registering anything new.</summary>
-    internal void ClearRegisteredElement(SelectRule selectionRule, int number = 1)
+    public void ClearRegisteredElement(SelectRule selectionRule, int number = 1)
         => _registered.Remove($"{selectionRule.UniqueIdentifier}:{number}");
 
     public void SetRegisteredElement(SelectRule selectionRule, string id, int number = 1)
@@ -123,7 +124,7 @@ internal sealed class MauiSpellcastingSectionHandler : ISpellcastingSectionHandl
         = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Clears prepared state. Call before loading a new character.</summary>
-    internal void Reset() => _preparedIds.Clear();
+    public void ResetPreparedState() => _preparedIds.Clear();
 
     /// <summary>Returns the prepared spell element IDs for the given spellcasting class.</summary>
     public IReadOnlyCollection<string> GetPreparedIds(string spellcastingName) =>
@@ -158,6 +159,69 @@ internal sealed class MauiMessageDialogService : IMessageDialogService
 }
 
 /// <summary>
+/// MAUI implementation of the shared launcher contract.
+/// Uses MAUI Essentials where possible and returns false when the platform
+/// cannot open the requested target.
+/// </summary>
+internal sealed class MauiExternalLauncher : IExternalLauncher
+{
+    public bool OpenPath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        try
+        {
+            if (File.Exists(path))
+            {
+                return Launcher.Default.OpenAsync(
+                    new OpenFileRequest(Path.GetFileName(path), new ReadOnlyFile(path)))
+                    .GetAwaiter().GetResult();
+            }
+
+            Uri? uri = TryCreateUri(path);
+            if (uri == null)
+                return false;
+
+            return Launcher.Default.OpenAsync(uri).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[Launcher:Path] {path}\n{ex}");
+            return false;
+        }
+    }
+
+    public bool OpenUri(string uri)
+    {
+        if (string.IsNullOrWhiteSpace(uri))
+            return false;
+
+        try
+        {
+            return Launcher.Default.OpenAsync(new Uri(uri, UriKind.Absolute))
+                .GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[Launcher:Uri] {uri}\n{ex}");
+            return false;
+        }
+    }
+
+    private static Uri? TryCreateUri(string pathOrUri)
+    {
+        if (Uri.TryCreate(pathOrUri, UriKind.Absolute, out var uri))
+            return uri;
+
+        if (Path.IsPathRooted(pathOrUri))
+            return new Uri(Path.GetFullPath(pathOrUri));
+
+        return null;
+    }
+}
+
+/// <summary>
 /// MAUI implementation of ICharacterSheetGenerator.
 /// Builds CharacterSheetEx directly from CharacterManager.Current without any WPF/ApplicationManager
 /// dependencies, then calls CharacterSheetEx.Save() (pure iTextSharp) to write the PDF.
@@ -179,6 +243,12 @@ internal sealed class MauiCharacterSheetGenerator : ICharacterSheetGenerator
         sheet.Configuration.IncludeSpellcastingPage  = spellInfos.Any();
         sheet.Configuration.IncludeFormatting        = true;
 
+        // Card pages — read directly from MAUI Preferences (same keys as UserPreferencesService).
+        sheet.Configuration.IncludeSpellcards   = Preferences.Default.Get(UserPreferencesService.KeySpellCards,   defaultValue: false);
+        sheet.Configuration.IncludeItemcards    = Preferences.Default.Get(UserPreferencesService.KeyItemCards,    defaultValue: false);
+        sheet.Configuration.IncludeAttackCards  = Preferences.Default.Get(UserPreferencesService.KeyAttackCards,  defaultValue: false);
+        sheet.Configuration.IncludeFeatureCards = Preferences.Default.Get(UserPreferencesService.KeyFeatureCards, defaultValue: false);
+
         sheet.ExportContent = BuildExportContent(cm, character, elements, stats, sheet.Configuration);
 
         // Equipment page — ExportContentGenerator has no WPF dependencies.
@@ -190,6 +260,38 @@ internal sealed class MauiCharacterSheetGenerator : ICharacterSheetGenerator
         foreach (var info in spellInfos)
             sheet.SpellcastingPageExportContentCollection.Add(
                 BuildSpellcastingPage(cm, stats, info, addedSpells));
+
+        // Populate card collections if the corresponding pages are enabled.
+        if (sheet.Configuration.IncludeSpellcards)
+        {
+            var spellCollection = elements
+                .Where(e => e.Type.Equals("Spell"))
+                .Cast<Spell>()
+                .Concat(cm.GetPreparedSpells())
+                .OrderBy(x => x.Level)
+                .ThenBy(x => x.Name)
+                .Distinct();
+            sheet.Spells.AddRange(spellCollection);
+        }
+
+        if (sheet.Configuration.IncludeItemcards)
+        {
+            foreach (var item in character.Inventory.Items)
+            {
+                if (item.ShowCard)
+                    sheet.Items.Add(item);
+            }
+        }
+
+        if (sheet.Configuration.IncludeFeatureCards)
+        {
+            var organizer = new ElementsOrganizer(elements);
+            foreach (var feature in organizer.GetSortedFeatures(new List<ElementBase>()))
+            {
+                if (feature.SheetDescription.DisplayOnSheet)
+                    sheet.Features.Add(feature);
+            }
+        }
 
         return sheet.Save(outputPath);
     }
@@ -515,13 +617,13 @@ internal sealed class MauiCharacterSheetGenerator : ICharacterSheetGenerator
         }
 
         // ── Background ──
-        export.BackgroundContent.Name             = character.Background;
+        export.BackgroundContent.Name             = character.Background ?? "";
         var bgVariant = elements.FirstOrDefault(x => x.Type == "Background Variant");
         if (bgVariant != null) export.BackgroundContent.Name = bgVariant.GetAlternateName();
-        export.BackgroundContent.PersonalityTrait = character.FillableBackgroundCharacteristics.Traits.Content;
-        export.BackgroundContent.Ideal            = character.FillableBackgroundCharacteristics.Ideals.Content;
-        export.BackgroundContent.Bond             = character.FillableBackgroundCharacteristics.Bonds.Content;
-        export.BackgroundContent.Flaw             = character.FillableBackgroundCharacteristics.Flaws.Content;
+        export.BackgroundContent.PersonalityTrait = character.FillableBackgroundCharacteristics.Traits.Content ?? "";
+        export.BackgroundContent.Ideal            = character.FillableBackgroundCharacteristics.Ideals.Content ?? "";
+        export.BackgroundContent.Bond             = character.FillableBackgroundCharacteristics.Bonds.Content ?? "";
+        export.BackgroundContent.Flaw             = character.FillableBackgroundCharacteristics.Flaws.Content ?? "";
         export.BackgroundContent.Trinket          = character.Trinket?.Content ?? "";
         export.BackgroundContent.Story            = character.BackgroundStory?.Content ?? "";
         export.BackgroundContent.FeatureName      = character.BackgroundFeatureName?.ToString() ?? "";
@@ -538,10 +640,37 @@ internal sealed class MauiCharacterSheetGenerator : ICharacterSheetGenerator
         export.AppearanceContent.Hair     = character.Hair;
 
         // ── Affiliations ──
-        export.AlliesAndOrganizations    = character.Allies;
-        export.OrganizationName          = character.OrganisationName;
-        export.AdditionalFeaturesAndTraits = character.AdditionalFeatures;
-        export.Treasure                  = inv.Treasure;
+        export.AlliesAndOrganizations      = character.Allies ?? "";
+        export.OrganizationName            = character.OrganisationName ?? "";
+        export.AdditionalFeaturesAndTraits = character.AdditionalFeatures ?? "";
+        export.Treasure                    = inv.Treasure ?? "";
+
+        // ── Additional notes (racial traits displayed separately on sheet) ──
+        var racialTraitsSb = new StringBuilder();
+        var racialTraitChildren = new List<ElementBase>();
+        foreach (var feature in organizer.GetSortedRacialTraits(racialTraitChildren))
+        {
+            if (!feature.SheetDescription.DisplayOnSheet) continue;
+            int charLevel = character.Level;
+            string descText = "";
+            foreach (var sd in feature.SheetDescription.OrderBy(x => x.Level))
+            {
+                if (sd.Level > charLevel) continue;
+                descText = sd.Description;
+            }
+            string content = cm.StatisticsCalculator.ReplaceInline(descText);
+            string displayName = feature.GetAlternateName();
+            if (config.IncludeFormatting)
+            {
+                if (racialTraitsSb.Length > 0) racialTraitsSb.Append("<p>&nbsp;</p>");
+                racialTraitsSb.Append($"<p><strong><em>{displayName}.</em></strong> {content}</p>");
+            }
+            else
+            {
+                racialTraitsSb.AppendLine($"{displayName}. {content}");
+            }
+        }
+        export.TemporaryRacialTraits = racialTraitsSb.ToString().Trim();
 
         return export;
     }
@@ -604,9 +733,8 @@ internal sealed class MauiCharacterSheetGenerator : ICharacterSheetGenerator
         }
 
         // Collect prepared/always-prepared IDs
-        var handler = SpellcastingSectionContext.Current as MauiSpellcastingSectionHandler;
         var preparedIds = new HashSet<string>(
-            handler?.GetPreparedIds(info.Name) ?? Array.Empty<string>(),
+            SpellcastingSectionContext.Current?.GetPreparedIds(info.Name) ?? Array.Empty<string>(),
             StringComparer.OrdinalIgnoreCase);
         var alwaysPreparedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var e in cm.GetElements().Where(e => e.Type == "Spell"))

@@ -5,7 +5,6 @@
 // Assembly location: C:\Program Files (x86)\Aurora\Aurora Character Builder\Aurora Builder.exe
 
 using System;
-using System.Drawing;
 using System.IO;
 
 #nullable disable
@@ -18,18 +17,9 @@ public static class GalleryUtilities
     return Convert.ToBase64String(File.ReadAllBytes(path));
   }
 
-  public static Image ConvertToBase64(string base64)
-  {
-    using (MemoryStream memoryStream = new MemoryStream(Convert.FromBase64String(base64)))
-      return Image.FromStream((Stream) memoryStream);
-  }
-
   public static bool SaveBase64AsImage(string base64, string outputPath)
   {
-    using (MemoryStream memoryStream = new MemoryStream(Convert.FromBase64String(base64)))
-    {
-      Image.FromStream((Stream) memoryStream).Save(outputPath);
-      return true;
-    }
+    File.WriteAllBytes(outputPath, Convert.FromBase64String(base64));
+    return true;
   }
 }

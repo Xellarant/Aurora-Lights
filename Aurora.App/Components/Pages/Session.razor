@@ -1,0 +1,471 @@
+@page "/session"
+@implements IDisposable
+@inject CharacterTabService Tabs
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@using Builder.Presentation.Models
+
+@if (_tab is null || _snap is null)
+{
+    <div style="margin-top: 24px;">
+        <MudText Color="Color.Secondary">No character loaded. Open a character from the <MudLink Href="/">Characters</MudLink> page.</MudText>
+    </div>
+    return;
+}
+
+<div class="page-header-row" style="margin-bottom: 16px;">
+    <MudText Typo="Typo.h6" Style="margin: 0;">@_snap.Name</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Style="margin: 0;">
+        Level @_snap.Level @_snap.Race @_snap.Class
+    </MudText>
+</div>
+
+@* ── HP Row ── *@
+<div class="session-card">
+    <div class="session-card-title">Hit Points</div>
+    <div class="session-hp-row">
+        @* Current HP *@
+        <div class="session-hp-block">
+            <div class="session-hp-label">Current</div>
+            <div class="session-hp-controls">
+                <button class="session-hp-btn" @onclick="() => AdjustHp(-1)">−</button>
+                <input class="session-hp-input" type="number"
+                       value="@_s.CurrentHp"
+                       min="0" max="@(_snap.MaxHp + _s.TempHp)"
+                       @onchange="OnCurrentHpChanged" />
+                <button class="session-hp-btn" @onclick="() => AdjustHp(+1)">+</button>
+            </div>
+            <div class="session-hp-max">/ @_snap.MaxHp</div>
+        </div>
+
+        <div class="session-hp-sep"></div>
+
+        @* Temp HP *@
+        <div class="session-hp-block">
+            <div class="session-hp-label">Temp</div>
+            <div class="session-hp-controls">
+                <button class="session-hp-btn" @onclick="() => AdjustTempHp(-1)">−</button>
+                <input class="session-hp-input" type="number"
+                       value="@_s.TempHp"
+                       min="0" max="999"
+                       @onchange="OnTempHpChanged" />
+                <button class="session-hp-btn" @onclick="() => AdjustTempHp(+1)">+</button>
+            </div>
+        </div>
+    </div>
+
+    @* Death saves — only shown when HP is 0 *@
+    @if (_s.CurrentHp == 0)
+    {
+        <div class="session-death-row">
+            <div class="session-death-block">
+                <div class="session-death-label" style="color: #a6e3a1;">Successes</div>
+                <div class="session-pips">
+                    @for (int i = 1; i <= 3; i++)
+                    {
+                        var idx = i;
+                        <button class="session-pip @(idx <= _s.DeathSaveSuccesses ? "pip-success" : "pip-empty")"
+                                @onclick="() => ToggleDeathSuccess(idx)"></button>
+                    }
+                </div>
+            </div>
+            <div class="session-death-block">
+                <div class="session-death-label" style="color: #f38ba8;">Failures</div>
+                <div class="session-pips">
+                    @for (int i = 1; i <= 3; i++)
+                    {
+                        var idx = i;
+                        <button class="session-pip @(idx <= _s.DeathSaveFailures ? "pip-failure" : "pip-empty")"
+                                @onclick="() => ToggleDeathFailure(idx)"></button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@* ── Status Row ── *@
+<div class="session-card">
+    <div class="session-card-title">Status</div>
+    <div class="session-status-row">
+
+        @* Inspiration *@
+        <button class="session-inspiration-btn @(_s.Inspiration ? "inspiration-on" : "")"
+                @onclick="ToggleInspiration">
+            <span class="inspiration-star">★</span>
+            Inspiration
+        </button>
+
+        @* Exhaustion *@
+        <div class="session-exhaustion-block">
+            <div class="session-status-label">Exhaustion</div>
+            <div class="session-pips">
+                @for (int i = 1; i <= 6; i++)
+                {
+                    var lvl = i;
+                    <button class="session-pip @(lvl <= _s.Exhaustion ? "pip-exhaustion" : "pip-empty")"
+                            @onclick="() => SetExhaustion(lvl)"></button>
+                }
+            </div>
+            @if (_s.Exhaustion > 0)
+            {
+                <div class="session-exhaustion-label">Level @_s.Exhaustion</div>
+            }
+        </div>
+    </div>
+
+    @* Conditions *@
+    <div class="session-conditions-row" style="margin-top: 10px;">
+        <div class="session-status-label" style="margin-bottom: 6px;">Conditions</div>
+        <div class="session-conditions-list">
+            @foreach (var cond in _s.Conditions.ToList())
+            {
+                var c = cond;
+                <div class="session-condition-chip">
+                    @c
+                    <button class="session-condition-remove" @onclick="() => RemoveCondition(c)">×</button>
+                </div>
+            }
+            <MudMenu Icon="@Icons.Material.Filled.Add"
+                     Size="Size.Small"
+                     Dense="true"
+                     AnchorOrigin="Origin.BottomLeft"
+                     TransformOrigin="Origin.TopLeft">
+                @foreach (var cond in _allConditions)
+                {
+                    var c = cond;
+                    <MudMenuItem Disabled="@_s.Conditions.Contains(c)"
+                                 OnClick="() => AddCondition(c)">@c</MudMenuItem>
+                }
+            </MudMenu>
+        </div>
+    </div>
+</div>
+
+@* ── Spell Slots ── *@
+@if (_spellLevels.Count > 0)
+{
+    <div class="session-card">
+        <div class="session-card-title">Spell Slots</div>
+        <div class="session-slots-grid">
+            @foreach (var entry in _spellLevels)
+            {
+                var level = entry.Level;
+                var total = entry.TotalSlots;
+                var used  = _s.SpellSlotsUsed.GetValueOrDefault(level, 0);
+                <div class="session-slot-row">
+                    <div class="session-slot-label">@OrdinalLevel(level)</div>
+                    <div class="session-pips">
+                        @for (int i = 1; i <= total; i++)
+                        {
+                            var idx = i;
+                            <button class="session-pip @(idx <= used ? "pip-slot-used" : "pip-slot-free")"
+                                    @onclick="() => ToggleSlot(level, idx)"></button>
+                        }
+                    </div>
+                    <div class="session-slot-count">@(total - used)/@total</div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@* ── Custom Resources ── *@
+<div class="session-card">
+    <div class="session-card-title-row">
+        <div class="session-card-title">Resources</div>
+        <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline"
+                       Size="Size.Small"
+                       OnClick="OpenAddResourceDialog"
+                       Style="color: #89b4fa; padding: 2px;" />
+    </div>
+
+    @if (_s.CustomResources.Count == 0)
+    {
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Style="font-size: 12px;">
+            No resources tracked. Use + to add Bardic Inspiration, Ki Points, etc.
+        </MudText>
+    }
+    else
+    {
+        <div class="session-resources-list">
+            @foreach (var res in _s.CustomResources.ToList())
+            {
+                var r = res;
+                <div class="session-resource-row">
+                    <div class="session-resource-name">
+                        @r.Name
+                        <span class="session-resource-reset">(@ResetLabel(r.ResetOn))</span>
+                    </div>
+                    @if (r.UseNumeric)
+                    {
+                        <div class="session-resource-numeric">
+                            <button class="session-hp-btn" @onclick="() => AdjustResource(r, -1)">−</button>
+                            <span class="session-resource-val">@r.Remaining/@r.Max</span>
+                            <button class="session-hp-btn" @onclick="() => AdjustResource(r, +1)">+</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="session-pips">
+                            @for (int i = 1; i <= r.Max; i++)
+                            {
+                                var idx = i;
+                                <button class="session-pip @(idx <= r.Used ? "pip-resource-used" : "pip-slot-free")"
+                                        @onclick="() => ToggleResource(r, idx)"></button>
+                            }
+                        </div>
+                    }
+                    <div class="session-resource-actions">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       OnClick="() => OpenEditResourceDialog(r)"
+                                       Style="color: #6c7086; padding: 2px;" />
+                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                       Size="Size.Small"
+                                       OnClick="() => RemoveResource(r)"
+                                       Style="color: #6c7086; padding: 2px;" />
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@* ── Rest Buttons ── *@
+<div class="session-rest-row">
+    <MudButton Variant="Variant.Outlined"
+               Color="Color.Default"
+               StartIcon="@Icons.Material.Filled.Bedtime"
+               OnClick="DoShortRest">
+        Short Rest
+    </MudButton>
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.NightShelter"
+               OnClick="DoLongRest"
+               Style="margin-left: 10px;">
+        Long Rest
+    </MudButton>
+    <MudIconButton Icon="@Icons.Material.Filled.Save"
+                   Size="Size.Small"
+                   OnClick="SaveSession"
+                   Style="margin-left: auto; color: #6c7086;"
+                   title="Save session" />
+</div>
+
+@code {
+    private CharacterTab? _tab;
+    private CharacterSnapshot? _snap;
+    private SessionState _s = new();
+    private List<SpellLevelEntry> _spellLevels = [];
+
+    private static readonly string[] _allConditions =
+    [
+        "Blinded", "Charmed", "Deafened", "Exhaustion", "Frightened",
+        "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified",
+        "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"
+    ];
+
+    protected override void OnInitialized()
+    {
+        Tabs.TabsChanged += OnTabsChanged;
+        Refresh();
+    }
+
+    private void OnTabsChanged() => InvokeAsync(() => { Refresh(); StateHasChanged(); });
+    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+
+    private void Refresh()
+    {
+        _tab  = Tabs.ActiveTab;
+        _snap = _tab?.Snapshot;
+        if (_tab != null)
+        {
+            _s = _tab.Session;
+            _s.InitializeIfNew(_snap?.MaxHp ?? 0);
+        }
+        _spellLevels = _snap?.SpellLevels.Where(l => l.TotalSlots > 0).ToList() ?? [];
+    }
+
+    // ── HP ────────────────────────────────────────────────────────────────────
+
+    private void AdjustHp(int delta)
+    {
+        int max = (_snap?.MaxHp ?? 0) + _s.TempHp;
+        _s.CurrentHp = Math.Clamp(_s.CurrentHp + delta, 0, max);
+        AutoSave();
+    }
+
+    private void AdjustTempHp(int delta)
+    {
+        _s.TempHp = Math.Max(0, _s.TempHp + delta);
+        AutoSave();
+    }
+
+    private void OnCurrentHpChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+        {
+            int max = (_snap?.MaxHp ?? 0) + _s.TempHp;
+            _s.CurrentHp = Math.Clamp(v, 0, max);
+            AutoSave();
+        }
+    }
+
+    private void OnTempHpChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+        {
+            _s.TempHp = Math.Max(0, v);
+            AutoSave();
+        }
+    }
+
+    // ── Death saves ───────────────────────────────────────────────────────────
+
+    private void ToggleDeathSuccess(int idx)
+    {
+        _s.DeathSaveSuccesses = _s.DeathSaveSuccesses == idx ? idx - 1 : idx;
+        AutoSave();
+    }
+
+    private void ToggleDeathFailure(int idx)
+    {
+        _s.DeathSaveFailures = _s.DeathSaveFailures == idx ? idx - 1 : idx;
+        AutoSave();
+    }
+
+    // ── Status ────────────────────────────────────────────────────────────────
+
+    private void ToggleInspiration()
+    {
+        _s.Inspiration = !_s.Inspiration;
+        AutoSave();
+    }
+
+    private void SetExhaustion(int lvl)
+    {
+        _s.Exhaustion = _s.Exhaustion == lvl ? lvl - 1 : lvl;
+        AutoSave();
+    }
+
+    private void AddCondition(string cond)
+    {
+        if (!_s.Conditions.Contains(cond)) { _s.Conditions.Add(cond); AutoSave(); }
+    }
+
+    private void RemoveCondition(string cond)
+    {
+        _s.Conditions.Remove(cond);
+        AutoSave();
+    }
+
+    // ── Spell slots ───────────────────────────────────────────────────────────
+
+    private void ToggleSlot(int level, int idx)
+    {
+        var used = _s.SpellSlotsUsed.GetValueOrDefault(level, 0);
+        _s.SpellSlotsUsed[level] = used == idx ? idx - 1 : idx;
+        AutoSave();
+    }
+
+    // ── Custom resources ──────────────────────────────────────────────────────
+
+    private void ToggleResource(CustomResource r, int idx)
+    {
+        r.Used = r.Used == idx ? idx - 1 : idx;
+        AutoSave();
+    }
+
+    private void AdjustResource(CustomResource r, int delta)
+    {
+        r.Used = Math.Clamp(r.Used - delta, 0, r.Max); // delta +1 = use one more
+        AutoSave();
+    }
+
+    private async Task OpenAddResourceDialog()
+    {
+        var dialog = await DialogService.ShowAsync<AddResourceDialog>("Add Resource");
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: CustomResource res })
+        {
+            _s.CustomResources.Add(res);
+            AutoSave();
+        }
+    }
+
+    private async Task OpenEditResourceDialog(CustomResource existing)
+    {
+        var parameters = new DialogParameters<AddResourceDialog>
+        {
+            { x => x.Existing, existing },
+            { x => x.IsEdit,   true     },
+        };
+        var dialog = await DialogService.ShowAsync<AddResourceDialog>("Edit Resource", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: CustomResource updated })
+        {
+            var idx = _s.CustomResources.IndexOf(existing);
+            if (idx >= 0) _s.CustomResources[idx] = updated;
+            else           _s.CustomResources.Add(updated);
+            AutoSave();
+        }
+    }
+
+    private void RemoveResource(CustomResource r)
+    {
+        _s.CustomResources.Remove(r);
+        AutoSave();
+    }
+
+    // ── Rest ──────────────────────────────────────────────────────────────────
+
+    private void DoShortRest()
+    {
+        _s.ShortRest();
+        AutoSave();
+        Snackbar.Add("Short rest taken — death saves cleared.", Severity.Info);
+    }
+
+    private void DoLongRest()
+    {
+        _s.LongRest(_snap?.MaxHp ?? _s.CurrentHp);
+        AutoSave();
+        Snackbar.Add("Long rest taken — HP, slots, and resources restored.", Severity.Success);
+    }
+
+    // ── Persistence ───────────────────────────────────────────────────────────
+
+    private void AutoSave()
+    {
+        if (_tab != null)
+            _tab.File.SaveSession(_s);
+    }
+
+    private void SaveSession()
+    {
+        if (_tab != null)
+        {
+            _tab.File.SaveSession(_s);
+            Snackbar.Add("Session saved.", Severity.Success);
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static string OrdinalLevel(int level) => level switch
+    {
+        1 => "1st",
+        2 => "2nd",
+        3 => "3rd",
+        _ => $"{level}th"
+    };
+
+    private static string ResetLabel(ResetOn r) => r switch
+    {
+        ResetOn.LongRest  => "LR",
+        ResetOn.ShortRest => "SR",
+        _                 => "Manual"
+    };
+}

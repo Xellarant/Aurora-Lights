@@ -1,0 +1,119 @@
+name: Build macOS MAUI (unsigned)
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    env:
+      PROJECT: Aurora.App/Aurora.App.csproj   # <-- update if different
+    strategy:
+      matrix:
+        runtime: [maccatalyst-arm64, maccatalyst-x64]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install MAUI workloads
+        run: dotnet workload install maui
+
+      - name: Restore
+        run: dotnet restore "$PROJECT"
+
+      - name: Publish (${{ matrix.runtime }})
+        run: |
+          dotnet publish "$PROJECT" \
+            -f net10.0-maccatalyst \
+            -r ${{ matrix.runtime }} \
+            -c Release \
+            -o publish/${{ matrix.runtime }}
+
+      - name: List publish output
+        run: ls -la publish/${{ matrix.runtime }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-publish-${{ matrix.runtime }}
+          path: publish/${{ matrix.runtime }}
+
+  create-universal:
+    runs-on: macos-latest
+    needs: build-mac
+    env:
+      PROJECT: Aurora.App/Aurora.App.csproj   # <-- update if different
+    steps:
+      - name: Download arm64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-publish-maccatalyst-arm64
+          path: arm
+
+      - name: Download x64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-publish-maccatalyst-x64
+          path: x64
+
+      - name: Find app bundles
+        run: |
+          set -euo pipefail
+          ARM_APP=$(find arm -name "*.app" -print -quit || true)
+          X64_APP=$(find x64 -name "*.app" -print -quit || true)
+          if [ -z "$ARM_APP" ] || [ -z "$X64_APP" ]; then
+            echo "App bundles not found in downloaded artifacts"
+            echo "Contents of arm:"
+            ls -R arm || true
+            echo "Contents of x64:"
+            ls -R x64 || true
+            exit 1
+          fi
+          echo "ARM_APP=$ARM_APP" >> $GITHUB_ENV
+          echo "X64_APP=$X64_APP" >> $GITHUB_ENV
+
+      - name: Create universal binary (.app)
+        run: |
+          set -euo pipefail
+          echo "Using ARM app: $ARM_APP"
+          echo "Using x64 app: $X64_APP"
+          mkdir -p universal
+          APP_BASENAME=$(basename "$ARM_APP")
+          # Copy ARM app as the base for the universal app
+          cp -R "$ARM_APP" "universal/"
+          UNIVERSAL_APP_PATH="universal/$APP_BASENAME"
+
+          # Find main executables inside the app bundles
+          ARM_EXE=$(find "$ARM_APP/Contents/MacOS" -type f -maxdepth 1 -print -quit || true)
+          X64_EXE=$(find "$X64_APP/Contents/MacOS" -type f -maxdepth 1 -print -quit || true)
+          if [ -z "$ARM_EXE" ] || [ -z "$X64_EXE" ]; then
+            echo "Could not locate executables inside .app bundles"
+            exit 1
+          fi
+          EXE_NAME=$(basename "$ARM_EXE")
+          UNIVERSAL_EXE="$UNIVERSAL_APP_PATH/Contents/MacOS/$EXE_NAME"
+
+          echo "ARM_EXE=$ARM_EXE"
+          echo "X64_EXE=$X64_EXE"
+          echo "UNIVERSAL_EXE=$UNIVERSAL_EXE"
+
+          # Create universal (fat) binary using lipo
+          lipo -create "$X64_EXE" "$ARM_EXE" -output "$UNIVERSAL_EXE"
+          chmod +x "$UNIVERSAL_EXE"
+
+          # Zip the universal .app for upload
+          cd universal
+          zip -r "../${APP_BASENAME}-universal.zip" "$APP_BASENAME"
+          cd ..
+
+      - name: Upload universal artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-publish-universal
+          path: |
+            *.zip

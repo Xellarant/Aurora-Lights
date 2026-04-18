@@ -47,10 +47,6 @@
     <Reference Include="Aurora.Documents">
       <HintPath>..\lib\Aurora.Documents.dll</HintPath>
     </Reference>
-    <Reference Include="Aurora.Presentation">
-      <HintPath>..\lib\Aurora.Presentation.dll</HintPath>
-    </Reference>
-
     <!-- Expression evaluation -->
     <Reference Include="DynamicExpresso.Core">
       <HintPath>..\lib\DynamicExpresso.Core.dll</HintPath>
@@ -68,7 +64,6 @@
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="5.0.7" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.7" />
     <PackageReference Include="System.ServiceModel.Syndication" Version="10.0.0" />
-    <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
   </ItemGroup>
 
   <!-- Embedded resources: XML data, HTML documents, gallery images -->
@@ -79,6 +74,7 @@
     <EmbeddedResource Include="Resources\Gallery\**\*.jpg" />
     <EmbeddedResource Include="Resources\Gallery\**\*.png" />
     <EmbeddedResource Include="Resources\card-bg.jpg" />
+    <EmbeddedResource Include="Resources\Sheets\**\*.pdf" />
   </ItemGroup>
 
 </Project>

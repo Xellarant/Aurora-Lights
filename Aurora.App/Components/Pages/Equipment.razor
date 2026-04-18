@@ -1,7 +1,25 @@
 @page "/equipment"
 @implements IDisposable
 @inject CharacterTabService Tabs
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject DebugLogService DebugLog
+@using Aurora.App.Services
 @using Builder.Presentation.ViewModels.Shell.Items
+
+@if (_initError is not null)
+{
+    <div class="page-error-box" style="margin-top: 24px;">
+        <div class="page-error-title">Equipment page failed to initialize.</div>
+        <pre class="page-error-detail">@_initError</pre>
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+            This error has been captured. Enable Dev Mode in
+            <MudLink Href="/preferences">Preferences</MudLink> then open the
+            <MudLink Href="/console">Console</MudLink> for details.
+        </MudText>
+    </div>
+    return;
+}
 
 @if (_snap is null)
 {
@@ -11,118 +29,97 @@
     return;
 }
 
-@* ── Attacks ── *@
-@if (_snap.Attacks.Count > 0)
-{
-    <div class="section-label">Attacks</div>
-    <div class="attack-table mb-section">
-        <div class="attack-row attack-header">
-            <span class="attack-name">Name</span>
-            <span class="attack-bonus">Attack</span>
-            <span class="attack-damage">Damage</span>
-            <span class="attack-range">Range</span>
-        </div>
-        @foreach (var atk in _snap.Attacks)
-        {
-            <div class="attack-row">
-                <span class="attack-name">@atk.Name</span>
-                <span class="attack-bonus">@atk.Attack</span>
-                <span class="attack-damage">@atk.Damage</span>
-                <span class="attack-range">@atk.Range</span>
-            </div>
-        }
-    </div>
-}
-
-@* ── Currency ── *@
-<div class="section-label">Currency</div>
-<div class="currency-strip mb-section">
-    @CoinField("CP", "#b87333", () => _snap.CoinCopper,   v => { _snap.CoinCopper   = v; MarkDirty(); })
-    <div class="currency-sep"></div>
-    @CoinField("SP", "#a0a0b0", () => _snap.CoinSilver,   v => { _snap.CoinSilver   = v; MarkDirty(); })
-    <div class="currency-sep"></div>
-    @CoinField("EP", "#7ab3c4", () => _snap.CoinElectrum, v => { _snap.CoinElectrum = v; MarkDirty(); })
-    <div class="currency-sep"></div>
-    @CoinField("GP", "#f9e2af", () => _snap.CoinGold,     v => { _snap.CoinGold     = v; MarkDirty(); })
-    <div class="currency-sep"></div>
-    @CoinField("PP", "#cdd6f4", () => _snap.CoinPlatinum, v => { _snap.CoinPlatinum = v; MarkDirty(); })
-</div>
-
-@* ── Inventory ── *@
-<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-    <div class="section-label" style="margin-bottom: 0;">Inventory</div>
-    @if (_snap.AttunedMax > 0)
-    {
-        <span style="font-size: 11px; color: #6c7086;">
-            Attuned: @_snap.AttunedCount / @_snap.AttunedMax
-        </span>
-    }
-</div>
-
-@if (_snap.InventoryItems.Count == 0)
-{
-    <MudText Color="Color.Secondary" Style="font-size: 13px; margin-bottom: 20px;">No items in inventory.</MudText>
-}
-else
-{
-    <div class="inv-table mb-section">
-        <div class="inv-row inv-header">
-            <span class="inv-name">Item</span>
-            <span class="inv-tags"></span>
-            <span class="inv-weight">Weight</span>
-            <span class="inv-price">Value</span>
-        </div>
-        @foreach (var item in _snap.InventoryItems)
-        {
-            <div class="inv-row">
-                <span class="inv-name">@item.Name</span>
-                <span class="inv-tags">
-                    @if (item.IsEquippable)
-                    {
-                        <button class="inv-tag @(item.IsEquipped ? "inv-tag-equipped" : "inv-tag-inactive")"
-                                title="@(item.IsEquipped ? $"Equipped: {item.EquippedLocation} — click to unequip" : "Click to equip")"
-                                @onclick="() => ToggleEquipped(item)">E</button>
-                    }
-                    @if (item.IsAttunable)
-                    {
-                        <button class="inv-tag @(item.IsAttuned ? "inv-tag-attuned" : "inv-tag-attunable")"
-                                title="@(item.IsAttuned ? "Attuned — click to unattune" : "Requires Attunement — click to attune")"
-                                @onclick="() => ToggleAttuned(item)">@(item.IsAttuned ? "A" : "◇")</button>
-                    }
-                </span>
-                <span class="inv-weight">@item.DisplayWeight</span>
-                <span class="inv-price">@item.DisplayPrice</span>
-            </div>
-        }
-    </div>
-}
-
-@* ── Free-form text fields ── *@
-<div class="section-label">Equipment Notes</div>
-<MudTextField @bind-Value="_snap.InventoryEquipmentText" @bind-Value:after="MarkDirty"
-              Variant="Variant.Outlined" Lines="3" AutoGrow="true"
-              Style="width: 100%; font-size: 13px;" Class="mb-section" />
-
-<div class="section-label">Treasure</div>
-<MudTextField @bind-Value="_snap.InventoryTreasureText" @bind-Value:after="MarkDirty"
-              Variant="Variant.Outlined" Lines="3" AutoGrow="true"
-              Style="width: 100%; font-size: 13px;" Class="mb-section" />
-
-<div class="section-label">Quest Items</div>
-<MudTextField @bind-Value="_snap.InventoryQuestText" @bind-Value:after="MarkDirty"
-              Variant="Variant.Outlined" Lines="3" AutoGrow="true"
-              Style="width: 100%; font-size: 13px;" Class="mb-section" />
+<CharacterEquipmentWorkspace Model="@EquipmentModel"
+                             OnAddItem="OpenAddItemDialog"
+                             OnOpenGearSlot="OpenGearSlotDialogAsync"
+                             OnUnequipGearSlot="UnequipGearAsync"
+                             OnRemoveItem="RemoveItemAsync"
+                             OnToggleEquipped="ToggleEquippedAsync"
+                             OnToggleAttuned="ToggleAttunedAsync"
+                             OnChangeAmount="ChangeAmountAsync"
+                             OnCoinChanged="ChangeCoinAsync"
+                             OnNoteChanged="ChangeNoteAsync" />
 
 @code {
     private CharacterSnapshot? _snap;
+    private string? _initError;
+
+    private string? _armorName;
+    private string? _mainHandName;
+    private string? _offHandName;
+
+    private EquipmentOverviewModel EquipmentModel =>
+        _snap is null
+            ? new EquipmentOverviewModel()
+            : new()
+            {
+                Attacks = _snap.Attacks.Select(atk => new EquipmentAttackModel(atk.Name, atk.Attack, atk.Damage, atk.Range)).ToList(),
+                GearSlots =
+                [
+                    new("armor", "Armor", _armorName),
+                    new("main-hand", "Main Hand", _mainHandName),
+                    new("off-hand", "Off Hand", _offHandName)
+                ],
+                InventoryItems = _snap.InventoryItems
+                    .Select(item => new EquipmentInventoryItemModel(
+                        item.Identifier,
+                        item.Name,
+                        item.Amount,
+                        item.IsStackable,
+                        item.IsEquipped,
+                        item.EquippedLocation,
+                        item.IsAttunable,
+                        item.IsAttuned,
+                        item.DisplayWeight,
+                        item.DisplayPrice,
+                        item.IsEquippable))
+                    .ToList(),
+                Copper = _snap.CoinCopper,
+                Silver = _snap.CoinSilver,
+                Electrum = _snap.CoinElectrum,
+                Gold = _snap.CoinGold,
+                Platinum = _snap.CoinPlatinum,
+                AttunedCount = _snap.AttunedCount,
+                AttunedMax = _snap.AttunedMax,
+                EquipmentNotes = _snap.InventoryEquipmentText,
+                TreasureNotes = _snap.InventoryTreasureText,
+                QuestNotes = _snap.InventoryQuestText
+            };
 
     protected override void OnInitialized()
     {
         Tabs.TabsChanged += OnTabsChanged;
-        LoadFromActiveTab();
+        try
+        {
+            LoadFromActiveTab();
+        }
+        catch (Exception ex)
+        {
+            _initError = $"{ex.GetType().Name}: {ex.Message}\n\n{ex.StackTrace}";
+            DebugLog.LogException(ex, "Equipment.OnInitialized");
+        }
     }
 
-    private void LoadFromActiveTab() => _snap = Tabs.ActiveTab?.Snapshot;
+    private void LoadFromActiveTab()
+    {
+        _snap = Tabs.ActiveTab?.Snapshot;
+        RefreshGearNames();
+    }
+
+    private void RefreshGearNames()
+    {
+        try
+        {
+            var inv = Tabs.ActiveTab?.Character?.Inventory;
+            _armorName = inv?.EquippedArmor?.DisplayName ?? inv?.EquippedArmor?.Name;
+            _mainHandName = inv?.EquippedPrimary?.DisplayName ?? inv?.EquippedPrimary?.Name;
+            _offHandName = inv?.EquippedSecondary?.DisplayName ?? inv?.EquippedSecondary?.Name;
+        }
+        catch (Exception ex)
+        {
+            DebugLog.LogException(ex, "Equipment.RefreshGearNames");
+        }
+    }
 
     private void OnTabsChanged() => InvokeAsync(() =>
     {
@@ -135,13 +132,138 @@ else
     private void MarkDirty()
     {
         if (Tabs.ActiveTab is { } tab)
+        {
             Tabs.MarkDirty(tab);
+        }
     }
 
-    private void ToggleEquipped(EquipmentItemEntry entry)
+    private static GearSlot ParseSlot(string slotId) => slotId switch
     {
-        var item = FindLiveItem(entry.Identifier);
-        if (item == null) return;
+        "armor" => GearSlot.Armor,
+        "main-hand" => GearSlot.MainHand,
+        "off-hand" => GearSlot.OffHand,
+        _ => throw new InvalidOperationException("Unknown gear slot.")
+    };
+
+    private async Task OpenGearSlotDialogAsync(string slotId)
+    {
+        await OpenGearSlotDialog(ParseSlot(slotId));
+    }
+
+    private Task UnequipGearAsync(string slotId)
+    {
+        UnequipGear(ParseSlot(slotId));
+        return Task.CompletedTask;
+    }
+
+    private async Task OpenGearSlotDialog(GearSlot slot)
+    {
+        if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap }) return;
+
+        var invOptions = EquipmentService.GetInventoryItemsForSlot(character, slot);
+
+        var parameters = new DialogParameters
+        {
+            [nameof(GearSlotPickerDialog.Slot)] = slot,
+            [nameof(GearSlotPickerDialog.InventoryOptions)] = invOptions,
+        };
+        var dialog = await DialogService.ShowAsync<GearSlotPickerDialog>("", parameters);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: GearPickerResult pick })
+        {
+            bool ok = pick.IsNew
+                ? EquipmentService.AddAndEquipToSlot(character, slot, pick.ElementId!)
+                : EquipmentService.EquipToSlot(character, slot, pick.Identifier!);
+
+            if (!ok)
+            {
+                Snackbar.Add("Could not equip item.", Severity.Error);
+                return;
+            }
+
+            snap.RefreshEquipmentFromCharacter(character);
+            _snap = snap;
+            RefreshGearNames();
+            file.SaveInventoryItems(character);
+            MarkDirty();
+            StateHasChanged();
+        }
+    }
+
+    private void UnequipGear(GearSlot slot)
+    {
+        if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap }) return;
+
+        EquipmentService.UnequipSlot(character, slot);
+        snap.RefreshEquipmentFromCharacter(character);
+        _snap = snap;
+        RefreshGearNames();
+        file.SaveInventoryItems(character);
+        MarkDirty();
+        StateHasChanged();
+    }
+
+    private async Task OpenAddItemDialog()
+    {
+        var dialog = await DialogService.ShowAsync<ItemPickerDialog>("Add Item");
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: ItemPickerResult pick })
+        {
+            if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap })
+                return;
+
+            var added = EquipmentService.AddItem(character, pick.ElementId, pick.Amount);
+            if (!added)
+            {
+                Snackbar.Add("Could not add item - element not found.", Severity.Error);
+                return;
+            }
+
+            snap.RefreshEquipmentFromCharacter(character);
+            _snap = snap;
+            RefreshGearNames();
+
+            file.SaveInventoryItems(character);
+            MarkDirty();
+            StateHasChanged();
+        }
+    }
+
+    private Task RemoveItemAsync(string identifier)
+    {
+        if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap })
+            return Task.CompletedTask;
+
+        EquipmentService.RemoveItem(character, identifier);
+        snap.RefreshEquipmentFromCharacter(character);
+        _snap = snap;
+        RefreshGearNames();
+
+        file.SaveInventoryItems(character);
+        MarkDirty();
+        return Task.CompletedTask;
+    }
+
+    private Task ChangeAmountAsync(EquipmentAmountChangeModel change)
+    {
+        if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap })
+            return Task.CompletedTask;
+
+        EquipmentService.SetAmount(character, change.Identifier, change.Amount);
+        snap.RefreshEquipmentFromCharacter(character);
+        _snap = snap;
+
+        file.SaveInventoryItems(character);
+        MarkDirty();
+        return Task.CompletedTask;
+    }
+
+    private Task ToggleEquippedAsync(string identifier)
+    {
+        var item = FindLiveItem(identifier);
+        if (item is null) return Task.CompletedTask;
 
         if (item.IsEquipped)
             item.Deactivate();
@@ -150,12 +272,13 @@ else
 
         RefreshEquipment();
         MarkDirty();
+        return Task.CompletedTask;
     }
 
-    private void ToggleAttuned(EquipmentItemEntry entry)
+    private Task ToggleAttunedAsync(string identifier)
     {
-        var item = FindLiveItem(entry.Identifier);
-        if (item == null) return;
+        var item = FindLiveItem(identifier);
+        if (item is null) return Task.CompletedTask;
 
         if (item.IsAttuned)
             item.DeactivateAttunement();
@@ -164,6 +287,7 @@ else
 
         RefreshEquipment();
         MarkDirty();
+        return Task.CompletedTask;
     }
 
     private RefactoredEquipmentItem? FindLiveItem(string identifier) =>
@@ -175,29 +299,60 @@ else
         if (Tabs.ActiveTab is not { Character: { } character, Snapshot: { } snap }) return;
         snap.RefreshEquipmentFromCharacter(character);
         _snap = snap;
+        RefreshGearNames();
     }
 
-    // Coin fields can't use @bind-Value:after because MudNumericField<long> needs
-    // explicit get/set wiring to call MarkDirty on the same render cycle.
-    private RenderFragment CoinField(string label, string color,
-        Func<long> getter, Action<long> setter) => builder =>
+    private Task ChangeCoinAsync(EquipmentCoinChangeModel change)
     {
-        builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "class", "currency-cell");
-        builder.OpenComponent<MudNumericField<long>>(2);
-        builder.AddAttribute(3, "Value", getter());
-        builder.AddAttribute(4, "ValueChanged", EventCallback.Factory.Create<long>(this, setter));
-        builder.AddAttribute(5, "Variant", Variant.Text);
-        builder.AddAttribute(6, "Margin", Margin.None);
-        builder.AddAttribute(7, "Min", 0L);
-        builder.AddAttribute(8, "HideSpinButtons", true);
-        builder.AddAttribute(9, "style",
-            $"color: {color}; font-size: 18px; font-weight: 700; text-align: center; width: 100%;");
-        builder.CloseComponent();
-        builder.OpenElement(10, "div");
-        builder.AddAttribute(11, "class", "currency-label");
-        builder.AddContent(12, label);
-        builder.CloseElement();
-        builder.CloseElement();
-    };
+        if (_snap is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        switch (change.CoinId)
+        {
+            case "cp":
+                _snap.CoinCopper = change.Value;
+                break;
+            case "sp":
+                _snap.CoinSilver = change.Value;
+                break;
+            case "ep":
+                _snap.CoinElectrum = change.Value;
+                break;
+            case "gp":
+                _snap.CoinGold = change.Value;
+                break;
+            case "pp":
+                _snap.CoinPlatinum = change.Value;
+                break;
+        }
+
+        MarkDirty();
+        return Task.CompletedTask;
+    }
+
+    private Task ChangeNoteAsync(EquipmentNoteChangeModel change)
+    {
+        if (_snap is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        switch (change.NoteId)
+        {
+            case "equipment":
+                _snap.InventoryEquipmentText = change.Value;
+                break;
+            case "treasure":
+                _snap.InventoryTreasureText = change.Value;
+                break;
+            case "quest":
+                _snap.InventoryQuestText = change.Value;
+                break;
+        }
+
+        MarkDirty();
+        return Task.CompletedTask;
+    }
 }

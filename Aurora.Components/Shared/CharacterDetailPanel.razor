@@ -1,0 +1,52 @@
+<section class="character-detail-panel">
+    <div class="character-detail-header">
+        <div>
+            <h2 class="character-detail-title">@Title</h2>
+            @if (!string.IsNullOrWhiteSpace(Subtitle))
+            {
+                <p class="character-detail-subtitle">@Subtitle</p>
+            }
+        </div>
+    </div>
+
+    @if (Fields.Count == 0)
+    {
+        <p class="character-detail-empty">@EmptyMessage</p>
+    }
+    else
+    {
+        <div class="character-detail-grid">
+            @foreach (CharacterDetailField field in Fields)
+            {
+                <div class="character-detail-item">
+                    <span class="character-detail-label">@field.Label</span>
+                    <strong class="character-detail-value">@field.Value</strong>
+                </div>
+            }
+        </div>
+
+        @if (Actions is not null)
+        {
+            <div class="character-detail-actions">
+                @Actions
+            </div>
+        }
+    }
+</section>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Character Detail";
+
+    [Parameter]
+    public string? Subtitle { get; set; }
+
+    [Parameter]
+    public string EmptyMessage { get; set; } = "Select a character to inspect its details.";
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<CharacterDetailField> Fields { get; set; } = [];
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+}

@@ -1,0 +1,205 @@
+@page "/characters"
+@rendermode InteractiveServer
+@inject WebCharacterSessionService CharacterSession
+@inject NavigationManager Nav
+
+<PageTitle>Characters</PageTitle>
+
+<CharacterLibraryShell Title="Characters"
+                       IntroText="Imported `.dnd5e` files now participate in the current web session. Use this page to inspect them and choose which character the browser studio should open next."
+                       StatusMessage="@_message"
+                       StatusIsError="@_failed">
+    <CreationContent>
+        <div class="create-panel">
+            <CharacterCreationFields Model="_creationModel" />
+
+            <div class="action-row">
+                <button class="action-link primary" @onclick="CreateCharacterAsync" disabled="@_busy || string.IsNullOrWhiteSpace(_creationModel.Name)">Create New Character</button>
+            </div>
+        </div>
+    </CreationContent>
+
+    <BrowserContent>
+        <CharacterBrowser Characters="@BrowserEntries"
+                          Title="Imported Files"
+                          DirectoryCaption="@DirectoryCaption"
+                          EmptyMessage="No imported character files are available yet. Upload one on the Import page."
+                          BusyMessage="@BusyMessage"
+                          ShowCreateButton="false"
+                          SelectedId="@_selectedCharacter?.RelativePath"
+                          OnSelected="OnBrowserSelected" />
+    </BrowserContent>
+
+    <DetailContent>
+        <CharacterDetailPanel Title="Character Detail"
+                              EmptyMessage="Select an imported character to inspect its metadata."
+                              Fields="@DetailFields">
+            <Actions>
+                @if (_selectedCharacter is not null)
+                {
+                    <button class="action-link primary" @onclick="() => OpenCharacterAsync(_selectedCharacter)" disabled="@_busy">Use in Studio</button>
+                }
+            </Actions>
+        </CharacterDetailPanel>
+    </DetailContent>
+</CharacterLibraryShell>
+
+@code {
+    private IReadOnlyList<ImportedCharacterSummary> _characters = [];
+    private ImportedCharacterSummary? _selectedCharacter;
+    private bool _loading = true;
+    private bool _busy;
+    private bool _failed;
+    private string? _message;
+    private readonly CharacterCreationModel _creationModel = new()
+    {
+        Name = "New Character"
+    };
+
+    private IReadOnlyList<CharacterBrowserEntry> BrowserEntries =>
+        _characters.Select(ToBrowserEntry).ToList();
+
+    private string DirectoryCaption =>
+        _loading
+            ? string.Empty
+            : $"{_characters.Count} imported character{(_characters.Count == 1 ? string.Empty : "s")} in the current session";
+
+    private string? BusyMessage =>
+        _loading
+            ? "Loading imported characters..."
+            : _busy
+                ? "Processing character request..."
+                : null;
+
+    private IReadOnlyList<CharacterDetailField> DetailFields =>
+        _selectedCharacter is null
+            ? []
+            : [
+                new("Name", _selectedCharacter.DisplayName),
+                new("Player", ValueOrDash(_selectedCharacter.PlayerName)),
+                new("Build", _selectedCharacter.DisplayBuild),
+                new("Background", ValueOrDash(_selectedCharacter.Background)),
+                new("Group", ValueOrDash(_selectedCharacter.GroupName)),
+                new("Version", ValueOrDash(_selectedCharacter.Version)),
+                new("File", _selectedCharacter.FileName),
+                new("Size", FormatBytes(_selectedCharacter.SizeBytes))
+            ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _failed = false;
+        _message = null;
+
+        try
+        {
+            _characters = await CharacterSession.GetImportedCharactersAsync();
+            _selectedCharacter = _characters.FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _message = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void SelectCharacter(ImportedCharacterSummary character)
+    {
+        _selectedCharacter = character;
+        _message = null;
+    }
+
+    private void OnBrowserSelected(CharacterBrowserEntry entry)
+    {
+        ImportedCharacterSummary? character = _characters.FirstOrDefault(candidate =>
+            string.Equals(candidate.RelativePath, entry.Id, StringComparison.Ordinal));
+        if (character is not null)
+        {
+            SelectCharacter(character);
+        }
+    }
+
+    private async Task OpenCharacterAsync(ImportedCharacterSummary character)
+    {
+        _busy = true;
+        try
+        {
+            bool opened = await CharacterSession.SetCurrentCharacterAsync(character.RelativePath);
+            if (!opened)
+            {
+                _failed = true;
+                _message = "That character is no longer available in the current session.";
+                return;
+            }
+
+            _failed = false;
+            _message = $"{character.DisplayName} is now the active character for this browser session.";
+            Nav.NavigateTo("/studio");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task CreateCharacterAsync()
+    {
+        _busy = true;
+        _failed = false;
+        _message = null;
+
+        try
+        {
+            WebCharacterRuntimeState runtimeState = await CharacterSession.CreateCharacterAsync(_creationModel.Name, _creationModel.PlayerName);
+            await LoadAsync();
+            _selectedCharacter = _characters.FirstOrDefault(character =>
+                string.Equals(character.RelativePath, runtimeState.Summary.RelativePath, StringComparison.OrdinalIgnoreCase));
+            _message = runtimeState.StatusMessage;
+            Nav.NavigateTo("/studio");
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _message = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static string ValueOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static CharacterBrowserEntry ToBrowserEntry(ImportedCharacterSummary character) =>
+        new(
+            character.RelativePath,
+            character.DisplayName,
+            character.DisplayBuild,
+            string.IsNullOrWhiteSpace(character.PlayerName) ? null : $"Player: {character.PlayerName}",
+            string.IsNullOrWhiteSpace(character.Background) ? character.FileName : $"Background: {character.Background}",
+            string.IsNullOrWhiteSpace(character.GroupName) ? "Imported" : character.GroupName);
+
+    private static string FormatBytes(long size)
+    {
+        string[] suffixes = ["B", "KB", "MB", "GB"];
+        double value = size;
+        int index = 0;
+        while (value >= 1024 && index < suffixes.Length - 1)
+        {
+            value /= 1024;
+            index++;
+        }
+
+        return $"{value:0.#} {suffixes[index]}";
+    }
+}

@@ -3,34 +3,20 @@
 @inject CharacterService Characters
 @inject CharacterTabService Tabs
 @inject NavigationManager Nav
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject UserPreferencesService Prefs
 @using Builder.Presentation
-
-<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-    <MudText Typo="Typo.h5">Characters</MudText>
-    <button class="new-char-btn" @onclick="OnNewCharacter">
-        <span class="new-char-icon">＋</span>
-        New Character
-    </button>
-</div>
 
 @if (_loading)
 {
     <div style="display: flex; align-items: center; gap: 12px; margin-top: 24px;">
         <MudProgressCircular Indeterminate="true" Size="Size.Small" />
-        <MudText Color="Color.Secondary">Loading characters…</MudText>
+        <MudText Color="Color.Secondary">Loading characters...</MudText>
     </div>
 }
-@if (_loadingCharacter)
-{
-    <div class="char-load-overlay">
-        <div class="char-load-box">
-            <div class="char-load-name">@_loadingCharacterName</div>
-            <MudProgressLinear Value="@Characters.LoadingPercent" Color="Color.Primary" Class="char-load-bar" />
-            <div class="char-load-status">@(string.IsNullOrEmpty(Characters.LoadingStatus) ? "Starting…" : Characters.LoadingStatus)</div>
-        </div>
-    </div>
-}
-else if (_error is not null)
+
+@if (_error is not null)
 {
     <MudAlert Severity="@(_warning ? Severity.Warning : Severity.Error)" Class="mt-4">
         <pre style="white-space: pre-wrap; font-size: 11px; max-height: 300px; overflow-y: auto; margin: 0;">@_error</pre>
@@ -40,84 +26,53 @@ else if (_error is not null)
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2" OnClick="NavigateToCharacter">Open anyway</MudButton>
     }
 }
-else if (_characters.Count == 0)
-{
-    <MudText Color="Color.Secondary" Class="mt-4">
-        No characters found in <code>@Characters.CharactersDirectory</code>.<br />
-        Create a character using the Aurora Builder desktop app, then return here.
-    </MudText>
-}
 else
 {
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-        <MudText Typo="Typo.caption" Color="Color.Secondary">
-            @_characters.Count character@(_characters.Count == 1 ? "" : "s") &middot; @Characters.CharactersDirectory
-        </MudText>
-        @if (_preloading)
-        {
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <MudProgressCircular Indeterminate="true" Size="Size.Small" Style="width: 14px; height: 14px;" />
-                <MudText Typo="Typo.caption" Color="Color.Secondary">Loading content data…</MudText>
-            </div>
-        }
-    </div>
-
-    @* Favorites section *@
-    @if (_favorites.Count > 0)
-    {
-        <div class="char-section-header">
-            <span style="color: #f9e2af;">★</span> Favorites
-        </div>
-        <div class="char-grid mb-6">
-            @foreach (var c in _favorites)
-            {
-                <CharacterCard Character="c" OnSelected="OnCharacterSelected" />
-            }
-        </div>
-    }
-
-    @* Groups *@
-    @foreach (var group in _groups)
-    {
-        <div class="char-section-header">@group.Key</div>
-        <div class="char-grid mb-6">
-            @foreach (var c in group)
-            {
-                <CharacterCard Character="c" OnSelected="OnCharacterSelected" />
-            }
-        </div>
-    }
+    <CharacterLibraryShell>
+        <BrowserContent>
+            <CharacterBrowser Characters="@BrowserEntries"
+                              Title="Characters"
+                              DirectoryCaption="@DirectoryCaption"
+                              EmptyMessage="@EmptyMessage"
+                              BusyMessage="@BusyMessage"
+                              ShowCreateButton="true"
+                              CreateButtonText="New Character"
+                              DisableCreateButton="@_preloading"
+                              OnCreate="OnNewCharacter"
+                              OnSelected="OnBrowserSelected" />
+        </BrowserContent>
+    </CharacterLibraryShell>
 }
 
 @code {
     private List<Builder.Presentation.Models.CharacterFile> _characters = [];
-    private List<Builder.Presentation.Models.CharacterFile> _favorites = [];
-    private IEnumerable<IGrouping<string, Builder.Presentation.Models.CharacterFile>> _groups = [];
     private bool _loading = true;
     private bool _preloading;
     private string? _error;
     private bool _warning;
-    private string _loadingCharacterName = "";
 
-    protected override void OnInitialized()
+    private IReadOnlyList<CharacterBrowserEntry> BrowserEntries =>
+        _characters.Select(ToBrowserEntry).ToList();
+
+    private string DirectoryCaption =>
+        _characters.Count == 0
+            ? Characters.CharactersDirectory
+            : $"{_characters.Count} character{(_characters.Count == 1 ? string.Empty : "s")} - {Characters.CharactersDirectory}";
+
+    private string EmptyMessage =>
+        $"No characters found in {Characters.CharactersDirectory}. Create a character using the Aurora Builder desktop app, then return here.";
+
+    private string? BusyMessage => _preloading ? "Loading content data..." : null;
+
+    public void Dispose()
     {
-        Characters.LoadingProgressChanged += OnLoadingProgress;
     }
-
-    private void OnLoadingProgress() => InvokeAsync(StateHasChanged);
-
-    public void Dispose() => Characters.LoadingProgressChanged -= OnLoadingProgress;
 
     protected override Task OnInitializedAsync()
     {
         try
         {
             _characters = Characters.LoadCharacterFiles().ToList();
-            _favorites   = _characters.Where(x => x.IsFavorite).ToList();
-
-            _groups = _characters
-                .GroupBy(x => string.IsNullOrEmpty(x.CollectionGroupName) ? "Characters" : x.CollectionGroupName)
-                .OrderBy(g => g.Key);
         }
         catch (Exception ex)
         {
@@ -128,11 +83,7 @@ else
             _loading = false;
         }
 
-        // Kick off element data loading in the background so it's ready before
-        // the user clicks a character. The SemaphoreSlim in CharacterService ensures
-        // LoadCharacterAsync will simply wait if preloading is still in progress.
         _ = RunPreloadAsync();
-
         return Task.CompletedTask;
     }
 
@@ -140,9 +91,20 @@ else
     {
         _preloading = true;
         StateHasChanged();
+
         try
         {
             await Characters.PreloadAsync();
+
+            string? mruPath = Prefs.MruCharacterPath;
+            if (!string.IsNullOrEmpty(mruPath))
+            {
+                Builder.Presentation.Models.CharacterFile? mruFile = _characters.FirstOrDefault(file => file.FilePath == mruPath);
+                if (mruFile != null && Tabs.FindTab(mruFile) == null)
+                {
+                    Characters.BeginPreload(mruFile);
+                }
+            }
         }
         finally
         {
@@ -151,72 +113,165 @@ else
         }
     }
 
-    private bool _loadingCharacter;
-
-    private async Task OnCharacterSelected(Builder.Presentation.Models.CharacterFile c)
+    private async Task OnCharacterSelected(Builder.Presentation.Models.CharacterFile characterFile)
     {
-        // If already open in a tab, just activate it — no reload needed.
-        var existing = Tabs.FindTab(c);
+        CharacterTab? existing = Tabs.FindTab(characterFile);
         if (existing != null)
         {
             Tabs.ActivateTab(existing);
-            Nav.NavigateTo("/character");
+            Nav.NavigateTo("/build");
             return;
         }
 
-        _loadingCharacter = true;
-        _loadingCharacterName = c.DisplayName ?? "";
+        if (Characters.IsPreloaded(characterFile))
+        {
+            CharacterTab tab = Tabs.OpenTab(characterFile, Characters.CurrentCharacter!);
+            tab.Snapshot = CharacterSnapshot.From(Characters.CurrentCharacter!);
+            tab.ProgressionSnapshots = SnapshotProgressionManagers();
+            tab.Session = characterFile.LoadSession();
+            Nav.NavigateTo("/build");
+            return;
+        }
+
         _error = null;
         _warning = false;
-        StateHasChanged();
+        CharacterTab loadingTab = Tabs.OpenLoadingTab(characterFile);
+        Nav.NavigateTo("/build");
 
         try
         {
-            var (success, message) = await Characters.LoadCharacterAsync(c);
+            (bool success, string message) = await Characters.LoadCharacterAsync(characterFile);
+
             if (success && Characters.CurrentCharacter != null)
             {
-                var tab = Tabs.OpenTab(c, Characters.CurrentCharacter);
-                tab.Snapshot = CharacterSnapshot.From(Characters.CurrentCharacter);
-                tab.ProgressionSnapshots = SnapshotProgressionManagers();
-                Nav.NavigateTo("/character");
+                loadingTab.Character = Characters.CurrentCharacter;
+                loadingTab.Snapshot = CharacterSnapshot.From(Characters.CurrentCharacter);
+                loadingTab.ProgressionSnapshots = SnapshotProgressionManagers();
+                loadingTab.Session = characterFile.LoadSession();
+                loadingTab.IsLoading = false;
+                Tabs.NotifyChanged();
                 return;
             }
-            // Partial load: character exists but something is missing
-            if (!success && Characters.CurrentCharacter != null)
+
+            if (Characters.CurrentCharacter != null)
             {
-                var tab = Tabs.OpenTab(c, Characters.CurrentCharacter);
-                tab.Snapshot = CharacterSnapshot.From(Characters.CurrentCharacter);
-                tab.ProgressionSnapshots = SnapshotProgressionManagers();
-                _warning = true;
-                _error = string.IsNullOrEmpty(message)
-                    ? $"⚠ {c.DisplayName} loaded with missing elements — some features may not display."
+                loadingTab.Character = Characters.CurrentCharacter;
+                loadingTab.Snapshot = CharacterSnapshot.From(Characters.CurrentCharacter);
+                loadingTab.ProgressionSnapshots = SnapshotProgressionManagers();
+                loadingTab.Session = characterFile.LoadSession();
+                loadingTab.IsLoading = false;
+                Tabs.NotifyChanged();
+                string warningMessage = string.IsNullOrEmpty(message)
+                    ? $"Warning: {characterFile.DisplayName} loaded with missing elements; some features may not display."
                     : message;
+                Snackbar.Add(warningMessage, Severity.Warning);
+                return;
             }
-            else
-            {
-                _error = string.IsNullOrEmpty(message)
-                    ? $"Could not load {c.DisplayName}."
-                    : $"Could not load {c.DisplayName}: {message}";
-            }
+
+            Tabs.CloseTab(loadingTab);
+            string errorMessage = string.IsNullOrEmpty(message)
+                ? $"Could not load {characterFile.DisplayName}."
+                : $"Could not load {characterFile.DisplayName}: {message}";
+            Snackbar.Add(errorMessage, Severity.Error);
         }
         catch (Exception ex)
         {
-            _error = $"{c.DisplayName}: {ex.GetType().Name} — {ex.Message}";
-        }
-        finally
-        {
-            _loadingCharacter = false;
-            StateHasChanged();
+            DebugLogService.Instance.LogException(ex, "Start.OnCharacterSelected");
+            Tabs.CloseTab(loadingTab);
+            Snackbar.Add($"{characterFile.DisplayName}: {ex.GetType().Name} - {ex.Message}", Severity.Error);
         }
     }
 
     private void NavigateToCharacter() => Nav.NavigateTo("/character");
 
-    private void OnNewCharacter()
+    private async Task OnNewCharacter()
     {
-        // TODO: open new character flow
+        IDialogReference dialog = await DialogService.ShowAsync<NewCharacterDialog>("New Character");
+        DialogResult? result = await dialog.Result;
+        if (result is not { Canceled: false, Data: NewCharacterInfo info })
+        {
+            return;
+        }
+
+        _error = null;
+        _warning = false;
+
+        try
+        {
+            (Builder.Presentation.Models.CharacterFile? file, string? error) =
+                await Characters.CreateNewCharacterAsync(info.Name, info.PlayerName, Prefs.DefaultHpMethod);
+
+            if (file == null || Characters.CurrentCharacter == null)
+            {
+                _error = error ?? "Failed to create character.";
+                StateHasChanged();
+                return;
+            }
+
+            CharacterTab tab = Tabs.OpenTab(file, Characters.CurrentCharacter);
+            tab.Snapshot = CharacterSnapshot.From(Characters.CurrentCharacter);
+            tab.ProgressionSnapshots = SnapshotProgressionManagers();
+            tab.IsNew = true;
+
+            _characters = Characters.LoadCharacterFiles().ToList();
+            Nav.NavigateTo("/build");
+        }
+        catch (Exception ex)
+        {
+            DebugLogService.Instance.LogException(ex, "Start.OnNewCharacter");
+            _error = $"{ex.GetType().Name}: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private void OnBrowserSelected(CharacterBrowserEntry entry)
+    {
+        Builder.Presentation.Models.CharacterFile? character = _characters.FirstOrDefault(candidate =>
+            string.Equals(candidate.FilePath, entry.Id, StringComparison.Ordinal));
+
+        if (character != null)
+        {
+            _ = OnCharacterSelected(character);
+        }
     }
 
     private static IReadOnlyList<ClassProgressionSnapshot> SnapshotProgressionManagers() =>
         BuildService.SnapshotProgressionManagers();
+
+    private static CharacterBrowserEntry ToBrowserEntry(Builder.Presentation.Models.CharacterFile character) =>
+        new(
+            character.FilePath,
+            character.DisplayName,
+            $"Level {character.DisplayLevel} - {character.DisplayRace}",
+            character.DisplayClass,
+            string.IsNullOrWhiteSpace(character.CollectionGroupName) ? null : character.CollectionGroupName,
+            character.CollectionGroupName,
+            character.IsFavorite,
+            ToPortraitDataUrl(character));
+
+    private static string? ToPortraitDataUrl(Builder.Presentation.Models.CharacterFile character)
+    {
+        if (!string.IsNullOrEmpty(character.DisplayPortraitBase64))
+        {
+            return $"data:image/png;base64,{character.DisplayPortraitBase64}";
+        }
+
+        if (!string.IsNullOrEmpty(character.DisplayPortraitFilePath))
+        {
+            try
+            {
+                if (File.Exists(character.DisplayPortraitFilePath))
+                {
+                    byte[] bytes = File.ReadAllBytes(character.DisplayPortraitFilePath);
+                    return $"data:image/png;base64,{Convert.ToBase64String(bytes)}";
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        return null;
+    }
 }

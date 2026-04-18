@@ -1,0 +1,60 @@
+@page "/console"
+@implements IDisposable
+@inject DebugLogService Log
+@inject UserPreferencesService Prefs
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+    <MudText Typo="Typo.h5">Console</MudText>
+    <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" OnClick="() => Log.Clear()">
+        Clear
+    </MudButton>
+</div>
+
+@if (_entries.Count == 0)
+{
+    <MudText Color="Color.Secondary" Style="font-size: 13px;">No log entries.</MudText>
+}
+else
+{
+    <div class="console-log">
+        @foreach (var entry in _entries.AsEnumerable().Reverse())
+        {
+            <div class="console-entry console-entry-@entry.Level.ToString().ToLower()">
+                <span class="console-ts">@entry.Timestamp.ToString("HH:mm:ss.fff")</span>
+                <span class="console-level @LevelClass(entry.Level)">@entry.Level.ToString().ToUpper()[..3]</span>
+                <span class="console-msg">@entry.Message</span>
+                @if (!string.IsNullOrEmpty(entry.Details))
+                {
+                    <details class="console-details">
+                        <summary>Details</summary>
+                        <pre class="console-pre">@entry.Details</pre>
+                    </details>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyList<LogEntry> _entries = [];
+
+    protected override void OnInitialized()
+    {
+        Log.Changed += OnLogChanged;
+        _entries = Log.GetSnapshot();
+    }
+
+    private void OnLogChanged() => InvokeAsync(() =>
+    {
+        _entries = Log.GetSnapshot();
+        StateHasChanged();
+    });
+
+    public void Dispose() => Log.Changed -= OnLogChanged;
+
+    private static string LevelClass(LogLevel level) => level switch
+    {
+        LogLevel.Error   => "console-level-error",
+        LogLevel.Warning => "console-level-warn",
+        _                => "console-level-info",
+    };
+}

@@ -51,166 +51,75 @@
     </MudAlert>
 }
 
-@* ── Spellcasting stats ── *@
-<div class="combat-strip" style="margin-bottom: 20px;">
-    <div class="combat-stat">
-        <div class="combat-stat-value" style="font-size: 14px; font-weight: 600;">@_snap.SpellcastingClass</div>
-        <div class="combat-stat-label">Class</div>
-    </div>
-    <div class="combat-sep"></div>
-    <div class="combat-stat">
-        <div class="combat-stat-value" style="font-size: 14px; font-weight: 600;">@_snap.SpellcastingAbility</div>
-        <div class="combat-stat-label">Ability</div>
-    </div>
-    <div class="combat-sep"></div>
-    <div class="combat-stat">
-        <div class="combat-stat-value">@_snap.SpellcastingDC</div>
-        <div class="combat-stat-label">Spell DC</div>
-    </div>
-    <div class="combat-sep"></div>
-    <div class="combat-stat">
-        <div class="combat-stat-value">@_snap.SpellcastingAttack</div>
-        <div class="combat-stat-label">Spell Attack</div>
-    </div>
-    @if (_snap.IsSpellcasterPrepared && _snap.MaxPrepared > 0)
-    {
-        <div class="combat-sep"></div>
-        <div class="combat-stat">
-            <div class="combat-stat-value @(_snap.PreparedCount >= _snap.MaxPrepared ? "prepared-count-full" : "")">
-                @_snap.PreparedCount / @_snap.MaxPrepared
-            </div>
-            <div class="combat-stat-label">Prepared</div>
-        </div>
-    }
-</div>
-
-@* ── Known spell selection (for known casters) ── *@
-@foreach (var group in _spellRuleGroups)
-{
-    <div class="build-section">
-        <div class="section-label">@group.Label — Known Spells</div>
-        <div class="build-rule-list">
-            @foreach (var entry in group.Rules)
-            {
-                <div class="build-rule-row">
-                    <div class="build-rule-label">@entry.Label</div>
-                    <div class="build-rule-value @(entry.CurrentName == null ? "build-rule-empty" : "")">
-                        @(entry.CurrentName ?? "—")
-                    </div>
-                    <button class="build-rule-btn" @onclick="() => OpenSpellPickerAsync(entry)">Change</button>
-                </div>
-            }
-        </div>
-    </div>
-}
-
-@* ── Two-panel spell layout ── *@
-<div class="magic-layout">
-
-    @* ── Left: spell list ── *@
-    <div class="magic-list">
-
-        @* Cantrips *@
-        @if (_snap.Cantrips.Count > 0)
-        {
-            <div class="magic-level-header">
-                <span class="section-label" style="margin: 0;">Cantrips</span>
-            </div>
-            @foreach (var name in _snap.Cantrips)
-            {
-                var cantripId = _cantripEntries.FirstOrDefault(c => c.Name == name).Id ?? name;
-                <div class="spell-overview-row @(_selectedId == cantripId ? "spell-overview-selected" : "")"
-                     @onclick="() => SelectSpell(cantripId)">
-                    <span class="spell-dot spell-dot-cantrip"></span>
-                    <span class="spell-name">@name</span>
-                </div>
-            }
-        }
-
-        @* Leveled spells *@
-        @foreach (var lvl in _snap.SpellLevels)
-        {
-            <div class="magic-level-header">
-                <span class="section-label" style="margin: 0;">@Ordinal(lvl.Level) Level</span>
-                @if (lvl.TotalSlots > 0)
-                {
-                    <div class="magic-slot-track">
-                        @for (int i = 0; i < lvl.TotalSlots; i++)
-                        {
-                            var slotIndex = i;
-                            var used = slotIndex < lvl.UsedSlots;
-                            <button class="slot-bubble @(used ? "slot-bubble-used" : "slot-bubble-free")"
-                                    title="@(used ? "Recover slot" : "Expend slot")"
-                                    @onclick="() => ToggleSlot(lvl, slotIndex)">
-                            </button>
-                        }
-                        <span class="slot-count">@(lvl.TotalSlots - lvl.UsedSlots)/@lvl.TotalSlots</span>
-                    </div>
-                }
-            </div>
-            @foreach (var spell in lvl.Spells)
-            {
-                <div class="spell-overview-row @(_selectedId == spell.Id ? "spell-overview-selected" : "")"
-                     @onclick="() => SelectSpell(spell.Id)">
-                    <MudCheckBox Value="spell.IsPrepared"
-                                 ValueChanged="@((bool v) => OnPreparedChanged(spell, v))"
-                                 Size="Size.Small"
-                                 Color="Color.Primary"
-                                 Disabled="@(spell.IsAlwaysPrepared || (!spell.IsPrepared && _snap.IsSpellcasterPrepared && _snap.PreparedCount >= _snap.MaxPrepared))"
-                                 Style="margin: 0; padding: 0;" />
-                    <span class="spell-name @(spell.IsPrepared ? "spell-name-prepared" : "")">@spell.Name</span>
-                </div>
-            }
-        }
-    </div>
-
-    @* ── Right: spell detail ── *@
-    <div class="magic-detail">
-        @if (_spellDetail != null)
-        {
-            <div class="spell-detail-name">@_spellDetail.Name</div>
-            <div class="spell-detail-meta">
-                @if (!string.IsNullOrEmpty(_spellDetail.Subtitle))
-                {
-                    <span class="spell-detail-subtitle">@_spellDetail.Subtitle</span>
-                }
-                @if (!string.IsNullOrEmpty(_spellDetail.Source))
-                {
-                    <span class="spell-detail-source">@_spellDetail.Source</span>
-                }
-            </div>
-            @if (!string.IsNullOrEmpty(_spellDetail.CastingTime) ||
-                 !string.IsNullOrEmpty(_spellDetail.Range) ||
-                 !string.IsNullOrEmpty(_spellDetail.Components) ||
-                 !string.IsNullOrEmpty(_spellDetail.Duration))
-            {
-                <div class="spell-detail-props">
-                    @SpellPropRow("Casting Time", _spellDetail.CastingTime)
-                    @SpellPropRow("Range",        _spellDetail.Range)
-                    @SpellPropRow("Components",   _spellDetail.Components)
-                    @SpellPropRow("Duration",     _spellDetail.Duration)
-                </div>
-            }
-            @if (!string.IsNullOrWhiteSpace(_spellDetail.Description))
-            {
-                <div class="spell-detail-desc">@_spellDetail.Description</div>
-            }
-        }
-        else
-        {
-            <div class="spell-detail-empty">Select a spell to see details.</div>
-        }
-    </div>
-</div>
+<CharacterMagicWorkspace Model="@MagicModel"
+                         Busy="_saving"
+                         SelectedSpellId="_selectedId"
+                         SelectedSpell="@SelectedSpellModel"
+                         OnSelectSpell="SelectSpellAsync"
+                         OnChangeKnownSpell="OpenSpellPickerByKeyAsync"
+                         OnPreparedChanged="OnPreparedChangedAsync"
+                         OnToggleSlot="ToggleSlotAsync" />
 
 @code {
-    private CharacterSnapshot?                _snap;
+    private CharacterSnapshot? _snap;
     private IReadOnlyList<SelectionRuleGroup> _spellRuleGroups = [];
-    private bool                              _saving;
-    private string?                           _saveError;
-    private string?                           _selectedId;
-    private SpellDetail?                      _spellDetail;
+    private bool _saving;
+    private string? _saveError;
+    private string? _selectedId;
+    private SpellDetail? _spellDetail;
     private IReadOnlyList<(string Id, string Name)> _cantripEntries = [];
+
+    private MagicOverviewModel MagicModel =>
+        _snap is null
+            ? new MagicOverviewModel()
+            : new()
+            {
+                HasSpellcasting = _snap.HasSpellcasting,
+                IsPreparedCaster = _snap.IsSpellcasterPrepared,
+                SpellcastingClass = _snap.SpellcastingClass,
+                SpellcastingAbility = _snap.SpellcastingAbility,
+                SpellcastingDc = _snap.SpellcastingDC,
+                SpellcastingAttack = _snap.SpellcastingAttack,
+                PreparedCount = _snap.PreparedCount,
+                MaxPrepared = _snap.MaxPrepared,
+                KnownSpellGroups = _spellRuleGroups.Select((group, groupIndex) =>
+                    new MagicKnownSpellGroupModel(
+                        group.Label,
+                        group.Rules.Select((entry, entryIndex) => new MagicKnownSpellEntryModel(
+                            $"{groupIndex}:{entryIndex}",
+                            entry.Label,
+                            entry.CurrentName)).ToList()))
+                    .ToList(),
+                Cantrips = _cantripEntries
+                    .Select(entry => new MagicSpellListEntryModel(entry.Id, entry.Name, true, true))
+                    .ToList(),
+                SpellLevels = _snap.SpellLevels
+                    .Select(level => new MagicSpellLevelModel(
+                        level.Level,
+                        level.Spells.Select(spell => new MagicSpellListEntryModel(
+                            spell.Id,
+                            spell.Name,
+                            spell.IsPrepared,
+                            spell.IsAlwaysPrepared)).ToList(),
+                        level.TotalSlots,
+                        level.UsedSlots))
+                    .ToList()
+            };
+
+    private MagicSpellDetailModel? SelectedSpellModel =>
+        _spellDetail is null
+            ? null
+            : new MagicSpellDetailModel(
+                _spellDetail.Id,
+                _spellDetail.Name,
+                _spellDetail.Source,
+                _spellDetail.Level,
+                _spellDetail.Subtitle,
+                _spellDetail.CastingTime,
+                _spellDetail.Range,
+                _spellDetail.Components,
+                _spellDetail.Duration,
+                _spellDetail.Description);
 
     protected override void OnInitialized()
     {
@@ -220,10 +129,10 @@
 
     private void LoadFromActiveTab()
     {
-        _snap            = Tabs.ActiveTab?.Snapshot;
+        _snap = Tabs.ActiveTab?.Snapshot;
         _spellRuleGroups = _snap != null ? BuildService.GetSpellRuleGroups() : [];
-        _selectedId      = null;
-        _spellDetail     = null;
+        _selectedId = null;
+        _spellDetail = null;
 
         if (_snap != null)
         {
@@ -252,27 +161,12 @@
 
     public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
 
-    private void SelectSpell(string id)
+    private Task SelectSpellAsync(string id)
     {
-        _selectedId  = id;
+        _selectedId = id;
         _spellDetail = BuildService.GetSpellDetail(id);
+        return Task.CompletedTask;
     }
-
-    private RenderFragment SpellPropRow(string label, string value) => builder =>
-    {
-        if (string.IsNullOrWhiteSpace(value)) return;
-        builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "class", "spell-prop-row");
-        builder.OpenElement(2, "span");
-        builder.AddAttribute(3, "class", "spell-prop-label");
-        builder.AddContent(4, label);
-        builder.CloseElement();
-        builder.OpenElement(5, "span");
-        builder.AddAttribute(6, "class", "spell-prop-value");
-        builder.AddContent(7, value);
-        builder.CloseElement();
-        builder.CloseElement();
-    };
 
     private async Task ManualSaveAsync()
     {
@@ -285,20 +179,36 @@
         if (error == null)
         {
             Tabs.MarkClean(tab);
-            Snackbar.Add("Saved.", Severity.Success, cfg => { cfg.VisibleStateDuration = 2000; });
+            Snackbar.Add("Saved.", Severity.Success, cfg => cfg.VisibleStateDuration = 2000);
         }
         else
         {
             _saveError = error;
         }
+
         StateHasChanged();
     }
 
-    // ── Spell selection (known casters) ──────────────────────────────────────────
+    private async Task OpenSpellPickerByKeyAsync(string key)
+    {
+        string[] parts = key.Split(':', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 2
+            || !int.TryParse(parts[0], out int groupIndex)
+            || !int.TryParse(parts[1], out int entryIndex)
+            || groupIndex < 0
+            || groupIndex >= _spellRuleGroups.Count
+            || entryIndex < 0
+            || entryIndex >= _spellRuleGroups[groupIndex].Rules.Count)
+        {
+            return;
+        }
+
+        await OpenSpellPickerAsync(_spellRuleGroups[groupIndex].Rules[entryIndex]);
+    }
 
     private async Task OpenSpellPickerAsync(SelectionRuleEntry entry)
     {
-        var tab  = Tabs.ActiveTab;
+        var tab = Tabs.ActiveTab;
         var file = Characters.CurrentCharacterFile;
         if (tab == null || file == null) return;
 
@@ -306,13 +216,13 @@
 
         var parameters = new DialogParameters
         {
-            [nameof(SelectionPickerDialog.Entry)]   = entry,
+            [nameof(SelectionPickerDialog.Entry)] = entry,
             [nameof(SelectionPickerDialog.Options)] = options,
         };
         var dialogOptions = new DialogOptions
         {
-            MaxWidth         = MaxWidth.Large,
-            FullWidth        = true,
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
             CloseOnEscapeKey = true,
         };
 
@@ -321,7 +231,7 @@
 
         if (result is { Canceled: false, Data: string selectedId })
         {
-            _saving    = true;
+            _saving = true;
             _saveError = null;
             StateHasChanged();
 
@@ -338,12 +248,12 @@
             else if (autoSave)
             {
                 Tabs.MarkClean(tab);
-                Snackbar.Add("Changes saved.", Severity.Success, cfg => { cfg.VisibleStateDuration = 2000; });
+                Snackbar.Add("Changes saved.", Severity.Success, cfg => cfg.VisibleStateDuration = 2000);
             }
             else
             {
                 Tabs.MarkDirty(tab);
-                Snackbar.Add("Changes applied. Save when ready.", Severity.Info, cfg => { cfg.VisibleStateDuration = 2500; });
+                Snackbar.Add("Changes applied. Save when ready.", Severity.Info, cfg => cfg.VisibleStateDuration = 2500);
             }
 
             LoadFromActiveTab();
@@ -351,28 +261,63 @@
         }
     }
 
-    // ── Prepare toggles ──────────────────────────────────────────────────────────
-
-    private void OnPreparedChanged(SpellEntry spell, bool value)
+    private async Task OnPreparedChangedAsync(MagicPreparedChangeModel change)
     {
-        spell.IsPrepared = value;
-        if (Tabs.ActiveTab is { } tab)
-            Tabs.MarkDirty(tab);
+        if (_snap is null)
+        {
+            return;
+        }
+
+        SpellEntry? spell = _snap.SpellLevels
+            .SelectMany(level => level.Spells)
+            .FirstOrDefault(candidate => string.Equals(candidate.Id, change.SpellId, StringComparison.Ordinal));
+        if (spell is not null)
+        {
+            spell.IsPrepared = change.Value;
+            if (Tabs.ActiveTab is { } tab)
+            {
+                Tabs.MarkDirty(tab);
+
+                if (Prefs.AutoSaveBuildChanges)
+                {
+                    _saving = true;
+                    _saveError = null;
+                    StateHasChanged();
+
+                    string? error = await BuildService.SaveTabAsync(tab);
+
+                    _saving = false;
+                    if (error is null)
+                    {
+                        Tabs.MarkClean(tab);
+                    }
+                    else
+                    {
+                        _saveError = error;
+                    }
+
+                    StateHasChanged();
+                }
+            }
+        }
     }
 
-    private void ToggleSlot(SpellLevelEntry lvl, int slotIndex)
+    private Task ToggleSlotAsync(MagicSlotToggleModel change)
     {
-        if (slotIndex < lvl.UsedSlots)
-            lvl.UsedSlots = slotIndex;
-        else
-            lvl.UsedSlots = slotIndex + 1;
-    }
+        if (_snap is null)
+        {
+            return Task.CompletedTask;
+        }
 
-    private static string Ordinal(int n) => n switch
-    {
-        1 => "1st",
-        2 => "2nd",
-        3 => "3rd",
-        _ => $"{n}th",
-    };
+        SpellLevelEntry? level = _snap.SpellLevels.FirstOrDefault(candidate => candidate.Level == change.Level);
+        if (level is not null)
+        {
+            if (change.SlotIndex < level.UsedSlots)
+                level.UsedSlots = change.SlotIndex;
+            else
+                level.UsedSlots = change.SlotIndex + 1;
+        }
+
+        return Task.CompletedTask;
+    }
 }

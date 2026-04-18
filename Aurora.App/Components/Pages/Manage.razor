@@ -1,6 +1,9 @@
 @page "/manage"
 @implements IDisposable
 @inject CharacterTabService Tabs
+@inject UserPreferencesService Prefs
+@using Builder.Presentation
+@using Builder.Presentation.Models.Sources
 
 @if (_snap is null)
 {
@@ -10,126 +13,32 @@
     return;
 }
 
-@* ── Player Info ── *@
-<div class="build-section">
-    <div class="section-label">Player</div>
-    <div class="edit-grid">
-        <div class="edit-row">
-            <span class="edit-label">Character</span>
-            <MudTextField @bind-Value="_snap.Name" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Player</span>
-            <MudTextField @bind-Value="_snap.PlayerName" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">XP</span>
-            <MudNumericField @bind-Value="_snap.Experience" @bind-Value:after="MarkDirty"
-                             Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Deity</span>
-            <MudTextField Value="_snap.Deity" ReadOnly="true"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Alignment</span>
-            <MudTextField Value="_snap.Alignment" ReadOnly="true"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-    </div>
-</div>
+<MudTabs Elevation="0" ApplyEffectsToContainer="true" PanelClass="pa-0 pt-4">
 
-@* ── Appearance ── *@
-<div class="build-section">
-    <div class="section-label">Appearance</div>
-    <div class="edit-grid edit-grid-2col">
-        <div class="edit-row">
-            <span class="edit-label">Age</span>
-            <MudTextField @bind-Value="_snap.Age" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Gender</span>
-            <MudTextField @bind-Value="_snap.Gender" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Height</span>
-            <MudTextField @bind-Value="_snap.Height" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Weight</span>
-            <MudTextField @bind-Value="_snap.Weight" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Eyes</span>
-            <MudTextField @bind-Value="_snap.Eyes" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Hair</span>
-            <MudTextField @bind-Value="_snap.Hair" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Skin</span>
-            <MudTextField @bind-Value="_snap.Skin" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-    </div>
-</div>
+    <MudTabPanel Text="Info">
+        <CharacterManageWorkspace InfoModel="_infoModel"
+                                  OnInfoChanged="MarkDirty" />
+    </MudTabPanel>
 
-@* ── Backstory ── *@
-<div class="build-section">
-    <div class="section-label">Backstory</div>
-    <MudTextField @bind-Value="_snap.Backstory" @bind-Value:after="MarkDirty"
-                  Variant="Variant.Outlined" Lines="6" AutoGrow="true"
-                  Style="width: 100%; font-size: 13px;" />
-</div>
+    <MudTabPanel Text="Sources">
+        <CharacterManageWorkspace EmptyMessage="No source restrictions are available."
+                                  InfoModel="@null"
+                                  SourceGroups="@SourceGroups"
+                                  ShowDefaultActions="true"
+                                  OnToggleGroup="ToggleGroupAsync"
+                                  OnToggleItem="ToggleSourceAsync"
+                                  OnLoadDefaults="LoadDefaultAsync"
+                                  OnSaveDefaults="SaveAsDefaultAsync" />
+    </MudTabPanel>
 
-@* ── Affiliations ── *@
-<div class="build-section">
-    <div class="section-label">Affiliations</div>
-    <div class="edit-grid">
-        <div class="edit-row">
-            <span class="edit-label">Organisation</span>
-            <MudTextField @bind-Value="_snap.Organisation" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-        <div class="edit-row">
-            <span class="edit-label">Allies</span>
-            <MudTextField @bind-Value="_snap.Allies" @bind-Value:after="MarkDirty"
-                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="edit-field" />
-        </div>
-    </div>
-</div>
-
-@* ── Trinket ── *@
-<div class="build-section">
-    <div class="section-label">Trinket</div>
-    <MudTextField @bind-Value="_snap.Trinket" @bind-Value:after="MarkDirty"
-                  Variant="Variant.Outlined" Lines="2" AutoGrow="true"
-                  Style="width: 100%; font-size: 13px;" />
-</div>
-
-@* ── Notes ── *@
-<div class="build-section">
-    <div class="section-label">Notes</div>
-    <MudTextField @bind-Value="_snap.Notes1" @bind-Value:after="MarkDirty"
-                  Variant="Variant.Outlined" Lines="4" AutoGrow="true"
-                  Style="width: 100%; font-size: 13px; margin-bottom: 10px;" />
-    <MudTextField @bind-Value="_snap.Notes2" @bind-Value:after="MarkDirty"
-                  Variant="Variant.Outlined" Lines="4" AutoGrow="true"
-                  Style="width: 100%; font-size: 13px;" />
-</div>
+</MudTabs>
 
 @code {
     private CharacterSnapshot? _snap;
+    private CharacterTab? _tab;
+    private EditableCharacterInfoModel? _infoModel;
+    private IReadOnlyList<SourceRestrictionGroupModel> SourceGroups =>
+        CharacterManager.Current.SourcesManager.SourceGroups.Select(ToGroupModel).ToList();
 
     protected override void OnInitialized()
     {
@@ -137,7 +46,12 @@
         LoadFromActiveTab();
     }
 
-    private void LoadFromActiveTab() => _snap = Tabs.ActiveTab?.Snapshot;
+    private void LoadFromActiveTab()
+    {
+        _tab = Tabs.ActiveTab;
+        _snap = _tab?.Snapshot;
+        _infoModel = _snap is null ? null : ToInfoModel(_snap);
+    }
 
     private void OnTabsChanged() => InvokeAsync(() =>
     {
@@ -147,9 +61,161 @@
 
     public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
 
-    private void MarkDirty()
+    private Task MarkDirty()
     {
-        if (Tabs.ActiveTab is { } tab)
+        if (_tab is { } tab && _snap is not null && _infoModel is not null)
+        {
+            ApplyInfoModel(_infoModel, _snap);
             Tabs.MarkDirty(tab);
+        }
+
+        return Task.CompletedTask;
     }
+
+    private void ToggleGroup(SourcesGroup group)
+    {
+        if (!group.AllowUnchecking)
+        {
+            return;
+        }
+
+        group.SetIsChecked(group.IsChecked == true ? false : (bool?)true, updateChildren: true);
+        ApplyAndPersistRestrictions();
+    }
+
+    private void ToggleSource(SourceItem item)
+    {
+        if (!item.AllowUnchecking)
+        {
+            return;
+        }
+
+        item.SetIsChecked(item.IsChecked != true, updateChildren: true, updateParent: true);
+        ApplyAndPersistRestrictions();
+    }
+
+    private void ApplyAndPersistRestrictions()
+    {
+        CharacterManager.Current.SourcesManager.ApplyRestrictions(reprocess: true);
+        _ = MarkDirty();
+        if (_tab is { } tab)
+        {
+            tab.File.SaveSourceRestrictions();
+        }
+
+        StateHasChanged();
+    }
+
+    private void SaveAsDefault()
+    {
+        CharacterManager.Current.SourcesManager.StoreDefaults();
+    }
+
+    private void LoadDefault()
+    {
+        CharacterManager.Current.SourcesManager.LoadDefaults();
+        _ = MarkDirty();
+        if (_tab is { } tab)
+        {
+            tab.File.SaveSourceRestrictions();
+        }
+
+        StateHasChanged();
+    }
+
+    private Task ToggleGroupAsync(string groupId)
+    {
+        SourcesGroup? group = CharacterManager.Current.SourcesManager.SourceGroups
+            .FirstOrDefault(candidate => string.Equals(candidate.Name, groupId, StringComparison.Ordinal));
+        if (group is not null)
+        {
+            ToggleGroup(group);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ToggleSourceAsync(string sourceId)
+    {
+        SourceItem? item = CharacterManager.Current.SourcesManager.SourceGroups
+            .SelectMany(group => group.Sources)
+            .FirstOrDefault(candidate => string.Equals(candidate.Source.Id, sourceId, StringComparison.Ordinal));
+        if (item is not null)
+        {
+            ToggleSource(item);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task LoadDefaultAsync()
+    {
+        LoadDefault();
+        return Task.CompletedTask;
+    }
+
+    private Task SaveAsDefaultAsync()
+    {
+        SaveAsDefault();
+        return Task.CompletedTask;
+    }
+
+    private static EditableCharacterInfoModel ToInfoModel(CharacterSnapshot snap) =>
+        new()
+        {
+            Name = snap.Name,
+            PlayerName = snap.PlayerName,
+            Experience = snap.Experience,
+            Deity = snap.Deity,
+            Alignment = snap.Alignment,
+            Age = snap.Age,
+            Gender = snap.Gender,
+            Height = snap.Height,
+            Weight = snap.Weight,
+            Eyes = snap.Eyes,
+            Hair = snap.Hair,
+            Skin = snap.Skin,
+            Backstory = snap.Backstory,
+            Organisation = snap.Organisation,
+            Allies = snap.Allies,
+            Trinket = snap.Trinket,
+            Notes1 = snap.Notes1,
+            Notes2 = snap.Notes2
+        };
+
+    private static void ApplyInfoModel(EditableCharacterInfoModel model, CharacterSnapshot snap)
+    {
+        snap.Name = model.Name;
+        snap.PlayerName = model.PlayerName;
+        snap.Experience = model.Experience;
+        snap.Deity = model.Deity;
+        snap.Alignment = model.Alignment;
+        snap.Age = model.Age;
+        snap.Gender = model.Gender;
+        snap.Height = model.Height;
+        snap.Weight = model.Weight;
+        snap.Eyes = model.Eyes;
+        snap.Hair = model.Hair;
+        snap.Skin = model.Skin;
+        snap.Backstory = model.Backstory;
+        snap.Organisation = model.Organisation;
+        snap.Allies = model.Allies;
+        snap.Trinket = model.Trinket;
+        snap.Notes1 = model.Notes1;
+        snap.Notes2 = model.Notes2;
+    }
+
+    private static SourceRestrictionGroupModel ToGroupModel(SourcesGroup group) =>
+        new(
+            group.Name,
+            group.Name,
+            group.Underline,
+            group.AllowUnchecking,
+            group.IsChecked,
+            group.Sources.Select(item => new SourceRestrictionItemModel(
+                item.Source.Id,
+                item.Source.Name ?? string.Empty,
+                item.IsChecked,
+                item.AllowUnchecking,
+                !item.AllowUnchecking)).ToList());
 }

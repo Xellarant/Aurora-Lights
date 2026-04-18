@@ -1,0 +1,120 @@
+<MudDialog Style="max-height: 90vh; width: 700px;">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Style="font-size: 15px; font-weight: 600;">Add Item to Inventory</MudText>
+    </TitleContent>
+    <DialogContent>
+        <div class="picker-layout">
+            @* ── Left: search + list ── *@
+            <div class="picker-left">
+                <MudTextField @bind-Value="_search"
+                              @bind-Value:after="RunSearch"
+                              Placeholder="Search items…"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Clearable="true"
+                              Immediate="true"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+
+                @if (_results.Count == 0)
+                {
+                    <MudText Color="Color.Secondary" Style="padding: 12px 0; font-size: 13px;">
+                        @(_search.Length < 2 ? "Type at least 2 characters to search." : "No items found.")
+                    </MudText>
+                }
+                else
+                {
+                    <div class="picker-list">
+                        @foreach (var r in _results)
+                        {
+                            var isSelected = r.Id == _selectedId;
+                            <div class="picker-item @(isSelected ? "picker-item-selected" : "")"
+                                 @onclick="() => SelectResult(r)">
+                                <div class="picker-item-name">@r.Name</div>
+                                <div style="font-size: 10px; color: #6c7086; margin-top: 1px;">@r.Type</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            @* ── Right: detail + quantity ── *@
+            <div class="picker-detail">
+                @if (_selected != null)
+                {
+                    <div class="picker-detail-name">@_selected.Name</div>
+                    <div style="font-size: 11px; color: #89b4fa; margin-bottom: 4px;">@_selected.Type</div>
+                    @if (!string.IsNullOrWhiteSpace(_selected.Source))
+                    {
+                        <div style="font-size: 10px; color: #6c7086; margin-bottom: 8px;">@_selected.Source</div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_selected.Description))
+                    {
+                        <div class="picker-detail-desc">@_selected.Description</div>
+                    }
+                    else
+                    {
+                        <div class="picker-detail-empty">No description available.</div>
+                    }
+
+                    <div style="margin-top: 16px; display: flex; align-items: center; gap: 10px;">
+                        <MudText Style="font-size: 13px; color: #cdd6f4;">Quantity:</MudText>
+                        <MudNumericField @bind-Value="_amount"
+                                         Min="1" Max="999"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Style="width: 80px;" />
+                    </div>
+                }
+                else
+                {
+                    <div class="picker-detail-empty">Select an item to see details.</div>
+                }
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Confirm"
+                   Disabled="@(_selectedId == null)">
+            Add
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+
+    private string _search = "";
+    private string? _selectedId;
+    private ItemSearchResult? _selected;
+    private int _amount = 1;
+    private List<ItemSearchResult> _results = [];
+
+    private void RunSearch()
+    {
+        if (_search.Length < 2)
+        {
+            _results = [];
+            return;
+        }
+        _results = EquipmentService.SearchItems(_search).ToList();
+    }
+
+    private void SelectResult(ItemSearchResult r)
+    {
+        _selectedId = r.Id;
+        _selected   = r;
+        _amount     = 1;
+    }
+
+    private void Cancel()  => MudDialog.Cancel();
+    private void Confirm()
+    {
+        if (_selectedId != null)
+            MudDialog.Close(new ItemPickerResult(_selectedId, _amount));
+    }
+}

@@ -8,7 +8,6 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 
 #nullable disable
@@ -83,9 +82,8 @@ public abstract class PageGenerator : IDisposable
     File.WriteAllBytes(path, os.ToArray());
     os.Close();
     os.Dispose();
-    if (!open)
-      return;
-    Process.Start(path);
+    if (open)
+      ExternalLauncherContext.Current?.OpenPath(path);
   }
 
   protected void PlacePage(PdfReader reader, Rectangle area)
