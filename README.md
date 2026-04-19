@@ -69,7 +69,7 @@ Useful project-level build commands:
 dotnet build .\Aurora.Logic\Aurora.Logic.csproj -v minimal
 dotnet build .\Aurora.App\Aurora.App.csproj -v minimal
 dotnet build .\Aurora.Web\Aurora.Web.csproj -v minimal
-dotnet build .\Aurora.Lights.csproj -v minimal
+dotnet build .\Aurora.Lights\Aurora.Lights.csproj -v minimal
 ```
 
 In this environment, project builds are the most reliable signal. A plain repository-root `dotnet build` has intermittently failed early without surfacing diagnostics even when the individual projects build successfully.

@@ -9,10 +9,11 @@
                  xmlns:controls1="clr-namespace:Builder.Presentation.Controls"
                  xmlns:viewModels="clr-namespace:Builder.Presentation.ViewModels"
                  xmlns:sliders="clr-namespace:Builder.Presentation.Views.Sliders"
-                 CloseButtonVisibility="Collapsed" Position="Bottom" Margin="0,98,0,26"
-                 Height="520" HorizontalAlignment="Stretch"
+                 MinWidth="400" CloseButtonVisibility="Collapsed" Position="Bottom" Margin="0,98,0,26"
                  IsPinned="false" BorderThickness="0,2,0,0" BorderBrush="{DynamicResource HighlightBrush}"
-                 IsAutoCloseEnabled="false" TitleVisibility="Collapsed" IsModal="false" Theme="Adapt">
+                 IsAutoCloseEnabled="false" TitleVisibility="Collapsed" IsModal="false" Theme="Adapt"
+                 Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=controls:MetroWindow}, Path=ActualWidth}"
+                 Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=controls:MetroWindow}, Path=ActualHeight}">
   <FrameworkElement.DataContext>
     <sliders:CompendiumSliderViewModel/>
   </FrameworkElement.DataContext>
