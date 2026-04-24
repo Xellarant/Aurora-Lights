@@ -39,6 +39,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<CharacterTabService>();
         builder.Services.AddSingleton<UserPreferencesService>();
         builder.Services.AddSingleton<ContentService>();
+        builder.Services.AddSingleton<ContentDatabaseService>();
         var debugLog = new DebugLogService();
         DebugLogService.Instance = debugLog;
         builder.Services.AddSingleton(debugLog);

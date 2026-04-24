@@ -14,16 +14,17 @@
     margin: 0;
     font-size: 1.25rem;
     font-weight: 700;
+    color: #cdd6f4;
 }
 
 .character-detail-subtitle {
     margin: 0.35rem 0 0;
-    color: #5f6b7a;
+    color: #a6adc8;
 }
 
 .character-detail-empty {
     margin: 0;
-    color: #5f6b7a;
+    color: #6c7086;
 }
 
 .character-detail-grid {
@@ -37,18 +38,20 @@
     gap: 0.25rem;
     padding: 0.85rem 0.95rem;
     border-radius: 0.85rem;
-    background: rgba(15, 23, 42, 0.04);
+    border: 1px solid #45475a;
+    background: #313244;
 }
 
 .character-detail-label {
-    color: #5f6b7a;
+    color: #6c7086;
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    font-weight: 700;
 }
 
 .character-detail-value {
-    color: #16202c;
+    color: #cdd6f4;
     font-size: 1rem;
 }
 

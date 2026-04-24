@@ -167,13 +167,24 @@
         _snap = Tabs.ActiveTab?.Snapshot;
     }
 
-    private void OnTabsChanged() => InvokeAsync(() =>
-    {
-        _snap = Tabs.ActiveTab?.Snapshot;
-        StateHasChanged();
-    });
+    private bool _disposed;
 
-    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+    private void OnTabsChanged()
+    {
+        if (_disposed) return;
+        _ = InvokeAsync(() =>
+        {
+            if (_disposed) return;
+            _snap = Tabs.ActiveTab?.Snapshot;
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Tabs.TabsChanged -= OnTabsChanged;
+    }
 
     private async Task PreviewPdfAsync()
     {

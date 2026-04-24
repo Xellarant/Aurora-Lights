@@ -45,6 +45,7 @@ else
 }
 
 @code {
+    private bool _disposed;
     private List<Builder.Presentation.Models.CharacterFile> _characters = [];
     private bool _loading = true;
     private bool _preloading;
@@ -66,6 +67,7 @@ else
 
     public void Dispose()
     {
+        _disposed = true;
     }
 
     protected override Task OnInitializedAsync()
@@ -76,6 +78,7 @@ else
         }
         catch (Exception ex)
         {
+            DebugLogService.Instance.LogException(ex, "Start.OnInitializedAsync");
             _error = ex.Message;
         }
         finally
@@ -89,27 +92,31 @@ else
 
     private async Task RunPreloadAsync()
     {
+        if (_disposed) return;
         _preloading = true;
-        StateHasChanged();
+        if (!_disposed) await InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
 
         try
         {
             await Characters.PreloadAsync();
 
-            string? mruPath = Prefs.MruCharacterPath;
-            if (!string.IsNullOrEmpty(mruPath))
+            if (!_disposed)
             {
-                Builder.Presentation.Models.CharacterFile? mruFile = _characters.FirstOrDefault(file => file.FilePath == mruPath);
-                if (mruFile != null && Tabs.FindTab(mruFile) == null)
+                string? mruPath = Prefs.MruCharacterPath;
+                if (!string.IsNullOrEmpty(mruPath))
                 {
-                    Characters.BeginPreload(mruFile);
+                    Builder.Presentation.Models.CharacterFile? mruFile = _characters.FirstOrDefault(file => file.FilePath == mruPath);
+                    if (mruFile != null && Tabs.FindTab(mruFile) == null)
+                    {
+                        Characters.BeginPreload(mruFile);
+                    }
                 }
             }
         }
         finally
         {
             _preloading = false;
-            await InvokeAsync(StateHasChanged);
+            if (!_disposed) await InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
         }
     }
 
@@ -119,7 +126,7 @@ else
         if (existing != null)
         {
             Tabs.ActivateTab(existing);
-            Nav.NavigateTo("/build");
+            Nav.NavigateTo("/character");
             return;
         }
 
@@ -129,14 +136,15 @@ else
             tab.Snapshot = CharacterSnapshot.From(Characters.CurrentCharacter!);
             tab.ProgressionSnapshots = SnapshotProgressionManagers();
             tab.Session = characterFile.LoadSession();
-            Nav.NavigateTo("/build");
+            CharacterContext.ClaimAfterLoad(tab);
+            Nav.NavigateTo("/character");
             return;
         }
 
         _error = null;
         _warning = false;
         CharacterTab loadingTab = Tabs.OpenLoadingTab(characterFile);
-        Nav.NavigateTo("/build");
+        Nav.NavigateTo("/build"); // stay on Build while loading spinner is shown
 
         try
         {
@@ -149,7 +157,9 @@ else
                 loadingTab.ProgressionSnapshots = SnapshotProgressionManagers();
                 loadingTab.Session = characterFile.LoadSession();
                 loadingTab.IsLoading = false;
+                CharacterContext.ClaimAfterLoad(loadingTab);
                 Tabs.NotifyChanged();
+                Nav.NavigateTo("/character");
                 return;
             }
 
@@ -160,7 +170,9 @@ else
                 loadingTab.ProgressionSnapshots = SnapshotProgressionManagers();
                 loadingTab.Session = characterFile.LoadSession();
                 loadingTab.IsLoading = false;
+                CharacterContext.ClaimAfterLoad(loadingTab);
                 Tabs.NotifyChanged();
+                Nav.NavigateTo("/character");
                 string warningMessage = string.IsNullOrEmpty(message)
                     ? $"Warning: {characterFile.DisplayName} loaded with missing elements; some features may not display."
                     : message;
@@ -212,6 +224,7 @@ else
             tab.Snapshot = CharacterSnapshot.From(Characters.CurrentCharacter);
             tab.ProgressionSnapshots = SnapshotProgressionManagers();
             tab.IsNew = true;
+            CharacterContext.ClaimAfterLoad(tab);
 
             _characters = Characters.LoadCharacterFiles().ToList();
             Nav.NavigateTo("/build");

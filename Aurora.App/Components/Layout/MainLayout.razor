@@ -75,11 +75,36 @@
         ? "height: calc(100vh - 64px - 34px - 28px); overflow-y: auto;"
         : "height: calc(100vh - 64px - 28px); overflow-y: auto;";
 
-    protected override void OnInitialized() => Tabs.TabsChanged += OnTabsChanged;
+    protected override void OnInitialized()
+    {
+        Tabs.TabsChanged          += OnTabsChanged;
+        CharacterContext.CaptureError += OnCaptureError;
+    }
 
-    private void OnTabsChanged() => InvokeAsync(StateHasChanged);
+    private bool _disposed;
 
-    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+    private void OnTabsChanged()
+    {
+        if (_disposed) return;
+        _ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
+    }
+
+    private void OnCaptureError(string message)
+    {
+        if (_disposed) return;
+        _ = InvokeAsync(() =>
+        {
+            if (!_disposed)
+                Snackbar.Add(message, Severity.Error, cfg => cfg.VisibleStateDuration = 8000);
+        });
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Tabs.TabsChanged          -= OnTabsChanged;
+        CharacterContext.CaptureError -= OnCaptureError;
+    }
 
     private void ActivateTab(CharacterTab tab)
     {
@@ -154,6 +179,8 @@
             TextSecondary = "#a6adc8",
             TextDisabled = "#6c7086",
             Divider = "#313244",
+            LinesDefault = "#313244",
+            LinesInputs = "#45475a",
         }
     };
 

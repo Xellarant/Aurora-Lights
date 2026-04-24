@@ -6,7 +6,7 @@
 
 .magic-empty {
     margin: 0;
-    color: #64748b;
+    color: #6c7086;
 }
 
 .magic-stats-strip {
@@ -17,11 +17,10 @@
 
 .magic-stat,
 .magic-known-row,
-.magic-spell-row,
 .magic-detail {
-    border: 1px solid #dbe1e8;
+    border: 1px solid #45475a;
     border-radius: 0.85rem;
-    background: #fbfcfd;
+    background: #313244;
 }
 
 .magic-stat {
@@ -34,11 +33,11 @@
 .magic-stat-value {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #203041;
+    color: #cdd6f4;
 }
 
 .magic-stat-value.full {
-    color: #c2410c;
+    color: #f38ba8;
 }
 
 .magic-stat-label,
@@ -48,7 +47,7 @@
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #64748b;
+    color: #6c7086;
 }
 
 .magic-section {
@@ -73,24 +72,31 @@
 }
 
 .magic-known-value.empty {
-    color: #6b7785;
+    color: #6c7086;
 }
 
 .magic-action-button {
-    border: 1px solid #cdd6df;
-    background: white;
-    color: #203041;
+    border: 1px solid #45475a;
+    background: #313244;
+    color: #cdd6f4;
     border-radius: 999px;
     padding: 0.45rem 0.85rem;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.magic-action-button:hover {
+    background: #45475a;
+    border-color: #585b70;
 }
 
 .magic-layout {
     display: grid;
     grid-template-columns: minmax(280px, 0.95fr) minmax(0, 1.05fr);
     gap: 1rem;
+    align-items: start;
 }
 
 .magic-level-header {
@@ -111,33 +117,61 @@
     width: 0.95rem;
     height: 0.95rem;
     border-radius: 999px;
-    border: 1px solid #1f6feb;
-    background: white;
+    border: 1.5px solid #89b4fa;
+    background: transparent;
     cursor: pointer;
+    transition: background 0.1s;
+}
+
+.magic-slot-bubble:hover {
+    background: rgba(137, 180, 250, 0.2);
 }
 
 .magic-slot-bubble.used {
-    background: #1f6feb;
+    background: #89b4fa;
 }
 
 .magic-slot-count {
     margin-left: 0.3rem;
     font-size: 0.75rem;
-    color: #64748b;
+    color: #6c7086;
 }
 
 .magic-spell-row {
+    display: flex;
+    align-items: center;
     padding: 0;
     overflow: hidden;
+    border-radius: 6px;
+    transition: background 0.1s;
+}
+
+.magic-spell-row:hover {
+    background: #313244;
+}
+
+.magic-spell-prep-check {
+    flex: 0 0 auto;
+    margin-left: 0.9rem;
+    align-self: center;
+    accent-color: #89b4fa;
+    cursor: pointer;
+    width: 1rem;
+    height: 1rem;
+}
+
+.magic-spell-prep-check:disabled {
+    opacity: 0.45;
+    cursor: default;
 }
 
 .magic-spell-row.selected {
-    border-color: #1f6feb;
-    box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.18);
+    background: #1e3a5a;
 }
 
 .magic-spell-select {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 0.65rem;
@@ -152,21 +186,27 @@
     width: 0.6rem;
     height: 0.6rem;
     border-radius: 999px;
-    background: #64748b;
+    background: #6c7086;
     flex: 0 0 auto;
 }
 
 .magic-spell-dot.cantrip {
-    background: #0f8b8d;
+    background: #89dceb;
 }
+
+.magic-spell-dot.prepared {
+    background: #89b4fa;
+}
+
 
 .magic-spell-name {
     font-size: 0.95rem;
-    color: #203041;
+    color: #cdd6f4;
 }
 
 .magic-spell-name.prepared {
     font-weight: 700;
+    color: #89b4fa;
 }
 
 .magic-detail {
@@ -176,7 +216,7 @@
 .magic-detail-name {
     font-size: 1.3rem;
     font-weight: 800;
-    color: #203041;
+    color: #cdd6f4;
 }
 
 .magic-detail-meta {
@@ -184,7 +224,7 @@
     flex-wrap: wrap;
     gap: 0.65rem;
     margin-top: 0.45rem;
-    color: #64748b;
+    color: #a6adc8;
 }
 
 .magic-detail-props {
@@ -203,7 +243,7 @@
     margin-top: 1rem;
     white-space: pre-wrap;
     line-height: 1.6;
-    color: #203041;
+    color: #a6adc8;
 }
 
 @media (max-width: 900px) {

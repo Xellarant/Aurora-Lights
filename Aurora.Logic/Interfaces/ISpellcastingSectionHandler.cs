@@ -15,6 +15,14 @@ public interface ISpellcastingSectionHandler
     bool SetPrepareSpell(Builder.Data.Elements.SpellcastingInformation information, string elementId);
 
     /// <summary>
+    /// Removes <paramref name="elementId"/> from the prepared set for the given class.
+    /// WPF derives prepared state from live controls and ignores this; MAUI uses it to
+    /// keep the in-memory <c>_preparedIds</c> set in sync when the user un-prepares a spell.
+    /// Default implementation is a no-op so existing WPF code needs no changes.
+    /// </summary>
+    void UnsetPrepareSpell(string spellcastingName, string elementId) { }
+
+    /// <summary>
     /// Clears any cached prepared-spell state before loading a different character.
     /// WPF derives this from live controls, so the default implementation is a no-op.
     /// </summary>

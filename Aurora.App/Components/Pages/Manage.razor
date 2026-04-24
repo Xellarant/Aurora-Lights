@@ -28,7 +28,7 @@
                                   OnToggleGroup="ToggleGroupAsync"
                                   OnToggleItem="ToggleSourceAsync"
                                   OnLoadDefaults="LoadDefaultAsync"
-                                  OnSaveDefaults="SaveAsDefaultAsync" />
+                                  OnSaveDefaults="SaveAsDefault" />
     </MudTabPanel>
 
 </MudTabs>
@@ -53,13 +53,24 @@
         _infoModel = _snap is null ? null : ToInfoModel(_snap);
     }
 
-    private void OnTabsChanged() => InvokeAsync(() =>
-    {
-        LoadFromActiveTab();
-        StateHasChanged();
-    });
+    private bool _disposed;
 
-    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+    private void OnTabsChanged()
+    {
+        if (_disposed) return;
+        _ = InvokeAsync(() =>
+        {
+            if (_disposed) return;
+            LoadFromActiveTab();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Tabs.TabsChanged -= OnTabsChanged;
+    }
 
     private Task MarkDirty()
     {
@@ -98,22 +109,6 @@
         StateHasChanged();
     }
 
-    private void SaveAsDefault()
-    {
-        CharacterManager.Current.SourcesManager.StoreDefaults();
-    }
-
-    private async Task LoadDefault()
-    {
-        if (_tab is not { } tab) return;
-        using var scope = await CharacterContext.EnterAsync(tab);
-
-        CharacterManager.Current.SourcesManager.LoadDefaults();
-        _ = MarkDirty();
-        tab.File.SaveSourceRestrictions();
-
-        StateHasChanged();
-    }
 
     private async Task ToggleGroupAsync(string groupId)
     {
@@ -138,13 +133,19 @@
 
     private async Task LoadDefaultAsync()
     {
-        await LoadDefault();
+        if (_tab is not { } tab) return;
+        using var scope = await CharacterContext.EnterAsync(tab);
+
+        CharacterManager.Current.SourcesManager.LoadDefaults();
+        _ = MarkDirty();
+        tab.File.SaveSourceRestrictions();
+
+        StateHasChanged();
     }
 
-    private Task SaveAsDefaultAsync()
+    private void SaveAsDefault()
     {
-        SaveAsDefault();
-        return Task.CompletedTask;
+        CharacterManager.Current.SourcesManager.StoreDefaults();
     }
 
     private static EditableCharacterInfoModel ToInfoModel(CharacterSnapshot snap) =>

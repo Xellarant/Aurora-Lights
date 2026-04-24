@@ -26,7 +26,6 @@ public static class BuildService
     public static IReadOnlyList<SelectionRuleGroup> GetRuleGroups()
     {
         var cm       = CharacterManager.Current;
-        var handler  = SelectionRuleExpanderContext.Current;
         var classMgrs = cm.ClassProgressionManagers;
 
         var mainEntries  = new List<SelectionRuleEntry>();
@@ -42,15 +41,7 @@ public static class BuildService
 
             for (int n = 1; n <= rule.Attributes.Number; n++)
             {
-                string? currentName = null;
-                try
-                {
-                    var current = handler?.GetRegisteredElement(rule, n);
-                    if (current != null)
-                        currentName = (string?)((dynamic)current).Name;
-                }
-                catch { }
-
+                string? currentName = ResolveCurrentSelectionName(rule, n);
                 string label = rule.Attributes.Number > 1
                     ? $"{rule.Attributes.Name ?? rule.Attributes.Type} ({n})"
                     : (rule.Attributes.Name ?? rule.Attributes.Type);
@@ -101,7 +92,6 @@ public static class BuildService
     public static IReadOnlyList<SelectionRuleGroup> GetSpellRuleGroups()
     {
         var cm      = CharacterManager.Current;
-        var handler = SelectionRuleExpanderContext.Current;
 
         var byClass = new Dictionary<string, List<SelectionRuleEntry>>(StringComparer.Ordinal);
 
@@ -115,15 +105,7 @@ public static class BuildService
 
             for (int n = 1; n <= rule.Attributes.Number; n++)
             {
-                string? currentName = null;
-                try
-                {
-                    var current = handler?.GetRegisteredElement(rule, n);
-                    if (current != null)
-                        currentName = (string?)((dynamic)current).Name;
-                }
-                catch { }
-
+                string? currentName = ResolveCurrentSelectionName(rule, n);
                 string label = rule.Attributes.Number > 1
                     ? $"{rule.Attributes.Name ?? rule.Attributes.Type} ({n})"
                     : (rule.Attributes.Name ?? rule.Attributes.Type);
@@ -602,21 +584,15 @@ public static class BuildService
     }
 
     /// <summary>
-    /// Extracts a plain-text description from an element.
-    /// Prefers SheetDescription[0].Description; falls back to Description via generator.
-    /// Uses dynamic dispatch to avoid Builder.Data.Elements import constraints.
+    /// Extracts a plain-text description from an element via GeneratePlainDescription,
+    /// which properly inserts paragraph breaks between &lt;p&gt; elements.
+    /// SheetDescription is skipped — it's a flat PDF-oriented text blob without structure.
     /// </summary>
     public static string GetFeatureDescription(object e)
     {
         try
         {
             dynamic el = e;
-            var sheetDesc = el.SheetDescription as System.Collections.IList;
-            if (sheetDesc != null && sheetDesc.Count > 0)
-            {
-                dynamic first = sheetDesc[0]!;
-                return (string)(first.Description ?? "");
-            }
             string raw = (string)(el.Description ?? "");
             if (!string.IsNullOrWhiteSpace(raw))
                 return ElementDescriptionGenerator.GeneratePlainDescription(raw).Trim();
@@ -940,7 +916,6 @@ public static class BuildService
     public static IReadOnlyList<BuildTabGroup> GetBuildTabs()
     {
         var cm       = CharacterManager.Current;
-        var handler  = SelectionRuleExpanderContext.Current;
         var classMgrs = cm.ClassProgressionManagers;
 
         var raceEntries        = new List<SelectionRuleEntry>();
@@ -960,15 +935,7 @@ public static class BuildService
 
             for (int n = 1; n <= rule.Attributes.Number; n++)
             {
-                string? currentName = null;
-                try
-                {
-                    var current = handler?.GetRegisteredElement(rule, n);
-                    if (current != null)
-                        currentName = (string?)((dynamic)current).Name;
-                }
-                catch { }
-
+                string? currentName = ResolveCurrentSelectionName(rule, n);
                 string ruleType  = rule.Attributes.Type  ?? "Other";
                 string ruleName  = rule.Attributes.Name  ?? ruleType;
                 string label = rule.Attributes.Number > 1
@@ -1009,13 +976,8 @@ public static class BuildService
 
         var tabs = new List<BuildTabGroup>();
 
-        // Race tab — always present
-        var raceGroups = raceEntries.Count > 0
-            ? new List<SelectionRuleGroup> { new("", Sort(raceEntries)) }
-            : new List<SelectionRuleGroup>();
-        tabs.Add(new BuildTabGroup("Race", raceGroups));
-
-        // Class tab — always present; initial Class rule first, then per-PM groups
+        // Class tab — always present; initial Class rule first, then per-PM groups (first tab because
+        // the level-up and HP controls sit outside the tabs and relate most directly to class choices)
         var classGroups = new List<SelectionRuleGroup>();
         if (classMainEntries.Count > 0)
             classGroups.Add(new SelectionRuleGroup("", Sort(classMainEntries)));
@@ -1027,6 +989,12 @@ public static class BuildService
                 Sort(entries)));
         }
         tabs.Add(new BuildTabGroup("Class", classGroups));
+
+        // Race tab
+        var raceGroups = raceEntries.Count > 0
+            ? new List<SelectionRuleGroup> { new("", Sort(raceEntries)) }
+            : new List<SelectionRuleGroup>();
+        tabs.Add(new BuildTabGroup("Race", raceGroups));
 
         // Background tab — always present
         var bgGroups = bgEntries.Count > 0
@@ -1061,7 +1029,6 @@ public static class BuildService
     public static IReadOnlyList<SelectionRuleEntry> GetAsiEntries()
     {
         var cm      = CharacterManager.Current;
-        var handler = SelectionRuleExpanderContext.Current;
         var classMgrs = cm.ClassProgressionManagers;
         var result  = new List<SelectionRuleEntry>();
 
@@ -1076,15 +1043,7 @@ public static class BuildService
 
             for (int n = 1; n <= rule.Attributes.Number; n++)
             {
-                string? currentName = null;
-                try
-                {
-                    var current = handler?.GetRegisteredElement(rule, n);
-                    if (current != null)
-                        currentName = (string?)((dynamic)current).Name;
-                }
-                catch { }
-
+                string? currentName = ResolveCurrentSelectionName(rule, n);
                 string ruleName = rule.Attributes.Name ?? ruleType;
                 string label    = rule.Attributes.Number > 1 ? $"{ruleName} ({n})" : ruleName;
                 result.Add(new SelectionRuleEntry(rule, n, label, currentName, rule.Attributes.RequiredLevel));
@@ -1118,6 +1077,20 @@ public static class BuildService
                 return ("Ability Scores", entry.Label);
         }
         return null;
+    }
+
+    /// <summary>
+    /// Returns the Name of the element currently registered for <paramref name="rule"/> slot
+    /// <paramref name="n"/>, or null if the slot is empty or the lookup fails.
+    /// </summary>
+    private static string? ResolveCurrentSelectionName(SelectRule rule, int n)
+    {
+        try
+        {
+            var current = SelectionRuleExpanderContext.Current?.GetRegisteredElement(rule, n);
+            return current is null ? null : (string?)((dynamic)current).Name;
+        }
+        catch { return null; }
     }
 }
 

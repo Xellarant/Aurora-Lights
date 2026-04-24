@@ -3,6 +3,7 @@
 @inject UserPreferencesService Prefs
 @inject DebugLogService DebugLog
 @inject ContentService Content
+@inject CharacterService Characters
 @inject NavigationManager Nav
 @inject ISnackbar Snackbar
 <MudText Typo="Typo.h5" Class="mb-6">Preferences</MudText>
@@ -122,6 +123,31 @@
             </div>
             <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small"
                        Href="/console">Open Console</MudButton>
+        </div>
+
+        <div class="pref-row" style="margin-top: 16px;">
+            <div class="pref-row-text">
+                <div class="pref-row-title">Element data source: @Characters.ElementLoadSource</div>
+                <div class="pref-row-desc">@Characters.ElementLoadSummary</div>
+                @if (Characters.ElementLoadSchemaVersion.HasValue)
+                {
+                    <div class="pref-row-desc">Schema version: @Characters.ElementLoadSchemaVersion.Value</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Characters.ElementLoadDatabasePath))
+                {
+                    <div class="pref-row-desc" style="font-family: monospace; word-break: break-all;">
+                        DB path: @Characters.ElementLoadDatabasePath
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Characters.ElementLoadFailureReason))
+                {
+                    <div class="pref-row-desc">Fallback reason: @Characters.ElementLoadFailureReason</div>
+                }
+                @if (Characters.ElementLoadSkippedElements > 0)
+                {
+                    <div class="pref-row-desc">Skipped elements during DB load: @Characters.ElementLoadSkippedElements</div>
+                }
+            </div>
         </div>
     }
 </div>

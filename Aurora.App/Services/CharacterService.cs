@@ -29,6 +29,12 @@ public sealed class CharacterService :
 
     public Character? CurrentCharacter { get; private set; }
     public CharacterFile? CurrentCharacterFile { get; private set; }
+    public string ElementLoadSource { get; private set; } = "Not loaded";
+    public string ElementLoadSummary { get; private set; } = "Elements have not been initialized yet.";
+    public string? ElementLoadDatabasePath { get; private set; }
+    public int? ElementLoadSchemaVersion { get; private set; }
+    public string? ElementLoadFailureReason { get; private set; }
+    public int ElementLoadSkippedElements { get; private set; }
 
     // ── Loading progress ────────────────────────────────────────────────────
     public int    LoadingPercent { get; private set; }
@@ -76,15 +82,38 @@ public sealed class CharacterService :
             if (_elementsInitialized) return;
             EnsureDirectoriesInitialized();
             DataManager.Current.InitializeFileLogger();
-            await DataManager.Current.InitializeElementDataAsync();
+
+            DbLoadResult dbResult = await DbElementLoader.TryLoadAsync(DataManager.Current.ElementsCollection);
+            if (!dbResult.Success)
+            {
+                await DataManager.Current.InitializeElementDataAsync();
+                ElementLoadSource = "XML fallback";
+                ElementLoadSummary = $"Loaded baseline content from XML. SQLite reason: {dbResult.FailureReason ?? "unknown"}";
+            }
+            else
+            {
+                ElementLoadSource = dbResult.SourceLabel;
+                ElementLoadSummary = dbResult.Summary;
+            }
+
+            ElementLoadDatabasePath = dbResult.DatabasePath;
+            ElementLoadSchemaVersion = dbResult.SchemaVersion;
+            ElementLoadFailureReason = dbResult.FailureReason;
+            ElementLoadSkippedElements = dbResult.SkippedElementCount;
+
             _elementsInitialized = true;
 
             var testId = "ID_WOTC_MOTM_RACE_GOBLIN";
             var testElement = DataManager.Current.ElementsCollection.GetElement(testId);
-            _initDiagnostic = testElement != null
+            string customDiagnostic = testElement != null
                 ? $"Custom elements OK (e.g. {testId} found)"
                 : $"⚠ Custom elements MISSING — {testId} not in collection. " +
                   $"Custom dir: {DataManager.Current.UserDocumentsCustomElementsDirectory}";
+            string schemaDiagnostic = ElementLoadSchemaVersion.HasValue
+                ? $"Schema version: {ElementLoadSchemaVersion.Value}"
+                : "Schema version: unknown";
+            _initDiagnostic = $"{ElementLoadSummary}\n{schemaDiagnostic}\n{customDiagnostic}";
+            LoadingProgressChanged?.Invoke();
         }
         finally
         {
@@ -112,6 +141,12 @@ public sealed class CharacterService :
         {
             _elementsInitialized = false;
             _initDiagnostic = null;
+            ElementLoadSource = "Not loaded";
+            ElementLoadSummary = "Elements have not been initialized yet.";
+            ElementLoadDatabasePath = null;
+            ElementLoadSchemaVersion = null;
+            ElementLoadFailureReason = null;
+            ElementLoadSkippedElements = 0;
         }
         finally
         {

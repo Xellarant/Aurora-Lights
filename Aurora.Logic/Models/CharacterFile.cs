@@ -500,14 +500,6 @@ public class CharacterFile : ObservableObject
                     else
                         CharacterManager.Current.LevelUpMain();
                 }
-                foreach (XmlNode childNode2 in elementsNode.ChildNodes)
-                {
-                    if (childNode2.GetAttributeValue("type") == "Level" || type == "Option")
-                    {
-                        ElementBase element1 = DataManager.Current.ElementsCollection.GetElement(childNode2.GetAttributeValue("id"));
-                        await this.ReadChildElements(childNode2, element1);
-                    }
-                }
                 ++currentProgress;
                 await this.SendCharacterLoadingScreenProgressUpdate(currentProgress.IsPercetageOf(progressMax));
                 element = (LevelElement)null;
@@ -1426,14 +1418,36 @@ public class CharacterFile : ObservableObject
         IReadOnlyCollection<string> preparedIds = handler?.GetPreparedIds(info.Name)
             ?? Array.Empty<string>();
 
+        // Warn about registered spells whose acquisition type is neither granted nor selected —
+        // these are silently skipped and would be invisible in any serialize/deserialize cycle.
+        foreach (var s in spells.Where(s => !s.Aquisition.WasGranted && !s.Aquisition.WasSelected))
+            Logger.Warning("BuildMauiKnownSpells: spell '{0}' has unknown acquisition type for class '{1}' — skipped", s.Id, info.Name);
+
+        var emittedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var s in granted.Concat(selected).GroupBy(x => x.Id).Select(g => g.First()))
         {
+            emittedIds.Add(s.Id);
             bool isChosen = s.Aquisition.WasGranted
                 ? s.Aquisition.GrantRule.IsAlwaysPrepared()
                 : s.Aquisition.SelectRule.IsAlwaysPrepared();
             if (!isChosen && info.Prepare)
                 isChosen = preparedIds.Contains(s.Id);
             yield return new SelectionElement((ElementBase)s) { IsChosen = isChosen };
+        }
+
+        // For prepared casters (Artificer, Cleric, Druid, …) the user prepares spells from
+        // the full class list — those spells are NOT registered on the character via grant/select
+        // rules, so they are absent from the granted/selected lists above. Emit them here so
+        // the serialised XML records <spell prepared="true"/> entries that survive a round-trip.
+        if (info.Prepare)
+        {
+            foreach (var id in preparedIds)
+            {
+                if (emittedIds.Contains(id)) continue;
+                var element = DataManager.Current.ElementsCollection.GetElement(id);
+                if (element is Spell preparedSpell)
+                    yield return new SelectionElement((ElementBase)preparedSpell) { IsChosen = true };
+            }
         }
     }
 

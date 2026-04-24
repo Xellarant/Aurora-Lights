@@ -1238,6 +1238,7 @@ html, body {
     font-size: 12px;
     color: #a6adc8;
     line-height: 1.5;
+    white-space: pre-wrap;
 }
 
 @media all and (display-mode: standalone) {
@@ -1971,6 +1972,19 @@ html, body {
     flex: 1;
 }
 
+/* HP + Status side-by-side row */
+.session-pair-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: stretch;
+}
+.session-pair-row > .session-card {
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
 /* HP */
 .session-hp-row {
     display: flex;
@@ -2221,11 +2235,102 @@ html, body {
     gap: 2px;
 }
 
+/* ── Equipment currency — global override (render-fragment elements bypass CSS isolation) ── */
+.equipment-currency-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 70px;
+}
+.equipment-currency-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6c7086;
+}
+/* Coin type colors — CP/SP/EP/GP/PP */
+.equipment-currency-strip > :nth-child(1) .equipment-currency-label { color: #c97a4a; } /* copper */
+.equipment-currency-strip > :nth-child(2) .equipment-currency-label { color: #bac2de; } /* silver */
+.equipment-currency-strip > :nth-child(3) .equipment-currency-label { color: #89dceb; } /* electrum */
+.equipment-currency-strip > :nth-child(4) .equipment-currency-label { color: #f9e2af; } /* gold */
+.equipment-currency-strip > :nth-child(5) .equipment-currency-label { color: #b4befe; } /* platinum */
+
+.session-currency-strip > :nth-child(1) .session-coin-label { color: #c97a4a; }
+.session-currency-strip > :nth-child(2) .session-coin-label { color: #bac2de; }
+.session-currency-strip > :nth-child(3) .session-coin-label { color: #89dceb; }
+.session-currency-strip > :nth-child(4) .session-coin-label { color: #f9e2af; }
+.session-currency-strip > :nth-child(5) .session-coin-label { color: #b4befe; }
+input.equipment-currency-input {
+    width: 100%;
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 0.75rem;
+    padding: 0.55rem 0.7rem;
+    font: inherit;
+    text-align: center;
+    -webkit-appearance: none;
+    appearance: none;
+    color-scheme: dark;
+    -moz-appearance: textfield;
+}
+input.equipment-currency-input:focus {
+    outline: none;
+    border-color: #89b4fa;
+}
+input.equipment-currency-input::-webkit-outer-spin-button,
+input.equipment-currency-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ── Session currency — compact single-row strip ── */
+.session-currency-strip {
+    display: flex;
+    align-items: center;
+}
+.session-coin-cell {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 0 6px;
+    border-right: 1px solid #45475a;
+    cursor: default;
+}
+.session-coin-cell:first-child { padding-left: 0; }
+.session-coin-cell:last-child  { border-right: none; padding-right: 0; }
+.session-coin-input {
+    width: 100%;
+    background: #1e1e2e;
+    border: 1px solid #45475a;
+    border-radius: 4px;
+    color: #cdd6f4;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+    padding: 4px 2px;
+    -webkit-appearance: none;
+    appearance: none;
+    color-scheme: dark;
+    -moz-appearance: textfield;
+}
+.session-coin-input::-webkit-outer-spin-button,
+.session-coin-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.session-coin-input:focus { outline: none; border-color: #89b4fa; }
+.session-coin-label {
+    font-size: 0.63rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6c7086;
+}
+
 /* Rest buttons */
 .session-rest-row {
     display: flex;
     align-items: center;
     margin-top: 4px;
     margin-bottom: 24px;
-}
 }

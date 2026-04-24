@@ -44,7 +44,9 @@ public sealed class CharacterTab
     /// <summary>
     /// In-memory XML representation of this tab's latest state. Captured by
     /// <see cref="CharacterContext"/> before swapping the CharacterManager singleton to a different
-    /// tab. Null until first captured or until the tab is hydrated from a file path.
+    /// tab. Null until first captured; CharacterContext treats null as "not yet captured, load from
+    /// disk" and non-null as "use this serialised state". Never assign an empty byte[] — the check
+    /// <c>StateXml is { Length: &gt; 0 }</c> treats empty the same as null, but the intent is lost.
     /// </summary>
     public byte[]? StateXml { get; set; }
 

@@ -11,6 +11,9 @@
     <MudNavLink Href="/preferences" Icon="@Icons.Material.Filled.Tune">
         Preferences
     </MudNavLink>
+    <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Storage">
+        Content DB
+    </MudNavLink>
     <MudNavLink Href="/console" Icon="@Icons.Material.Filled.Terminal"
                 Style="@(Prefs.DevMode ? "" : "opacity: 0.4; pointer-events: none;")">
         Console
@@ -23,33 +26,46 @@
     @* ── Per-character (only shown when a character is open) ── *@
     @if (Tabs.ActiveTab != null)
     {
+        bool _loading = Tabs.ActiveTab.IsLoading;
         <MudDivider Class="my-2" />
-        <MudNavLink Href="/character" Icon="@Icons.Material.Filled.Person">
+        <MudNavLink Href="/character" Icon="@Icons.Material.Filled.Person" Disabled="_loading">
             Overview
         </MudNavLink>
         <MudNavLink Href="/build" Icon="@Icons.Material.Filled.Build">
             Build
         </MudNavLink>
-        <MudNavLink Href="/equipment" Icon="@Icons.Material.Filled.Shield">
+        <MudNavLink Href="/equipment" Icon="@Icons.Material.Filled.Shield" Disabled="_loading">
             Equipment
         </MudNavLink>
-        <MudNavLink Href="/session" Icon="@Icons.Material.Filled.Favorite">
+        <MudNavLink Href="/session" Icon="@Icons.Material.Filled.Favorite" Disabled="_loading">
             Session
         </MudNavLink>
-        <MudNavLink Href="/magic" Icon="@Icons.Material.Filled.AutoAwesome">
+        <MudNavLink Href="/magic" Icon="@Icons.Material.Filled.AutoAwesome" Disabled="_loading">
             Magic
         </MudNavLink>
-        <MudNavLink Href="/manage" Icon="@Icons.Material.Filled.ManageAccounts">
+        <MudNavLink Href="/manage" Icon="@Icons.Material.Filled.ManageAccounts" Disabled="_loading">
             Manage
         </MudNavLink>
-        <MudNavLink Href="/sheet" Icon="@Icons.Material.Filled.Article">
+        <MudNavLink Href="/sheet" Icon="@Icons.Material.Filled.Article" Disabled="_loading">
             Sheet
         </MudNavLink>
     }
 </MudNavMenu>
 
 @code {
+    private bool _disposed;
+
     protected override void OnInitialized() => Tabs.TabsChanged += OnTabsChanged;
-    private void OnTabsChanged() => InvokeAsync(StateHasChanged);
-    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+
+    private void OnTabsChanged()
+    {
+        if (_disposed) return;
+        _ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Tabs.TabsChanged -= OnTabsChanged;
+    }
 }

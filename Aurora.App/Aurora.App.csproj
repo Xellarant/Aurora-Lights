@@ -13,7 +13,7 @@
     <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">net10.0-windows10.0.19041.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>Aurora.App</RootNamespace>
-    <AssemblyName>Aurora Reflections</AssemblyName>
+    <AssemblyName>Aurora.Reflections</AssemblyName>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <ApplicationTitle>Aurora: Reflections</ApplicationTitle>
@@ -51,11 +51,13 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
     <PackageReference Include="MudBlazor" Version="7.*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.*" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Aurora.Components\Aurora.Components.csproj" />
     <ProjectReference Include="..\Aurora.Logic\Aurora.Logic.csproj" />
+    <ProjectReference Include="..\Aurora.Importer\Aurora.Importer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -38,7 +38,12 @@ public sealed class PdfPreviewService : IDisposable
         {
             HttpListenerContext ctx;
             try { ctx = await _listener.GetContextAsync(); }
-            catch { break; }
+            catch (Exception ex)
+            {
+                if (_listener.IsListening)
+                    DebugLogService.Instance.LogException(ex, "PdfPreviewService.ListenLoop");
+                break;
+            }
 
             try
             {

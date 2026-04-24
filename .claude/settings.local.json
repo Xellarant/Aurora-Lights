@@ -35,10 +35,26 @@
       "Read(//c/Users/Ralla/Documents/**)",
       "Read(//c/Users/Ralla/**)",
       "Read(//.Supports/**)",
-      "Bash(grep -l \"prepared\" \"C:/Users/Ralla/Documents/5e Character Builder/\"*.dnd5e)"
+      "Bash(grep -l \"prepared\" \"C:/Users/Ralla/Documents/5e Character Builder/\"*.dnd5e)",
+      "Bash(grep -n \"FilePath\\\\|Extension\\\\|filter\\\\|\\\\\\\\.xml\\\\|\\\\\\\\.aurora\" \"c:/Users/Ralla/source/repos/Aurora-Lights/Aurora.Logic/Models/CharacterFile.cs\")",
+      "Bash(dotnet-script -e ':*)",
+      "Bash(powershell -command ':*)",
+      "Bash(powershell -c \"[System.Reflection.Assembly]::LoadFile\\('C:\\\\Users\\\\Ralla\\\\source\\\\repos\\\\Aurora-Lights\\\\Aurora.App\\\\bin\\\\Debug\\\\net10.0-windows10.0.19041.0\\\\win-x64\\\\Aurora.Logic.dll'\\).GetManifestResourceNames\\(\\) | Sort-Object\")",
+      "Bash(grep -r \"@page\" /c/Users/Ralla/source/repos/Aurora-Lights/Aurora.App/Components/Pages/*.razor)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(sqlite3 \"C:\\\\Users\\\\Ralla\\\\source\\\\repos\\\\5eApiTranslator\\\\5eApiTranslator\\\\Data\\\\aurora-character-loading-poc.sqlite\" \"SELECT COUNT\\(*\\) FROM companions; SELECT name, creature_type, size_text, challenge_text, cr_value FROM companions JOIN elements USING\\(element_id\\) WHERE cr_value <= 0.25 AND creature_type = 'Beast' LIMIT 10;\")",
+      "Bash(sqlite3 \"C:\\\\Users\\\\Ralla\\\\source\\\\repos\\\\5eApiTranslator\\\\5eApiTranslator\\\\Data\\\\aurora-character-loading-poc.sqlite\" \"SELECT e.name, c.actions_text FROM companions c JOIN elements e USING\\(element_id\\) WHERE c.actions_text IS NOT NULL LIMIT 5; SELECT et.type_name, COUNT\\(*\\) FROM elements JOIN element_types et USING\\(element_type_id\\) WHERE et.loader_family = 'companion' GROUP BY et.type_name;\")",
+      "Bash(sqlite3 C:/Users/Ralla/source/repos/5eApiTranslator/5eApiTranslator/Data/aurora-character-loading-poc.sqlite ':*)",
+      "Bash(python -c \"import json; data=json.load\\(open\\('C:/Users/Ralla/source/repos/5eApiTranslator/5eApiTranslator/Data/5e-SRD-Monsters.json'\\)\\); h=[m for m in data if m['index']=='homunculus'][0]; print\\('type:', h['type'], '| size:', h['size']\\)\")",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
-      "c:\\Users\\Ralla\\.claude\\projects\\c--Users-Ralla-source-repos-Aurora-Lights\\memory"
+      "c:\\Users\\Ralla\\.claude\\projects\\c--Users-Ralla-source-repos-Aurora-Lights\\memory",
+      "C:\\Users\\Ralla\\source\\repos\\5eApiTranslator\\5eApiTranslator\\Data",
+      "C:\\Users\\Ralla\\source\\repos\\5eApiTranslator\\5eApiTranslator"
     ]
   }
 }

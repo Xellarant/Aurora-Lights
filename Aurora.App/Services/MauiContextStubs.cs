@@ -140,6 +140,12 @@ internal sealed class MauiSpellcastingSectionHandler : ISpellcastingSectionHandl
         ids.Add(elementId);
         return true;
     }
+
+    public void UnsetPrepareSpell(string spellcastingName, string elementId)
+    {
+        if (_preparedIds.TryGetValue(spellcastingName, out var ids))
+            ids.Remove(elementId);
+    }
 }
 
 /// <summary>
@@ -174,16 +180,17 @@ internal sealed class MauiExternalLauncher : IExternalLauncher
         {
             if (File.Exists(path))
             {
-                return Launcher.Default.OpenAsync(
-                    new OpenFileRequest(Path.GetFileName(path), new ReadOnlyFile(path)))
-                    .GetAwaiter().GetResult();
+                _ = Launcher.Default.OpenAsync(
+                    new OpenFileRequest(Path.GetFileName(path), new ReadOnlyFile(path)));
+                return true;
             }
 
             Uri? uri = TryCreateUri(path);
             if (uri == null)
                 return false;
 
-            return Launcher.Default.OpenAsync(uri).GetAwaiter().GetResult();
+            _ = Launcher.Default.OpenAsync(uri);
+            return true;
         }
         catch (Exception ex)
         {
@@ -199,8 +206,8 @@ internal sealed class MauiExternalLauncher : IExternalLauncher
 
         try
         {
-            return Launcher.Default.OpenAsync(new Uri(uri, UriKind.Absolute))
-                .GetAwaiter().GetResult();
+            _ = Launcher.Default.OpenAsync(new Uri(uri, UriKind.Absolute));
+            return true;
         }
         catch (Exception ex)
         {

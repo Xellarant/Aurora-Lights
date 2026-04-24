@@ -574,6 +574,185 @@ public sealed class DataManager
     }
   }
 
+  /// <summary>
+  /// Runs the post-processing steps that finalize <see cref="ElementsCollection"/> after all
+  /// base elements have been loaded (from XML or from the SQLite DB loader).
+  /// Resolves internal support tags, synthesizes multiclass and ASI feature elements,
+  /// generates spell scrolls and internal derived elements, then fires the populated event.
+  /// </summary>
+  public void RunPostProcessing()
+  {
+    List<ElementParser> parsers = ElementParserFactory.GetParsers().ToList<ElementParser>();
+
+    // Load embedded resource elements (Level, internal templates, etc.) that are not in
+    // the custom content folder and therefore not in the SQLite DB.
+    var existingIds = new HashSet<string>(
+      this.ElementsCollection.Select<ElementBase, string>((Func<ElementBase, string>) (e => e.Id)),
+      StringComparer.OrdinalIgnoreCase);
+    ElementParser resourceParser = new ElementParser();
+    foreach (XmlDocument resourceDoc in this.LoadElementDocumentsFromResource())
+    {
+      if (resourceDoc.DocumentElement == null) continue;
+      foreach (XmlNode elementNode in resourceDoc.DocumentElement.ChildNodes
+        .Cast<XmlNode>()
+        .Where<XmlNode>((Func<XmlNode, bool>) (x => x.NodeType != XmlNodeType.Comment && x.Name.Equals("element"))))
+      {
+        try
+        {
+          ElementHeader header = resourceParser.ParseElementHeader(elementNode);
+          if (resourceParser.ParserType != header.Type)
+            resourceParser = parsers.FirstOrDefault<ElementParser>((Func<ElementParser, bool>) (p => p.ParserType == header.Type)) ?? new ElementParser();
+          ElementBase element = resourceParser.ParseElement(elementNode);
+          if (existingIds.Add(element.Id))
+            this.ElementsCollection.Add(element);
+        }
+        catch (Exception ex)
+        {
+          Logger.Warning($"RunPostProcessing: skipped resource element: {ex.Message}");
+        }
+      }
+    }
+
+    // Resolve ID_INTERNAL_SUPPORT_* tags to their display names.
+    List<ElementBase> supportElements = this.ElementsCollection
+      .Where<ElementBase>((Func<ElementBase, bool>) (x => x.Type.Equals("Support")))
+      .ToList<ElementBase>();
+
+    foreach (ElementBase el in (Collection<ElementBase>) this.ElementsCollection)
+    {
+      List<string> toAdd = new List<string>();
+      foreach (string tag in el.Supports)
+      {
+        if (tag.StartsWith("ID_INTERNAL_SUPPORT"))
+        {
+          ElementBase found = supportElements.FirstOrDefault<ElementBase>(
+            (Func<ElementBase, bool>) (x => x.Id.Equals(tag)));
+          if (found != null)
+            toAdd.Add(found.Name);
+        }
+      }
+      foreach (string name in toAdd)
+      {
+        if (!el.Supports.Contains(name))
+          el.Supports.Add(name);
+      }
+    }
+
+    // Synthesize multiclass elements and per-class ASI/Feat features.
+    IEnumerable<ElementBase> classFeatures = this.ElementsCollection
+      .Where<ElementBase>((Func<ElementBase, bool>) (x => x.Type == "Class Feature"));
+    ElementBase asiAbilityTemplate = classFeatures
+      .FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (x => x.Id.StartsWith("ID_INTERNAL_TEMPLATE_CLASS_FEATURE_ABILITY_4")));
+    ElementBase asiFeatTemplate = classFeatures
+      .FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (x => x.Id.StartsWith("ID_INTERNAL_TEMPLATE_CLASS_FEATURE_FEAT_4")));
+
+    List<string> processedClassNames = new List<string>();
+    int[] asiLevels = new int[] { 4, 6, 8, 10, 12, 14, 16, 18, 19 };
+
+    foreach (Class @class in this.ElementsCollection
+      .Where<ElementBase>((Func<ElementBase, bool>) (x => x.Type == "Class"))
+      .Cast<Class>().ToList<Class>())
+    {
+      if (@class.CanMulticlass)
+      {
+        ElementBase mc = parsers
+          .FirstOrDefault<ElementParser>((Func<ElementParser, bool>) (x => x.ParserType == "Multiclass"))
+          .ParseElement(@class.ElementNode);
+        this.ElementsCollection.Add(mc);
+        @class.Requirements = @class.HasRequirements
+          ? $"({@class.Requirements})&&!{mc.Id}"
+          : "!" + mc.Id;
+        @class.Rules.Add((RuleBase) new GrantRule(@class.ElementHeader)
+        {
+          Attributes = {
+            Type = "Grants",
+            Name = InternalGrants.MulticlassPrerequisite,
+            Requirements = $"{InternalOptions.AllowMulticlassing}&&({mc.Requirements})&&!{mc.Id}"
+          }
+        });
+        mc.Requirements = $"!{@class.Id}&&({mc.Requirements})";
+      }
+
+      if (!processedClassNames.Contains(@class.Name))
+      {
+        ElementBaseCollection asiElements = new ElementBaseCollection();
+        foreach (int level in asiLevels)
+        {
+          string className = @class.Name;
+          if (asiAbilityTemplate != null)
+          {
+            ElementBase copy = asiAbilityTemplate.Copy<ElementBase>();
+            string id = $"ID_INTERNAL_CLASS_FEATURE_ASI_{level}_{className.ToUpperInvariant()}";
+            if (!ElementsHelper.ValidateID(id)) id = ElementsHelper.SanitizeID(id);
+            copy.ElementHeader = new ElementHeader(
+              $"Ability Score Improvement ({level})", "Class Feature", "Player\u2019s Handbook", id);
+            copy.GetSelectRules().First<SelectRule>().Attributes.Name =
+              $"Ability Score Increase ({className.ToUpperInvariant()} {level})";
+            copy.GetSelectRules().First<SelectRule>().Attributes.RequiredLevel = level;
+            copy.GetSelectRules().First<SelectRule>().RenewIdentifier();
+            copy.GetSelectRules().First<SelectRule>().ElementHeader = copy.ElementHeader;
+            copy.Supports.Add("Improvement Option");
+            copy.Supports.Add(className);
+            copy.Supports.Add(level.ToString());
+            copy.IsExtended = true;
+            copy.IncludeInCompendium = false;
+            asiElements.Add(copy);
+          }
+          if (asiFeatTemplate != null)
+          {
+            ElementBase copy = asiFeatTemplate.Copy<ElementBase>();
+            string id = $"ID_INTERNAL_CLASS_FEATURE_FEAT_{level}_{className.ToUpperInvariant()}";
+            if (!ElementsHelper.ValidateID(id)) id = ElementsHelper.SanitizeID(id);
+            copy.ElementHeader = new ElementHeader(
+              $"Feat ({level})", "Class Feature", "Player\u2019s Handbook", id);
+            copy.GetSelectRules().First<SelectRule>().Attributes.Name =
+              $"Feat ({className.ToUpperInvariant()} {level})";
+            copy.GetSelectRules().First<SelectRule>().Attributes.RequiredLevel = level;
+            copy.GetSelectRules().First<SelectRule>().RenewIdentifier();
+            copy.GetSelectRules().First<SelectRule>().ElementHeader = copy.ElementHeader;
+            copy.Supports.Add("Improvement Option");
+            copy.Supports.Add(className);
+            copy.Supports.Add(level.ToString());
+            copy.IsExtended = true;
+            copy.IncludeInCompendium = false;
+            asiElements.Add(copy);
+          }
+        }
+        this.ElementsCollection.AddRange((IEnumerable<ElementBase>) asiElements);
+        processedClassNames.Add(@class.Name);
+      }
+    }
+
+    // Generate spell scrolls.
+    SpellScrollContentGenerator scrollGen = new SpellScrollContentGenerator();
+    ElementBase scrollTemplate = this.ElementsCollection
+      .FirstOrDefault<ElementBase>((Func<ElementBase, bool>) (x => x.Id.Equals("ID_WOTC_DMG_MAGIC_ITEM_SPELL_SCROLL_CANTRIP")));
+    MagicItemElement magicTemplate = scrollTemplate as MagicItemElement;
+    List<ElementBase> scrolls = scrollGen.Generate(
+      (IEnumerable<ElementBase>) this.ElementsCollection, magicTemplate);
+    this.ElementsCollection.AddRange((IEnumerable<ElementBase>) scrolls);
+
+    // Generate internal derived elements.
+    InternalElementsGenerator internalGen = new InternalElementsGenerator();
+    this.ElementsCollection.AddRange(
+      (IEnumerable<ElementBase>) internalGen.GenerateInternalFeats((IEnumerable<ElementBase>) this.ElementsCollection));
+    this.ElementsCollection.AddRange(
+      (IEnumerable<ElementBase>) internalGen.GenerateInternalLanguages((IEnumerable<ElementBase>) this.ElementsCollection));
+    this.ElementsCollection.AddRange(
+      (IEnumerable<ElementBase>) internalGen.GenerateInternalProficiency((IEnumerable<ElementBase>) this.ElementsCollection));
+    this.ElementsCollection.AddRange(
+      (IEnumerable<ElementBase>) internalGen.GenerateInternalAsi((IEnumerable<ElementBase>) this.ElementsCollection));
+    this.ElementsCollection.AddRange(
+      (IEnumerable<ElementBase>) internalGen.GenerateInternalSpells((IEnumerable<ElementBase>) this.ElementsCollection));
+    if (Debugger.IsAttached || ApplicationContext.Current.IsInDeveloperMode)
+      this.ElementsCollection.AddRange(
+        (IEnumerable<ElementBase>) internalGen.GenerateInternalIgnore((IEnumerable<ElementBase>) this.ElementsCollection));
+
+    this.InitializeItemDetails(this.ElementsCollection);
+    this.IsElementsCollectionPopulated = true;
+    this._eventAggregator.Send<ElementsCollectionPopulatedEvent>(new ElementsCollectionPopulatedEvent());
+  }
+
   [Obsolete("this method creates copies which is not used yet")]
   public IEnumerable<ElementBase> GetDataElements()
   {

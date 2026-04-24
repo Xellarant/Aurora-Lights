@@ -106,6 +106,8 @@ public sealed class CharacterSnapshot
     /// <summary>Captures all display-relevant data from the live Character object.</summary>
     public static CharacterSnapshot From(Character c)
     {
+        if (c is null) throw new ArgumentNullException(nameof(c));
+
         // Spellcasting: SpellcastingCollection is never populated in MAUI (it relies on
         // SpellContentViewModel which is WPF-only). Use SpellcastingInformation instead.
         var cm = CharacterManager.Current;
@@ -435,9 +437,7 @@ public sealed class CharacterSnapshot
                 var desc = "";
                 try
                 {
-                    if (e.SheetDescription?.Any() == true)
-                        desc = e.SheetDescription[0].Description ?? "";
-                    else if (!string.IsNullOrWhiteSpace(e.Description))
+                    if (!string.IsNullOrWhiteSpace(e.Description))
                         desc = ElementDescriptionGenerator.GeneratePlainDescription(e.Description).Trim();
                 }
                 catch { }
@@ -562,11 +562,13 @@ public sealed class CharacterSnapshot
         // excluded unless they are already prepared (in which case they stay visible so the user
         // knows to swap them out, matching the WPF behaviour).
         var sm = CharacterManager.Current.SourcesManager;
-        var restrictedIds     = new HashSet<string>(sm.GetRestrictedElementIds(),           StringComparer.OrdinalIgnoreCase);
-        var restrictedSources = new HashSet<string>(sm.GetUndefinedRestrictedSourceNames(), StringComparer.OrdinalIgnoreCase);
+        // Only honour per-element restrictions from the character file itself.
+        // GetUndefinedRestrictedSourceNames() relies on ApplyRestrictions() which is a WPF-only
+        // call that never runs here — without it the method marks every source as undefined,
+        // filtering out the entire class spell list. Content in the DB is already enabled content.
+        var restrictedIds = new HashSet<string>(sm.GetRestrictedElementIds(), StringComparer.OrdinalIgnoreCase);
 
-        bool IsRestricted(string id, string source) =>
-            restrictedIds.Contains(id) || restrictedSources.Contains(source);
+        bool IsRestricted(string id, string source) => restrictedIds.Contains(id);
 
         List<(string Name, string Id, int Level, string Source)> allSpellList;
 
@@ -596,7 +598,12 @@ public sealed class CharacterSnapshot
             try
             {
                 dynamic interp = new Builder.Presentation.Services.ExpressionInterpreter();
-                filteredSpells = ((IEnumerable<object>)interp.EvaluateSupportsExpression(supportsExpr, spellBase.Cast<object>()));
+                var interpreted = ((IEnumerable<object>)interp.EvaluateSupportsExpression(supportsExpr, spellBase.Cast<object>())).ToList();
+                // Fall back to direct Contains check when the interpreter returns nothing —
+                // it can succeed but yield an empty result for expressions it doesn't handle.
+                filteredSpells = interpreted.Count > 0
+                    ? interpreted
+                    : spellBase.Where(e => e.Supports != null && e.Supports.Contains(supportsExpr)).Cast<object>();
             }
             catch
             {

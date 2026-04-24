@@ -26,6 +26,13 @@ public static class CharacterContext
     private static readonly SemaphoreSlim _lock = new(1, 1);
     private static CharacterTab? _active;
 
+    /// <summary>
+    /// Fires when in-memory character state could not be captured before a tab swap or load.
+    /// Subscribers should surface this to the user — unsaved edits may have been lost.
+    /// Invoked on a background thread; marshal to the UI thread before touching Blazor components.
+    /// </summary>
+    public static event Action<string>? CaptureError;
+
     /// <summary>The tab currently loaded into the singleton, or null if nothing is active.</summary>
     public static CharacterTab? ActiveTab => _active;
 
@@ -53,6 +60,15 @@ public static class CharacterContext
             throw;
         }
     }
+
+    /// <summary>
+    /// Records <paramref name="tab"/> as the one currently loaded into the singleton without
+    /// acquiring the lock. Call this immediately after a character load completes while the
+    /// caller still owns the UI thread (e.g. directly after
+    /// <see cref="CharacterService.LoadCharacterAsync"/> returns in Start.razor). This lets
+    /// the next <see cref="EnterAsync"/> for the same tab skip the reload entirely.
+    /// </summary>
+    public static void ClaimAfterLoad(CharacterTab tab) => _active = tab;
 
     /// <summary>
     /// Drops the active tab reference so the next <see cref="EnterAsync"/> on any tab will hydrate
@@ -102,36 +118,38 @@ public static class CharacterContext
         }
     }
 
+    /// <summary>
+    /// Attempts to serialize the active tab's live character state into its StateXml buffer.
+    /// If serialization fails, fires <see cref="CaptureError"/> so the UI can warn the user.
+    /// Does NOT clear <c>_active</c> — callers are responsible for that.
+    /// </summary>
+    private static void TryCaptureActiveState(string callSite)
+    {
+        if (_active == null || CharacterManager.Current.Character == null) return;
+        try
+        {
+            _active.StateXml = _active.File.SerializeCharacter(CharacterManager.Current.Character);
+        }
+        catch (Exception ex)
+        {
+            DebugLogService.Instance.LogException(ex, callSite);
+            var name = _active.File.DisplayName ?? "character";
+            CaptureError?.Invoke(
+                $"Could not preserve unsaved edits for \"{name}\". " +
+                "Switching back to this tab will reload from the last saved file.");
+        }
+    }
+
     private static void CaptureAndInvalidateLocked()
     {
-        if (_active != null && CharacterManager.Current.Character != null)
-        {
-            try
-            {
-                _active.StateXml = _active.File.SerializeCharacter(CharacterManager.Current.Character);
-            }
-            catch (Exception ex)
-            {
-                DebugLogService.Instance.LogException(ex, "CharacterContext.CaptureAndInvalidateLocked");
-            }
-        }
+        TryCaptureActiveState("CharacterContext.CaptureAndInvalidateLocked");
         _active = null;
     }
 
     private static async Task SwapAsync(CharacterTab incoming)
     {
         // 1. Capture the outgoing tab's live state so unsaved edits are not lost on swap.
-        if (_active != null && CharacterManager.Current.Character != null)
-        {
-            try
-            {
-                _active.StateXml = _active.File.SerializeCharacter(CharacterManager.Current.Character);
-            }
-            catch (Exception ex)
-            {
-                DebugLogService.Instance.LogException(ex, "CharacterContext.SwapAsync:capture");
-            }
-        }
+        TryCaptureActiveState("CharacterContext.SwapAsync");
 
         // 2. Reset ancillary singletons (prepared spells, expander registry) before hydrating.
         CharacterLoadCompatibilityService.PrepareForCharacterLoad();

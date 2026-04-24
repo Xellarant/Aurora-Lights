@@ -1,0 +1,140 @@
+@page "/settings"
+@implements IDisposable
+@inject ContentDatabaseService ContentDb
+@inject CharacterService Characters
+@inject CharacterTabService Tabs
+
+<MudText Typo="Typo.h5" Class="mb-6">Content Database</MudText>
+
+<div class="pref-section">
+    <div class="section-label">Status</div>
+
+    <div style="margin-bottom: 12px;">
+        <div class="pref-row-title" style="margin-bottom: 4px;">Content directory</div>
+        <div style="font-family: monospace; font-size: 12px; color: #a6adc8; word-break: break-all;">
+            @(string.IsNullOrWhiteSpace(ContentDb.ContentDirectory) ? "(not available)" : ContentDb.ContentDirectory)
+        </div>
+    </div>
+
+    <div style="margin-bottom: 12px;">
+        <div class="pref-row-title" style="margin-bottom: 4px;">Database path</div>
+        <div style="font-family: monospace; font-size: 12px; color: #a6adc8; word-break: break-all;">
+            @(ContentDb.DatabasePath ?? "(not available)")
+        </div>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+        <div class="pref-row-title" style="margin-bottom: 4px;">Database state</div>
+        @if (ContentDb.SyncState == ContentDatabaseSyncState.Syncing)
+        {
+            <div style="color: #89b4fa; font-size: 13px;">
+                @(ContentDb.Progress?.PhaseLabel ?? "Syncing…")
+            </div>
+            <MudProgressLinear Indeterminate="false"
+                               Value="@SyncPercent"
+                               Min="0" Max="100"
+                               Color="Color.Primary"
+                               Class="mt-2" />
+        }
+        else if (ContentDb.LastResult != null)
+        {
+            <div style="color: @(ContentDb.LastResult.Success ? "#a6e3a1" : "#f38ba8"); font-size: 13px;">
+                @ContentDb.LastResult.Summary
+            </div>
+        }
+        else if (ContentDb.IsStale)
+        {
+            <div style="color: #fab387; font-size: 13px;">Database is out of date. Sync to update it.</div>
+        }
+        else
+        {
+            <div style="color: #6c7086; font-size: 13px;">Not checked yet.</div>
+        }
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Default"
+                   Size="Size.Small"
+                   Disabled="@(ContentDb.SyncState == ContentDatabaseSyncState.Syncing)"
+                   OnClick="CheckStaleAsync">
+            Check for Changes
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   Disabled="@(ContentDb.SyncState == ContentDatabaseSyncState.Syncing || string.IsNullOrWhiteSpace(ContentDb.ContentDirectory))"
+                   OnClick="SyncNowAsync">
+            Sync Now
+        </MudButton>
+        @if (ContentDb.SyncState == ContentDatabaseSyncState.Done && Tabs.Tabs.Count == 0)
+        {
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       Size="Size.Small"
+                       OnClick="ReloadElementsAsync">
+                Reload Elements
+            </MudButton>
+        }
+    </div>
+
+    @if (ContentDb.SyncState == ContentDatabaseSyncState.Done && ContentDb.LastResult?.Success == true && Tabs.Tabs.Count > 0)
+    {
+        <MudAlert Severity="Severity.Info" Class="mt-4" Dense="true">
+            Close all character tabs and click <strong>Reload Elements</strong> to use the updated database.
+        </MudAlert>
+    }
+</div>
+
+@code {
+    private CancellationTokenSource? _cts;
+
+    protected override void OnInitialized()
+    {
+        ContentDb.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private int SyncPercent
+    {
+        get
+        {
+            var p = ContentDb.Progress;
+            if (p == null || p.FilesTotal == 0) return 0;
+            return p.Phase switch
+            {
+                Aurora.Importer.AuroraImportPhase.Scanning  => (int)(p.FilesScanned * 50.0 / p.FilesTotal),
+                Aurora.Importer.AuroraImportPhase.Importing => 50 + (int)(p.FilesScanned * 40.0 / Math.Max(1, p.FilesTotal)),
+                Aurora.Importer.AuroraImportPhase.Resolving => 90,
+                Aurora.Importer.AuroraImportPhase.Complete  => 100,
+                _ => 0
+            };
+        }
+    }
+
+    private async Task CheckStaleAsync()
+    {
+        await Task.Run(() => ContentDb.CheckIsStale());
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SyncNowAsync()
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        await ContentDb.SyncAsync(_cts.Token);
+    }
+
+    private async Task ReloadElementsAsync()
+    {
+        Tabs.CloseAllTabs();
+        await Characters.ReloadElementsAsync();
+    }
+
+    public void Dispose()
+    {
+        ContentDb.StateChanged -= OnStateChanged;
+        _cts?.Cancel();
+    }
+}
