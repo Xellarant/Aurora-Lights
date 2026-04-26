@@ -65,32 +65,12 @@ public static class FileSaveService
         IReadOnlyList<FileTypeChoice> fileTypes,
         string? initialDirectory)
     {
-        var tcs = new TaskCompletionSource<string?>();
-        Foundation.NSRunLoop.Main.InvokeOnMainThread(() =>
-        {
-            try
-            {
-                var panel = AppKit.NSSavePanel.SavePanel;
-                panel.NameFieldStringValue = suggestedFileName;
-                if (fileTypes.Count > 0)
-                {
-                    panel.AllowedFileTypes = fileTypes
-                        .Select(ft => ft.Extension.TrimStart('.'))
-                        .ToArray();
-                }
-                if (!string.IsNullOrEmpty(initialDirectory) && Directory.Exists(initialDirectory))
-                    panel.DirectoryUrl = Foundation.NSUrl.FromFilename(initialDirectory);
-
-                var result = panel.RunModal();
-                tcs.TrySetResult(result == 1 ? panel.Url?.Path : null);
-            }
-            catch (Exception ex)
-            {
-                DebugLogService.Instance.LogException(ex, "FileSaveService.MacCatalyst");
-                tcs.TrySetResult(null);
-            }
-        });
-        return tcs.Task;
+        // NSSavePanel is an AppKit type not included in the Mac Catalyst managed
+        // binding. Save directly to the requested directory (or Documents) instead.
+        string dir = !string.IsNullOrEmpty(initialDirectory) && Directory.Exists(initialDirectory)
+            ? initialDirectory
+            : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        return Task.FromResult<string?>(Path.Combine(dir, suggestedFileName));
     }
 #endif
 }
