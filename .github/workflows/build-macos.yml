@@ -64,12 +64,16 @@ jobs:
         with:
           name: mac-publish-maccatalyst-arm64
           path: arm
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.run_id }}
 
       - name: Download x64 artifact
         uses: actions/download-artifact@v4
         with:
           name: mac-publish-maccatalyst-x64
           path: x64
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.run_id }}
 
       - name: Find app bundles
         run: |
