@@ -34,21 +34,30 @@ jobs:
             -f net10.0-maccatalyst \
             -r maccatalyst-x64 \
             -c Release \
-            -p:CreatePackage=false \
-            -o publish/maccatalyst-x64
+            -p:CreatePackage=false
 
-      - name: List publish output
-        run: find publish/maccatalyst-x64 | head -40
+      # MAUI ignores -o; find the .app wherever the toolchain put it.
+      - name: Stage x64 app bundle
+        run: |
+          set -euo pipefail
+          APP=$(find . -name "*.app" -not -path "*/obj/*" -not -path "*/.git/*" -print -quit || true)
+          if [ -z "$APP" ]; then
+            echo "ERROR: No .app bundle found. Build tree:"
+            find . -maxdepth 6 -not -path "*/obj/*" -not -path "*/.git/*" | head -60
+            exit 1
+          fi
+          echo "Found: $APP"
+          mkdir -p stage
+          ditto "$APP" "stage/$(basename "$APP")"
 
       - name: Upload x64 artifact
         uses: actions/upload-artifact@v4
         with:
           name: mac-publish-maccatalyst-x64
-          path: publish/maccatalyst-x64
+          path: stage
           if-no-files-found: error
 
   # ── arm64 build (Apple Silicon) + universal merge ────────────────────────────
-  # Runs after x64 so its artifact is guaranteed available for the lipo step.
   build-arm64-and-merge:
     runs-on: macos-26
     needs: build-x64
@@ -79,17 +88,27 @@ jobs:
             -f net10.0-maccatalyst \
             -r maccatalyst-arm64 \
             -c Release \
-            -p:CreatePackage=false \
-            -o publish/maccatalyst-arm64
+            -p:CreatePackage=false
 
-      - name: List arm64 publish output
-        run: find publish/maccatalyst-arm64 | head -40
+      - name: Stage arm64 app bundle
+        run: |
+          set -euo pipefail
+          APP=$(find . -name "*.app" -not -path "*/obj/*" -not -path "*/.git/*" -print -quit || true)
+          if [ -z "$APP" ]; then
+            echo "ERROR: No .app bundle found. Build tree:"
+            find . -maxdepth 6 -not -path "*/obj/*" -not -path "*/.git/*" | head -60
+            exit 1
+          fi
+          echo "Found: $APP"
+          mkdir -p stage
+          ditto "$APP" "stage/$(basename "$APP")"
+          echo "ARM_APP=stage/$(basename "$APP")" >> $GITHUB_ENV
 
       - name: Upload arm64 artifact
         uses: actions/upload-artifact@v4
         with:
           name: mac-publish-maccatalyst-arm64
-          path: publish/maccatalyst-arm64
+          path: stage
           if-no-files-found: error
 
       - name: Download x64 artifact
@@ -98,31 +117,20 @@ jobs:
           name: mac-publish-maccatalyst-x64
           path: x64
 
-      - name: Find app bundles
-        run: |
-          set -euo pipefail
-          ARM_APP=$(find publish/maccatalyst-arm64 -name "*.app" -print -quit || true)
-          X64_APP=$(find x64 -name "*.app" -print -quit || true)
-          if [ -z "$ARM_APP" ] || [ -z "$X64_APP" ]; then
-            echo "App bundles not found — dumping directory listings for diagnosis:"
-            echo "=== arm64 publish ==="
-            find publish/maccatalyst-arm64 | head -30 || true
-            echo "=== x64 download ==="
-            find x64 | head -30 || true
-            exit 1
-          fi
-          echo "ARM_APP=$ARM_APP" >> $GITHUB_ENV
-          echo "X64_APP=$X64_APP" >> $GITHUB_ENV
-
       - name: Create universal binary (.app)
         run: |
           set -euo pipefail
-          echo "Using ARM app: $ARM_APP"
-          echo "Using x64 app: $X64_APP"
-          mkdir -p universal
+          X64_APP=$(find x64 -name "*.app" -print -quit || true)
+          if [ -z "$ARM_APP" ] || [ -z "$X64_APP" ]; then
+            echo "App bundles not found — ARM=$ARM_APP  X64=$X64_APP"
+            exit 1
+          fi
+          echo "ARM: $ARM_APP"
+          echo "X64: $X64_APP"
+
           APP_BASENAME=$(basename "$ARM_APP")
-          cp -R "$ARM_APP" "universal/"
-          UNIVERSAL_APP_PATH="universal/$APP_BASENAME"
+          mkdir -p universal
+          ditto "$ARM_APP" "universal/$APP_BASENAME"
 
           ARM_EXE=$(find "$ARM_APP/Contents/MacOS" -type f -maxdepth 1 -print -quit || true)
           X64_EXE=$(find "$X64_APP/Contents/MacOS" -type f -maxdepth 1 -print -quit || true)
@@ -131,18 +139,13 @@ jobs:
             exit 1
           fi
           EXE_NAME=$(basename "$ARM_EXE")
-          UNIVERSAL_EXE="$UNIVERSAL_APP_PATH/Contents/MacOS/$EXE_NAME"
-
-          echo "ARM_EXE=$ARM_EXE"
-          echo "X64_EXE=$X64_EXE"
-          echo "UNIVERSAL_EXE=$UNIVERSAL_EXE"
+          UNIVERSAL_EXE="universal/$APP_BASENAME/Contents/MacOS/$EXE_NAME"
 
           lipo -create "$X64_EXE" "$ARM_EXE" -output "$UNIVERSAL_EXE"
           chmod +x "$UNIVERSAL_EXE"
 
           cd universal
           zip -r "../${APP_BASENAME}-universal.zip" "$APP_BASENAME"
-          cd ..
 
       - name: Upload universal artifact
         uses: actions/upload-artifact@v4
