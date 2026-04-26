@@ -153,3 +153,31 @@
 .source-restrictions-checkbox.locked {
     box-shadow: inset 0 0 0 2px rgba(203, 166, 247, 0.25);
 }
+
+.source-restrictions-search {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #45475a;
+    background: #1e1e2e;
+    color: #cdd6f4;
+    font: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.source-restrictions-search:focus {
+    border-color: #89b4fa;
+}
+
+.source-restrictions-search::placeholder {
+    color: #6c7086;
+}
+
+.source-restrictions-count {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #6c7086;
+    flex-shrink: 0;
+}

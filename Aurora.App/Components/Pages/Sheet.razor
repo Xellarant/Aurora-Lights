@@ -73,6 +73,27 @@
 </div>
 
 <div class="sheet-options" style="margin-top: 20px;">
+    <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Style="margin-bottom: 8px;">Sheet Pages</MudText>
+    <div class="sheet-options-row" style="margin-bottom: 12px;">
+        <MudTooltip Text="Include the character background &amp; biography page">
+            <MudChip T="string"
+                     Icon="@(Prefs.IncludeBackgroundPage ? Icons.Material.Filled.CheckBox : Icons.Material.Filled.CheckBoxOutlineBlank)"
+                     Color="@(Prefs.IncludeBackgroundPage ? Color.Primary : Color.Default)"
+                     Variant="Variant.Outlined"
+                     OnClick="@(() => Prefs.IncludeBackgroundPage = !Prefs.IncludeBackgroundPage)">
+                Background
+            </MudChip>
+        </MudTooltip>
+        <MudTooltip Text="Include the equipment &amp; inventory page">
+            <MudChip T="string"
+                     Icon="@(Prefs.IncludeEquipmentPage ? Icons.Material.Filled.CheckBox : Icons.Material.Filled.CheckBoxOutlineBlank)"
+                     Color="@(Prefs.IncludeEquipmentPage ? Color.Primary : Color.Default)"
+                     Variant="Variant.Outlined"
+                     OnClick="@(() => Prefs.IncludeEquipmentPage = !Prefs.IncludeEquipmentPage)">
+                Equipment
+            </MudChip>
+        </MudTooltip>
+    </div>
     <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Style="margin-bottom: 8px;">Card Pages</MudText>
     <div class="sheet-options-row">
         <MudTooltip Text="Add a page of spell cards to the PDF">

@@ -270,7 +270,7 @@ public sealed class CharacterBuildingFlowTests : IAsyncLifetime
         registered.Select(e => e.Type).Should().Contain("Background", because: "Soldier was registered");
 
         character.Level.Should().BeGreaterThanOrEqualTo(1);
-        character.HitPoints.Should().BeGreaterThan(0,
+        character.MaxHp.Should().BeGreaterThan(0,
             because: "Fighter with a race grants at minimum 10 HP at level 1");
 
         // Fighter proficiencies — must have at least one weapon or armour proficiency.
@@ -301,7 +301,7 @@ public sealed class CharacterBuildingFlowTests : IAsyncLifetime
         var reloaded = CharacterManager.Current.Character;
         reloaded.Should().NotBeNull();
         reloaded!.Level.Should().BeGreaterThanOrEqualTo(1);
-        reloaded.HitPoints.Should().BeGreaterThan(0,
+        reloaded.MaxHp.Should().BeGreaterThan(0,
             because: "HP must survive a serialize/reload cycle");
 
         var reloadedElements = CharacterManager.Current.GetElements().ToList();

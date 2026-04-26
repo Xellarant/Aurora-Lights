@@ -59,7 +59,10 @@ public sealed class PdfPreviewService : IDisposable
                     ctx.Response.StatusCode = 404;
                 }
             }
-            catch { /* swallow per-request errors */ }
+            catch (Exception ex)
+            {
+                DebugLogService.Instance.LogException(ex, "PdfPreviewService.ListenLoop.Request");
+            }
             finally
             {
                 try { ctx.Response.Close(); } catch { }

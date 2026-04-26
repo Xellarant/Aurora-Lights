@@ -229,13 +229,33 @@ public sealed class CharacterService :
             catch (Exception ex)
             {
                 DebugLogService.Instance.LogException(ex, "CharacterService.LoadCharacterAsync");
-                return (false, $"{ex.GetType().Name}: {ex.Message}\n\n{ex.StackTrace}");
+                return (false, BuildErrorMessage(ex));
             }
         }
         finally
         {
             _isCharacterLoading = false;
         }
+    }
+
+    private static string BuildErrorMessage(Exception ex)
+    {
+        // Walk the InnerException chain to surface the root cause (e.g. inside a TypeInitializationException).
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"{ex.GetType().Name}: {ex.Message}");
+        var inner = ex.InnerException;
+        int depth = 0;
+        while (inner != null && depth < 5)
+        {
+            sb.AppendLine($"  ↳ {inner.GetType().Name}: {inner.Message}");
+            inner = inner.InnerException;
+            depth++;
+        }
+        sb.AppendLine();
+        sb.AppendLine("(See Console page for full stack trace)");
+        sb.AppendLine();
+        sb.Append(ex.StackTrace);
+        return sb.ToString();
     }
 
     public string CharactersDirectory => DataManager.Current.UserDocumentsRootDirectory;

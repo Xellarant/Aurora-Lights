@@ -43,6 +43,7 @@ public static class MauiProgram
         var debugLog = new DebugLogService();
         DebugLogService.Instance = debugLog;
         builder.Services.AddSingleton(debugLog);
+        CharacterContext.ExceptionLogged += (ex, ctx) => debugLog.LogException(ex, ctx);
 
         // Capture truly unhandled exceptions (background threads, etc.) into the log.
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>

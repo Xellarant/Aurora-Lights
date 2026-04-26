@@ -15,8 +15,14 @@
 }
 else
 {
+    @if (_entries.Count > DisplayLimit)
+    {
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Style="margin-bottom: 8px; display: block;">
+            Showing latest @DisplayLimit of @_entries.Count entries. Clear to reset.
+        </MudText>
+    }
     <div class="console-log">
-        @foreach (var entry in _entries.AsEnumerable().Reverse())
+        @foreach (var entry in _displayed)
         {
             <div class="console-entry console-entry-@entry.Level.ToString().ToLower()">
                 <span class="console-ts">@entry.Timestamp.ToString("HH:mm:ss.fff")</span>
@@ -35,19 +41,30 @@ else
 }
 
 @code {
-    private IReadOnlyList<LogEntry> _entries = [];
+    private const int DisplayLimit = 200;
+
+    private IReadOnlyList<LogEntry> _entries   = [];
+    private IReadOnlyList<LogEntry> _displayed = [];
 
     protected override void OnInitialized()
     {
         Log.Changed += OnLogChanged;
-        _entries = Log.GetSnapshot();
+        UpdateEntries(Log.GetSnapshot());
     }
 
     private void OnLogChanged() => InvokeAsync(() =>
     {
-        _entries = Log.GetSnapshot();
+        UpdateEntries(Log.GetSnapshot());
         StateHasChanged();
     });
+
+    private void UpdateEntries(IReadOnlyList<LogEntry> entries)
+    {
+        _entries   = entries;
+        _displayed = entries.Count <= DisplayLimit
+            ? entries.AsEnumerable().Reverse().ToList()
+            : entries.Skip(entries.Count - DisplayLimit).Reverse().ToList();
+    }
 
     public void Dispose() => Log.Changed -= OnLogChanged;
 

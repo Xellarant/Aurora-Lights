@@ -138,6 +138,29 @@ public sealed class ContentService
         }
     }
 
+    /// <summary>
+    /// Deletes an installed .index file by its filename (basename only, no directory).
+    /// Returns null on success or an error message on failure.
+    /// </summary>
+    public string? RemoveIndex(string filename)
+    {
+        try
+        {
+            string dir = BuiltInCustomDirectory;
+            string path = Path.Combine(dir, filename);
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+                Changed?.Invoke();
+            }
+            return null;
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
+    }
+
     // ── Reload ────────────────────────────────────────────────────────────────
 
     /// <summary>True when at least one character tab is open.</summary>

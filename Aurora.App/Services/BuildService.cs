@@ -601,6 +601,63 @@ public static class BuildService
         return "";
     }
 
+    // ── Advancement timeline ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Returns a per-level breakdown of features for each class in the current character,
+    /// grouped by class-level. Only features that unlock at each specific level are included
+    /// (not cumulative); feature level is read via dynamic dispatch on e.Attributes.Level.
+    /// </summary>
+    public static IReadOnlyList<AdvancementClassTimeline> GetAdvancementTimeline()
+    {
+        var cm = CharacterManager.Current;
+        var result = new List<AdvancementClassTimeline>();
+
+        foreach (var m in cm.ClassProgressionManagers)
+        {
+            var byLevel = new Dictionary<int, List<FeatureEntry>>();
+            for (int lvl = 1; lvl <= m.ProgressionLevel; lvl++)
+                byLevel[lvl] = [];
+
+            foreach (var e in m.GetElements())
+            {
+                if (e.Type != "Class Feature" && e.Type != "Archetype Feature") continue;
+                if (string.IsNullOrWhiteSpace(e.Name)) continue;
+                if (e.Name.StartsWith("Ability Score Increase") ||
+                    e.Name.StartsWith("Ability Score Improvement") ||
+                    e.Name.Equals("Feat", StringComparison.OrdinalIgnoreCase)) continue;
+
+                int atLevel = 1;
+                try { dynamic d = e; atLevel = (int)d.Attributes.Level; } catch { }
+                if (atLevel < 1 || atLevel > m.ProgressionLevel) continue;
+                if (!byLevel.TryGetValue(atLevel, out var list)) continue;
+                if (list.Any(f => f.Name == e.Name)) continue;
+                list.Add(new FeatureEntry(e.Name!, GetFeatureDescription(e)));
+            }
+
+            var hitDieVal = 0;
+            try { hitDieVal = m.GetHitDieValue(); } catch { }
+
+            var levels = Enumerable.Range(1, m.ProgressionLevel)
+                .Select(lvl =>
+                {
+                    int avgHp = lvl == 1 && m.IsMainClass
+                        ? hitDieVal
+                        : (hitDieVal / 2) + 1;
+                    return new AdvancementLevelEntry(lvl, avgHp, byLevel[lvl]);
+                })
+                .ToList();
+
+            result.Add(new AdvancementClassTimeline(
+                m.ClassElement?.Name ?? "Unknown",
+                m.HD ?? "—",
+                m.IsMainClass,
+                levels));
+        }
+
+        return result;
+    }
+
     // ── Spell detail lookup ──────────────────────────────────────────────────────
 
     /// <summary>
@@ -913,6 +970,39 @@ public static class BuildService
     /// Always returns Race, Class, and Background tabs (may be empty of rules if none
     /// apply yet). Additional overflow tabs are added for any other rule types.
     /// </summary>
+    /// <summary>
+    /// Returns build tabs, ASI entries, and the next required step in a single scan of
+    /// <see cref="CharacterManager.SelectionRules"/>. Prefer this over calling
+    /// <see cref="GetBuildTabs"/>, <see cref="GetAsiEntries"/>, and
+    /// <see cref="GetNextRequiredStep"/> separately.
+    /// </summary>
+    public static (IReadOnlyList<BuildTabGroup> Tabs,
+                   IReadOnlyList<SelectionRuleEntry> AsiEntries,
+                   (string TabLabel, string StepLabel)? NextStep)
+        GetBuildData()
+    {
+        var tabs = GetBuildTabs();
+        var asi  = GetAsiEntries();
+
+        (string, string)? next = null;
+        foreach (var tab in tabs)
+        {
+            foreach (var group in tab.RuleGroups)
+            {
+                foreach (var rule in group.Rules)
+                {
+                    if (rule.CurrentName == null) { next = (tab.Label, rule.Label); goto done; }
+                }
+            }
+        }
+        foreach (var entry in asi)
+        {
+            if (entry.CurrentName == null) { next = ("Ability Scores", entry.Label); break; }
+        }
+        done:
+        return (tabs, asi, next);
+    }
+
     public static IReadOnlyList<BuildTabGroup> GetBuildTabs()
     {
         var cm       = CharacterManager.Current;
@@ -1122,3 +1212,16 @@ public sealed record SpellDetail(
     string Components,
     string Duration,
     string Description);
+
+// ── Advancement timeline ──────────────────────────────────────────────────────
+
+public sealed record AdvancementLevelEntry(
+    int                       Level,
+    int                       AverageHp,
+    IReadOnlyList<FeatureEntry> Features);
+
+public sealed record AdvancementClassTimeline(
+    string                             ClassName,
+    string                             HitDie,
+    bool                               IsMainClass,
+    IReadOnlyList<AdvancementLevelEntry> Levels);

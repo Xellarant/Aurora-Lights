@@ -28,27 +28,47 @@
     {
         bool _loading = Tabs.ActiveTab.IsLoading;
         <MudDivider Class="my-2" />
-        <MudNavLink Href="/character" Icon="@Icons.Material.Filled.Person" Disabled="_loading">
-            Overview
-        </MudNavLink>
+        @if (_loading)
+        {
+            <div style="display: flex; align-items: center; gap: 8px; padding: 6px 16px;">
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary"
+                                     Style="width: 14px; height: 14px;" />
+                <MudText Typo="Typo.caption" Style="color: #a6adc8;">Loading character…</MudText>
+            </div>
+        }
+        <MudTooltip Text="@(_loading ? "Loading character…" : "")" Placement="Placement.Right" Delay="300" Style="display:block">
+            <MudNavLink Href="/character" Icon="@Icons.Material.Filled.Person" Disabled="_loading">
+                Overview
+            </MudNavLink>
+        </MudTooltip>
         <MudNavLink Href="/build" Icon="@Icons.Material.Filled.Build">
             Build
         </MudNavLink>
-        <MudNavLink Href="/equipment" Icon="@Icons.Material.Filled.Shield" Disabled="_loading">
-            Equipment
-        </MudNavLink>
-        <MudNavLink Href="/session" Icon="@Icons.Material.Filled.Favorite" Disabled="_loading">
-            Session
-        </MudNavLink>
-        <MudNavLink Href="/magic" Icon="@Icons.Material.Filled.AutoAwesome" Disabled="_loading">
-            Magic
-        </MudNavLink>
-        <MudNavLink Href="/manage" Icon="@Icons.Material.Filled.ManageAccounts" Disabled="_loading">
-            Manage
-        </MudNavLink>
-        <MudNavLink Href="/sheet" Icon="@Icons.Material.Filled.Article" Disabled="_loading">
-            Sheet
-        </MudNavLink>
+        <MudTooltip Text="@(_loading ? "Loading character…" : "")" Placement="Placement.Right" Delay="300" Style="display:block">
+            <MudNavLink Href="/equipment" Icon="@Icons.Material.Filled.Shield" Disabled="_loading">
+                Equipment
+            </MudNavLink>
+        </MudTooltip>
+        <MudTooltip Text="@(_loading ? "Loading character…" : "")" Placement="Placement.Right" Delay="300" Style="display:block">
+            <MudNavLink Href="/session" Icon="@Icons.Material.Filled.Favorite" Disabled="_loading">
+                Session
+            </MudNavLink>
+        </MudTooltip>
+        <MudTooltip Text="@(_loading ? "Loading character…" : "")" Placement="Placement.Right" Delay="300" Style="display:block">
+            <MudNavLink Href="/magic" Icon="@Icons.Material.Filled.AutoAwesome" Disabled="_loading">
+                Magic
+            </MudNavLink>
+        </MudTooltip>
+        <MudTooltip Text="@(_loading ? "Loading character…" : "")" Placement="Placement.Right" Delay="300" Style="display:block">
+            <MudNavLink Href="/manage" Icon="@Icons.Material.Filled.ManageAccounts" Disabled="_loading">
+                Manage
+            </MudNavLink>
+        </MudTooltip>
+        <MudTooltip Text="@(_loading ? "Loading character…" : "")" Placement="Placement.Right" Delay="300" Style="display:block">
+            <MudNavLink Href="/sheet" Icon="@Icons.Material.Filled.Article" Disabled="_loading">
+                Sheet
+            </MudNavLink>
+        </MudTooltip>
     }
 </MudNavMenu>
 

@@ -160,9 +160,14 @@
         <MudTabPanel Text="@tab.Label">
             @if (tab.RuleGroups.Count == 0)
             {
-                <MudText Color="Color.Secondary" Typo="Typo.body2" Class="mt-4">
-                    No selections available yet for @tab.Label.
-                </MudText>
+                <div style="margin-top: 16px; padding: 12px; background: #181825; border-radius: 6px; border: 1px solid #313244;">
+                    <MudText Color="Color.Secondary" Typo="Typo.body2">
+                        No selections are available for <b>@tab.Label</b> at your current level.
+                    </MudText>
+                    <MudText Color="Color.Secondary" Typo="Typo.caption" Style="margin-top: 4px; display: block;">
+                        Complete selections on other tabs or level up to unlock choices here.
+                    </MudText>
+                </div>
             }
             else
             {
@@ -215,7 +220,17 @@
                             <div class="build-feature-list">
                                 @foreach (var f in cls.Features)
                                 {
-                                    <div class="build-feature-item">@f.Name</div>
+                                    @if (!string.IsNullOrWhiteSpace(f.Description))
+                                    {
+                                        <details class="build-feature-item build-feature-expandable">
+                                            <summary>@f.Name</summary>
+                                            <div class="build-feature-desc">@f.Description</div>
+                                        </details>
+                                    }
+                                    else
+                                    {
+                                        <div class="build-feature-item">@f.Name</div>
+                                    }
                                 }
                             </div>
                         }
@@ -318,6 +333,7 @@
                 }
 
                 @* ── Ability score table ── *@
+                <div class="ability-stats-table-wrapper">
                 <div class="ability-stats-table">
 
                     @* Row 1: abbreviation + name *@
@@ -421,6 +437,7 @@
                     </div>
 
                 </div>@* end ability-stats-table *@
+                </div>@* end ability-stats-table-wrapper *@
             </div>
 
             @* ASI / Feat selections — below the score table *@
@@ -573,9 +590,7 @@
         {
             using (await CharacterContext.EnterAsync(tab))
             {
-                _buildTabs  = BuildService.GetBuildTabs();
-                _asiEntries = BuildService.GetAsiEntries();
-                _nextStep   = BuildService.GetNextRequiredStep();
+                (_buildTabs, _asiEntries, _nextStep) = BuildService.GetBuildData();
                 LoadAbilityRows();
             }
         }
@@ -682,7 +697,11 @@
         var file = Characters.CurrentCharacterFile;
         if (tab == null || file == null) return;
 
+        _saving = true;
+        StateHasChanged();
         var options = await Task.Run(() => BuildService.GetOptions(entry.Rule));
+        _saving = false;
+        StateHasChanged();
 
         var parameters = new DialogParameters
         {
@@ -846,7 +865,11 @@
         var tab = Tabs.ActiveTab;
         if (tab == null) return;
 
+        _saving = true;
+        StateHasChanged();
         var options = await Task.Run(() => BuildService.GetMulticlassOptions());
+        _saving = false;
+        StateHasChanged();
         if (options.Count == 0)
         {
             Snackbar.Add("No multiclass options available in loaded content.", Severity.Warning);

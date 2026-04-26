@@ -1,3 +1,4 @@
+using Builder.Data.Elements;
 using Builder.Presentation;
 using Builder.Presentation.Models;
 using Builder.Presentation.Services.Data;
@@ -102,6 +103,10 @@ public sealed class CharacterSnapshot
     public int SpeedClimb  { get; init; }
     public int SpeedSwim   { get; init; }
     public int SpeedBurrow { get; init; }
+
+    // ── Companion (calculated; null when no companion is active) ──
+    public CompanionSnapshot? Companion { get; init; }
+    public bool HasCompanion => Companion is not null;
 
     /// <summary>Captures all display-relevant data from the live Character object.</summary>
     public static CharacterSnapshot From(Character c)
@@ -261,7 +266,74 @@ public sealed class CharacterSnapshot
             SpeedClimb  = CharacterManager.Current.StatisticsCalculator.StatisticValues.GetValue("speed:climb"),
             SpeedSwim   = CharacterManager.Current.StatisticsCalculator.StatisticValues.GetValue("speed:swim"),
             SpeedBurrow = CharacterManager.Current.StatisticsCalculator.StatisticValues.GetValue("speed:burrow"),
+            Companion   = cm.Status.HasCompanion ? BuildCompanionSnapshot(c) : null,
         };
+    }
+
+    private static CompanionSnapshot? BuildCompanionSnapshot(Character c)
+    {
+        try
+        {
+            var comp = c.Companion;
+            var el   = comp.Element;
+            if (el is null) return null;
+
+            string typeLine = $"{el.Size} {el.CreatureType?.ToLower() ?? ""}, {el.Alignment?.ToLower() ?? ""}".Trim(' ', ',');
+
+            var cm = CharacterManager.Current;
+            var stats = comp.Statistics;
+
+            var abilities = new[]
+            {
+                new CompanionAbilityEntry("STR", comp.Abilities.Strength.FinalScore, comp.Abilities.Strength.ModifierString),
+                new CompanionAbilityEntry("DEX", comp.Abilities.Dexterity.FinalScore, comp.Abilities.Dexterity.ModifierString),
+                new CompanionAbilityEntry("CON", comp.Abilities.Constitution.FinalScore, comp.Abilities.Constitution.ModifierString),
+                new CompanionAbilityEntry("INT", comp.Abilities.Intelligence.FinalScore, comp.Abilities.Intelligence.ModifierString),
+                new CompanionAbilityEntry("WIS", comp.Abilities.Wisdom.FinalScore, comp.Abilities.Wisdom.ModifierString),
+                new CompanionAbilityEntry("CHA", comp.Abilities.Charisma.FinalScore, comp.Abilities.Charisma.ModifierString),
+            };
+
+            var traits    = CollectCompanionFeatures(el.Traits,    "Companion Trait");
+            var actions   = CollectCompanionFeatures(el.Actions,   "Companion Action");
+            var reactions = CollectCompanionFeatures(el.Reactions, "Companion Reaction");
+
+            return new CompanionSnapshot(
+                Name:        comp.CompanionName.Content ?? comp.CompanionName.OriginalContent ?? el.Name ?? "",
+                TypeLine:    typeLine,
+                ArmorClass:  stats.ArmorClass > 0 ? stats.ArmorClass.ToString() : comp.ArmorClass.OriginalContent ?? "",
+                MaxHp:       stats.MaxHp > 0 ? stats.MaxHp.ToString() : comp.MaxHp.OriginalContent ?? "",
+                Speed:       stats.Speed > 0 ? stats.Speed.ToString() : comp.Speed.OriginalContent ?? "",
+                Initiative:  stats.Initiative >= 0 ? $"+{stats.Initiative}" : stats.Initiative.ToString(),
+                Proficiency: stats.Proficiency,
+                Abilities:   abilities,
+                Traits:      traits,
+                Actions:     actions,
+                Reactions:   reactions);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static IReadOnlyList<FeatureEntry> CollectCompanionFeatures(
+        IEnumerable<string>? ids, string elementType)
+    {
+        if (ids is null) return [];
+        try
+        {
+            var lookup = DataManager.Current.ElementsCollection
+                .Where(x => x.Type.Equals(elementType, StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(x => x.Id ?? "", x => x);
+
+            return ids
+                .Select(id => lookup.TryGetValue(id, out var e)
+                    ? new FeatureEntry(e.Name ?? id, e.Description ?? "")
+                    : new FeatureEntry(id, ""))
+                .Where(f => !string.IsNullOrWhiteSpace(f.Name))
+                .ToList();
+        }
+        catch { return []; }
     }
 
     private static IReadOnlyList<string> CollectLanguages()
@@ -778,6 +850,21 @@ public sealed class SpellEntry
     /// </summary>
     public bool   IsAlwaysPrepared { get; init; }
 }
+
+public sealed record CompanionAbilityEntry(string Abbreviation, int FinalScore, string ModifierString);
+
+public sealed record CompanionSnapshot(
+    string Name,
+    string TypeLine,
+    string ArmorClass,
+    string MaxHp,
+    string Speed,
+    string Initiative,
+    int    Proficiency,
+    IReadOnlyList<CompanionAbilityEntry> Abilities,
+    IReadOnlyList<FeatureEntry> Traits,
+    IReadOnlyList<FeatureEntry> Actions,
+    IReadOnlyList<FeatureEntry> Reactions);
 
 public sealed record SpellLevelEntry(int Level, IReadOnlyList<SpellEntry> Spells, int TotalSlots = 0)
 {

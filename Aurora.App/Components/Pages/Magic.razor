@@ -70,57 +70,49 @@
     private SpellDetail? _spellDetail;
     private IReadOnlyList<(string Id, string Name)> _cantripEntries = [];
 
-    private MagicOverviewModel MagicModel =>
-        _snap is null
-            ? new MagicOverviewModel()
-            : new()
-            {
-                HasSpellcasting = _snap.HasSpellcasting,
-                IsPreparedCaster = _snap.IsSpellcasterPrepared,
-                SpellcastingClass = _snap.SpellcastingClass,
-                SpellcastingAbility = _snap.SpellcastingAbility,
-                SpellcastingDc = _snap.SpellcastingDC,
-                SpellcastingAttack = _snap.SpellcastingAttack,
-                PreparedCount = _snap.PreparedCount,
-                MaxPrepared = _snap.MaxPrepared,
-                KnownSpellGroups = _spellRuleGroups.Select((group, groupIndex) =>
-                    new MagicKnownSpellGroupModel(
-                        group.Label,
-                        group.Rules.Select((entry, entryIndex) => new MagicKnownSpellEntryModel(
-                            $"{groupIndex}:{entryIndex}",
-                            entry.Label,
-                            entry.CurrentName)).ToList()))
-                    .ToList(),
-                Cantrips = _cantripEntries
-                    .Select(entry => new MagicSpellListEntryModel(entry.Id, entry.Name, true, true))
-                    .ToList(),
-                SpellLevels = _snap.SpellLevels
-                    .Select(level => new MagicSpellLevelModel(
-                        level.Level,
-                        level.Spells.Select(spell => new MagicSpellListEntryModel(
-                            spell.Id,
-                            spell.Name,
-                            spell.IsPrepared,
-                            spell.IsAlwaysPrepared)).ToList(),
-                        level.TotalSlots,
-                        level.UsedSlots))
-                    .ToList()
-            };
+    private MagicOverviewModel _magicModel = new();
+    private MagicOverviewModel MagicModel => _magicModel;
 
-    private MagicSpellDetailModel? SelectedSpellModel =>
-        _spellDetail is null
-            ? null
-            : new MagicSpellDetailModel(
-                _spellDetail.Id,
-                _spellDetail.Name,
-                _spellDetail.Source,
-                _spellDetail.Level,
-                _spellDetail.Subtitle,
-                _spellDetail.CastingTime,
-                _spellDetail.Range,
-                _spellDetail.Components,
-                _spellDetail.Duration,
-                _spellDetail.Description);
+    private void BuildMagicModel()
+    {
+        if (_snap is null) { _magicModel = new MagicOverviewModel(); _selectedSpellModel = null; return; }
+        _magicModel = new()
+        {
+            HasSpellcasting = _snap.HasSpellcasting,
+            IsPreparedCaster = _snap.IsSpellcasterPrepared,
+            SpellcastingClass = _snap.SpellcastingClass,
+            SpellcastingAbility = _snap.SpellcastingAbility,
+            SpellcastingDc = _snap.SpellcastingDC,
+            SpellcastingAttack = _snap.SpellcastingAttack,
+            PreparedCount = _snap.PreparedCount,
+            MaxPrepared = _snap.MaxPrepared,
+            KnownSpellGroups = _spellRuleGroups.Select((group, groupIndex) =>
+                new MagicKnownSpellGroupModel(
+                    group.Label,
+                    group.Rules.Select((entry, entryIndex) => new MagicKnownSpellEntryModel(
+                        $"{groupIndex}:{entryIndex}",
+                        entry.Label,
+                        entry.CurrentName)).ToList()))
+                .ToList(),
+            Cantrips = _cantripEntries
+                .Select(entry => new MagicSpellListEntryModel(entry.Id, entry.Name, true, true))
+                .ToList(),
+            SpellLevels = _snap.SpellLevels
+                .Select(level => new MagicSpellLevelModel(
+                    level.Level,
+                    level.Spells.Select(spell => new MagicSpellListEntryModel(
+                        spell.Id,
+                        spell.Name,
+                        spell.IsPrepared,
+                        spell.IsAlwaysPrepared)).ToList(),
+                    level.TotalSlots,
+                    level.UsedSlots))
+                .ToList()
+        };
+    }
+
+    private MagicSpellDetailModel? _selectedSpellModel;
+    private MagicSpellDetailModel? SelectedSpellModel => _selectedSpellModel;
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,6 +150,8 @@
             _spellRuleGroups = [];
             _cantripEntries = [];
         }
+
+        BuildMagicModel();
     }
 
     private bool _disposed;
@@ -183,6 +177,19 @@
     {
         _selectedId = id;
         _spellDetail = BuildService.GetSpellDetail(id);
+        _selectedSpellModel = _spellDetail is null
+            ? null
+            : new MagicSpellDetailModel(
+                _spellDetail.Id,
+                _spellDetail.Name,
+                _spellDetail.Source,
+                _spellDetail.Level,
+                _spellDetail.Subtitle,
+                _spellDetail.CastingTime,
+                _spellDetail.Range,
+                _spellDetail.Components,
+                _spellDetail.Duration,
+                _spellDetail.Description);
         return Task.CompletedTask;
     }
 
@@ -311,6 +318,7 @@
             }
         }
 
+        BuildMagicModel();
         Tabs.MarkDirty(tab);
 
         if (Prefs.AutoSaveBuildChanges)

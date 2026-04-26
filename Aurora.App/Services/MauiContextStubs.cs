@@ -245,8 +245,8 @@ internal sealed class MauiCharacterSheetGenerator : ICharacterSheetGenerator
                             .Where(x => !x.IsExtension).ToList();
 
         var sheet = new CharacterSheetEx();
-        sheet.Configuration.IncludeBackgroundPage    = true;
-        sheet.Configuration.IncludeEquipmentPage     = true;
+        sheet.Configuration.IncludeBackgroundPage    = Preferences.Default.Get(UserPreferencesService.KeyBackgroundPage, defaultValue: true);
+        sheet.Configuration.IncludeEquipmentPage     = Preferences.Default.Get(UserPreferencesService.KeyEquipmentPage,  defaultValue: true);
         sheet.Configuration.IncludeSpellcastingPage  = spellInfos.Any();
         sheet.Configuration.IncludeFormatting        = true;
 

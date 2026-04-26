@@ -37,6 +37,9 @@ packages/
 # Publish output
 **/publish/
 
+# Aurora.Web runtime data
+Aurora.Web/App_Data/
+
 # Crash dumps
 *.dmp
 

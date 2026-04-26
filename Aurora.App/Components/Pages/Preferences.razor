@@ -1,14 +1,27 @@
 @page "/preferences"
-@implements IDisposable
 @inject UserPreferencesService Prefs
 @inject DebugLogService DebugLog
-@inject ContentService Content
 @inject CharacterService Characters
-@inject NavigationManager Nav
-@inject ISnackbar Snackbar
 <MudText Typo="Typo.h5" Class="mb-6">Preferences</MudText>
 
 <div class="pref-section">
+    <div class="section-label">Appearance</div>
+
+    <div class="pref-row">
+        <div class="pref-row-text">
+            <div class="pref-row-title">Light mode</div>
+            <div class="pref-row-desc">
+                Switch to a light colour palette. Most MudBlazor controls will update immediately;
+                custom layout areas use the dark palette by design and are unaffected.
+            </div>
+        </div>
+        <MudSwitch Value="Prefs.LightMode"
+                   ValueChanged="@((bool v) => Prefs.LightMode = v)"
+                   Color="Color.Primary" />
+    </div>
+</div>
+
+<div class="pref-section" style="margin-top: 24px;">
     <div class="section-label">Build &amp; Magic</div>
 
     <div class="pref-row">
@@ -152,250 +165,5 @@
     }
 </div>
 
-@* ── Custom Content ── *@
-<div class="pref-section" style="margin-top: 24px;">
-    <div class="section-label">Custom Content</div>
-
-    @* Built-in path (informational) *@
-    <div style="margin-bottom: 16px;">
-        <div class="pref-row-title" style="margin-bottom: 4px;">Built-in custom directory</div>
-        <div style="font-family: monospace; font-size: 12px; color: #a6adc8; word-break: break-all;">
-            @Content.BuiltInCustomDirectory
-        </div>
-        <div class="pref-row-desc" style="margin-top: 4px;">
-            Place XML files or .index files here and Aurora will pick them up on next reload.
-        </div>
-    </div>
-
-    @* Additional directories *@
-    <div style="margin-bottom: 6px;">
-        <div class="pref-row-title">Additional content directories</div>
-        <div class="pref-row-desc" style="margin-bottom: 10px;">
-            Add extra folders containing Aurora XML content. Useful for homebrew or
-            third-party content stored outside the built-in custom directory.
-        </div>
-
-        @if (Content.AdditionalDirectories.Count == 0)
-        {
-            <div style="font-size: 13px; color: #6c7086; margin-bottom: 8px;">No additional directories configured.</div>
-        }
-        else
-        {
-            <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;">
-                @foreach (var dir in Content.AdditionalDirectories.ToList())
-                {
-                    var d = dir;
-                    <div style="display: flex; align-items: center; gap: 8px; background: #181825; border-radius: 6px; padding: 6px 10px;">
-                        <span style="font-family: monospace; font-size: 12px; color: #cdd6f4; flex: 1; word-break: break-all;">@d</span>
-                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                       Size="Size.Small"
-                                       title="Remove"
-                                       OnClick="() => RemoveDirectory(d)"
-                                       Style="color: #6c7086; padding: 2px; flex-shrink: 0;" />
-                    </div>
-                }
-            </div>
-        }
-
-        <div style="display: flex; gap: 8px; align-items: flex-start; margin-top: 4px;">
-            <MudTextField @bind-Value="_newDirPath"
-                          Label="Folder path"
-                          Placeholder="C:\path\to\homebrew\content"
-                          Variant="Variant.Outlined"
-                          Margin="Margin.Dense"
-                          Style="flex: 1; font-size: 13px;"
-                          Immediate="true"
-                          @onkeydown="OnDirKeyDown" />
-            <MudButton Variant="Variant.Outlined"
-                       Color="Color.Primary"
-                       Size="Size.Small"
-                       Disabled="@string.IsNullOrWhiteSpace(_newDirPath)"
-                       OnClick="AddDirectory"
-                       Style="margin-top: 4px; white-space: nowrap;">
-                Add
-            </MudButton>
-        </div>
-    </div>
-
-    @* .index file management *@
-    <div style="margin-top: 24px;">
-        <div class="pref-row-title">Content index files (.index)</div>
-        <div class="pref-row-desc" style="margin-bottom: 10px;">
-            Index files reference a collection of XML content files hosted online.
-            Paste a URL ending in <code>.index</code> to register it, then check for updates
-            to download the content. Requires a network connection.
-        </div>
-
-        @if (Content.InstalledIndexNames.Count > 0)
-        {
-            <div style="margin-bottom: 10px;">
-                <div style="font-size: 12px; color: #a6adc8; margin-bottom: 6px;">Installed index files:</div>
-                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                    @foreach (var name in Content.InstalledIndexNames)
-                    {
-                        <div style="background: #313244; border-radius: 4px; padding: 2px 8px; font-family: monospace; font-size: 11px; color: #cdd6f4;">
-                            @name
-                        </div>
-                    }
-                </div>
-            </div>
-        }
-
-        <div style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 10px;">
-            <MudTextField @bind-Value="_indexUrl"
-                          Label="Index URL"
-                          Placeholder="https://raw.githubusercontent.com/…/core.index"
-                          Variant="Variant.Outlined"
-                          Margin="Margin.Dense"
-                          Style="flex: 1; font-size: 13px;"
-                          Disabled="_working" />
-            <MudButton Variant="Variant.Outlined"
-                       Color="Color.Primary"
-                       Size="Size.Small"
-                       Disabled="@(_working || string.IsNullOrWhiteSpace(_indexUrl))"
-                       OnClick="FetchIndexAsync"
-                       Style="margin-top: 4px; white-space: nowrap;">
-                Fetch Index
-            </MudButton>
-        </div>
-
-        <MudButton Variant="Variant.Outlined"
-                   Color="Color.Default"
-                   StartIcon="@Icons.Material.Filled.Sync"
-                   Size="Size.Small"
-                   Disabled="_working"
-                   OnClick="CheckForUpdatesAsync">
-            Check for Updates
-        </MudButton>
-    </div>
-
-    @* Reload *@
-    @if (_needsReload)
-    {
-        <MudAlert Severity="Severity.Info" Class="mt-4" Dense="true">
-            Content changes will not take effect until elements are reloaded.
-            @if (Content.HasOpenTabs)
-            {
-                <span> Open characters will be closed.</span>
-            }
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
-                       Disabled="_working"
-                       OnClick="ReloadContentAsync"
-                       Style="margin-left: 12px;">
-                @(_working ? "Reloading…" : "Reload Now")
-            </MudButton>
-        </MudAlert>
-    }
-
-    @if (_statusMessage != null)
-    {
-        <MudAlert Severity="@_statusSeverity" Class="mt-3" Dense="true"
-                  ShowCloseIcon="true" CloseIconClicked="() => _statusMessage = null">
-            @_statusMessage
-        </MudAlert>
-    }
-</div>
-
 @code {
-    private string _indexUrl      = "";
-    private string _newDirPath    = "";
-    private string? _statusMessage;
-    private Severity _statusSeverity = Severity.Success;
-    private bool _working     = false;
-    private bool _needsReload = false;
-
-    protected override void OnInitialized() => Content.Changed += OnContentChanged;
-    private void OnContentChanged() => InvokeAsync(StateHasChanged);
-    public void Dispose() => Content.Changed -= OnContentChanged;
-
-    private void RemoveDirectory(string path)
-    {
-        Content.RemoveDirectory(path);
-        _needsReload = true;
-    }
-
-    private void OnDirKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter") AddDirectory();
-    }
-
-    private void AddDirectory()
-    {
-        string path = _newDirPath.Trim();
-        if (string.IsNullOrEmpty(path)) return;
-
-        if (!Directory.Exists(path))
-        {
-            _statusMessage  = $"Directory not found: {path}";
-            _statusSeverity = Severity.Error;
-            return;
-        }
-
-        Content.AddDirectory(path);
-        _newDirPath   = "";
-        _needsReload  = true;
-        _statusMessage = null;
-    }
-
-    private async Task FetchIndexAsync()
-    {
-        _working = true;
-        _statusMessage = null;
-        StateHasChanged();
-        try
-        {
-            var (success, msg) = await Content.FetchIndexAsync(_indexUrl);
-            _statusMessage   = msg;
-            _statusSeverity  = success ? Severity.Success : Severity.Error;
-            if (success) { _indexUrl = ""; _needsReload = true; }
-        }
-        finally
-        {
-            _working = false;
-        }
-    }
-
-    private async Task CheckForUpdatesAsync()
-    {
-        _working = true;
-        _statusMessage = null;
-        StateHasChanged();
-        try
-        {
-            var (updated, msg) = await Content.CheckForUpdatesAsync();
-            _statusMessage  = msg;
-            _statusSeverity = Severity.Info;
-            if (updated) _needsReload = true;
-        }
-        finally
-        {
-            _working = false;
-        }
-    }
-
-    private async Task ReloadContentAsync()
-    {
-        _working = true;
-        _statusMessage = null;
-        StateHasChanged();
-        try
-        {
-            string? error = await Content.ReloadContentAsync();
-            if (error != null)
-            {
-                _statusMessage  = $"Reload failed: {error}";
-                _statusSeverity = Severity.Error;
-            }
-            else
-            {
-                _needsReload = false;
-                Snackbar.Add("Content reloaded.", Severity.Success);
-                Nav.NavigateTo("/");
-            }
-        }
-        finally
-        {
-            _working = false;
-        }
-    }
 }
