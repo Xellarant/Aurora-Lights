@@ -308,6 +308,20 @@ public static class BuildService
         if (className == null) return [];
 
         string scName = className;
+
+        // Fast path: use the pre-resolved spell access map from the DB loader.
+        if (DbElementLoader.SpellAccessMap.TryGetValue(scName, out var spellIds))
+        {
+            return spellBase.Where(e =>
+            {
+                if (!spellIds.Contains(e.Id)) return false;
+                int lvl = 0;
+                try { lvl = (int)((dynamic)e).Level; } catch { }
+                return isCantrip ? lvl == 0 : lvl > 0;
+            });
+        }
+
+        // Fallback: supports-text scan (used when DB loader was not active).
         return spellBase.Where(e =>
         {
             if (e.Supports == null || !e.Supports.Contains(scName)) return false;
