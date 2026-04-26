@@ -4,56 +4,113 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-mac:
-    runs-on: macos-latest
+  # ── x64 build (Intel) ────────────────────────────────────────────────────────
+  build-x64:
+    runs-on: macos-26-intel
     env:
-      PROJECT: Aurora.App/Aurora.App.csproj   # <-- update if different
-    strategy:
-      matrix:
-        runtime: [maccatalyst-arm64, maccatalyst-x64]
-
+      PROJECT: Aurora.App/Aurora.App.csproj
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '10.0.101'
 
       - name: Install MAUI workloads
-        run: dotnet workload install maui
+        run: dotnet workload install maui --version 10.0.101.1
+
+      - name: Show SDK toolchain
+        run: |
+          dotnet --info
+          xcodebuild -version
 
       - name: Restore
         run: dotnet restore "$PROJECT"
 
-      - name: Publish (${{ matrix.runtime }})
+      - name: Publish (maccatalyst-x64)
         run: |
           dotnet publish "$PROJECT" \
             -f net10.0-maccatalyst \
-            -r ${{ matrix.runtime }} \
+            -r maccatalyst-x64 \
             -c Release \
-            -o publish/${{ matrix.runtime }}
+            -p:CreatePackage=false
 
-      - name: List publish output
-        run: ls -la publish/${{ matrix.runtime }}
+      # MAUI ignores -o; find the .app and zip it with a colon-free name
+      # so the artifact uploader (which enforces NTFS-safe paths) accepts it.
+      - name: Stage x64 app bundle
+        run: |
+          set -euo pipefail
+          APP=$(find . -name "*.app" -not -path "*/obj/*" -not -path "*/.git/*" -print -quit || true)
+          if [ -z "$APP" ]; then
+            echo "ERROR: No .app bundle found. Build tree:"
+            find . -maxdepth 6 -not -path "*/obj/*" -not -path "*/.git/*" | head -60
+            exit 1
+          fi
+          echo "Found: $APP"
+          mkdir -p stage
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "stage/aurora-maccatalyst-x64.zip"
 
-      - name: Upload artifact
+      - name: Upload x64 artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mac-publish-${{ matrix.runtime }}
-          path: publish/${{ matrix.runtime }}
+          name: mac-publish-maccatalyst-x64
+          path: stage/aurora-maccatalyst-x64.zip
+          if-no-files-found: error
 
-  create-universal:
-    runs-on: macos-latest
-    needs: build-mac
+  # ── arm64 build (Apple Silicon) + universal merge ────────────────────────────
+  build-arm64-and-merge:
+    runs-on: macos-26
+    needs: build-x64
     env:
-      PROJECT: Aurora.App/Aurora.App.csproj   # <-- update if different
+      PROJECT: Aurora.App/Aurora.App.csproj
     steps:
-      - name: Download arm64 artifact
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.0.101'
+
+      - name: Install MAUI workloads
+        run: dotnet workload install maui --version 10.0.101.1
+
+      - name: Show SDK toolchain
+        run: |
+          dotnet --info
+          xcodebuild -version
+
+      - name: Restore
+        run: dotnet restore "$PROJECT"
+
+      - name: Publish (maccatalyst-arm64)
+        run: |
+          dotnet publish "$PROJECT" \
+            -f net10.0-maccatalyst \
+            -r maccatalyst-arm64 \
+            -c Release \
+            -p:CreatePackage=false
+
+      - name: Stage arm64 app bundle
+        run: |
+          set -euo pipefail
+          APP=$(find . -name "*.app" -not -path "*/obj/*" -not -path "*/.git/*" -print -quit || true)
+          if [ -z "$APP" ]; then
+            echo "ERROR: No .app bundle found. Build tree:"
+            find . -maxdepth 6 -not -path "*/obj/*" -not -path "*/.git/*" | head -60
+            exit 1
+          fi
+          echo "Found: $APP"
+          echo "ARM_APP=$APP" >> $GITHUB_ENV
+          mkdir -p stage
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "stage/aurora-maccatalyst-arm64.zip"
+
+      - name: Upload arm64 artifact
+        uses: actions/upload-artifact@v4
         with:
           name: mac-publish-maccatalyst-arm64
-          path: arm
+          path: stage/aurora-maccatalyst-arm64.zip
+          if-no-files-found: error
 
       - name: Download x64 artifact
         uses: actions/download-artifact@v4
@@ -61,34 +118,25 @@ jobs:
           name: mac-publish-maccatalyst-x64
           path: x64
 
-      - name: Find app bundles
-        run: |
-          set -euo pipefail
-          ARM_APP=$(find arm -name "*.app" -print -quit || true)
-          X64_APP=$(find x64 -name "*.app" -print -quit || true)
-          if [ -z "$ARM_APP" ] || [ -z "$X64_APP" ]; then
-            echo "App bundles not found in downloaded artifacts"
-            echo "Contents of arm:"
-            ls -R arm || true
-            echo "Contents of x64:"
-            ls -R x64 || true
-            exit 1
-          fi
-          echo "ARM_APP=$ARM_APP" >> $GITHUB_ENV
-          echo "X64_APP=$X64_APP" >> $GITHUB_ENV
-
       - name: Create universal binary (.app)
         run: |
           set -euo pipefail
-          echo "Using ARM app: $ARM_APP"
-          echo "Using x64 app: $X64_APP"
-          mkdir -p universal
-          APP_BASENAME=$(basename "$ARM_APP")
-          # Copy ARM app as the base for the universal app
-          cp -R "$ARM_APP" "universal/"
-          UNIVERSAL_APP_PATH="universal/$APP_BASENAME"
 
-          # Find main executables inside the app bundles
+          # Extract x64 zip (ditto preserves Mac metadata)
+          ditto -x -k "x64/aurora-maccatalyst-x64.zip" x64_app/
+          X64_APP=$(find x64_app -name "*.app" -print -quit || true)
+
+          if [ -z "$ARM_APP" ] || [ -z "$X64_APP" ]; then
+            echo "App bundles not found — ARM=$ARM_APP  X64=$X64_APP"
+            exit 1
+          fi
+          echo "ARM: $ARM_APP"
+          echo "X64: $X64_APP"
+
+          APP_NAME=$(basename "$ARM_APP")
+          mkdir -p universal
+          ditto "$ARM_APP" "universal/$APP_NAME"
+
           ARM_EXE=$(find "$ARM_APP/Contents/MacOS" -type f -maxdepth 1 -print -quit || true)
           X64_EXE=$(find "$X64_APP/Contents/MacOS" -type f -maxdepth 1 -print -quit || true)
           if [ -z "$ARM_EXE" ] || [ -z "$X64_EXE" ]; then
@@ -96,24 +144,17 @@ jobs:
             exit 1
           fi
           EXE_NAME=$(basename "$ARM_EXE")
-          UNIVERSAL_EXE="$UNIVERSAL_APP_PATH/Contents/MacOS/$EXE_NAME"
+          UNIVERSAL_EXE="universal/$APP_NAME/Contents/MacOS/$EXE_NAME"
 
-          echo "ARM_EXE=$ARM_EXE"
-          echo "X64_EXE=$X64_EXE"
-          echo "UNIVERSAL_EXE=$UNIVERSAL_EXE"
-
-          # Create universal (fat) binary using lipo
+          echo "Merging: $ARM_EXE + $X64_EXE → $UNIVERSAL_EXE"
           lipo -create "$X64_EXE" "$ARM_EXE" -output "$UNIVERSAL_EXE"
           chmod +x "$UNIVERSAL_EXE"
 
-          # Zip the universal .app for upload
-          cd universal
-          zip -r "../${APP_BASENAME}-universal.zip" "$APP_BASENAME"
-          cd ..
+          # Zip with a colon-free name for artifact upload
+          ditto -c -k --sequesterRsrc --keepParent "universal/$APP_NAME" "aurora-universal.zip"
 
       - name: Upload universal artifact
         uses: actions/upload-artifact@v4
         with:
           name: mac-publish-universal
-          path: |
-            *.zip
+          path: aurora-universal.zip

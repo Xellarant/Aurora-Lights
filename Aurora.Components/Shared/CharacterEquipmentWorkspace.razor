@@ -63,12 +63,42 @@
 
     <section class="equipment-section">
         <div class="equipment-section-label">Currency</div>
-        <div class="equipment-currency-strip">
-            @CoinField("cp", "CP", Model.Copper)
-            @CoinField("sp", "SP", Model.Silver)
-            @CoinField("ep", "EP", Model.Electrum)
-            @CoinField("gp", "GP", Model.Gold)
-            @CoinField("pp", "PP", Model.Platinum)
+        <div class="session-currency-strip">
+            <label class="session-coin-cell">
+                <input class="session-coin-input" type="number" min="0"
+                       value="@Model.Copper"
+                       disabled="@(!OnCoinChanged.HasDelegate || Busy)"
+                       @onchange='args => _ = ChangeCoinAsync("cp", args.Value?.ToString())' />
+                <span class="session-coin-label">CP</span>
+            </label>
+            <label class="session-coin-cell">
+                <input class="session-coin-input" type="number" min="0"
+                       value="@Model.Silver"
+                       disabled="@(!OnCoinChanged.HasDelegate || Busy)"
+                       @onchange='args => _ = ChangeCoinAsync("sp", args.Value?.ToString())' />
+                <span class="session-coin-label">SP</span>
+            </label>
+            <label class="session-coin-cell">
+                <input class="session-coin-input" type="number" min="0"
+                       value="@Model.Electrum"
+                       disabled="@(!OnCoinChanged.HasDelegate || Busy)"
+                       @onchange='args => _ = ChangeCoinAsync("ep", args.Value?.ToString())' />
+                <span class="session-coin-label">EP</span>
+            </label>
+            <label class="session-coin-cell">
+                <input class="session-coin-input" type="number" min="0"
+                       value="@Model.Gold"
+                       disabled="@(!OnCoinChanged.HasDelegate || Busy)"
+                       @onchange='args => _ = ChangeCoinAsync("gp", args.Value?.ToString())' />
+                <span class="session-coin-label">GP</span>
+            </label>
+            <label class="session-coin-cell">
+                <input class="session-coin-input" type="number" min="0"
+                       value="@Model.Platinum"
+                       disabled="@(!OnCoinChanged.HasDelegate || Busy)"
+                       @onchange='args => _ = ChangeCoinAsync("pp", args.Value?.ToString())' />
+                <span class="session-coin-label">PP</span>
+            </label>
         </div>
     </section>
 
@@ -230,31 +260,6 @@
 
     [Parameter]
     public EventCallback<EquipmentNoteChangeModel> OnNoteChanged { get; set; }
-
-    private RenderFragment CoinField(string coinId, string label, long value) => builder =>
-    {
-        builder.OpenElement(0, "label");
-        builder.AddAttribute(1, "class", "equipment-currency-cell");
-
-        builder.OpenElement(2, "input");
-        builder.AddAttribute(3, "class", "equipment-currency-input");
-        builder.AddAttribute(4, "type", "number");
-        builder.AddAttribute(5, "min", "0");
-        builder.AddAttribute(6, "value", BindConverter.FormatValue(value));
-        builder.AddAttribute(7, "disabled", !OnCoinChanged.HasDelegate || Busy);
-        builder.AddAttribute(8, "onchange", EventCallback.Factory.CreateBinder<string>(
-            this,
-            updated => _ = ChangeCoinAsync(coinId, updated),
-            value.ToString()));
-        builder.CloseElement();
-
-        builder.OpenElement(9, "span");
-        builder.AddAttribute(10, "class", "equipment-currency-label");
-        builder.AddContent(11, label);
-        builder.CloseElement();
-
-        builder.CloseElement();
-    };
 
     private Task ChangeAmountAsync(string identifier, ChangeEventArgs args)
     {

@@ -6,7 +6,9 @@
 
 using iTextSharp.text;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 #nullable disable
 namespace Builder.Presentation.Models.CharacterSheet.PDF;
@@ -33,11 +35,49 @@ public static class FontsHelper
     return FontsHelper.GetFont("Calibri Bold Italic", "calibriz.ttf", size) ?? FontFactory.GetFont("Helvetica-BoldOblique", size);
   }
 
-  private static Font GetFont(string fontName, string filename, float size = 0.0f)
+  public static Font GetFont(string fontName, string filename, float size = 0.0f)
   {
-    string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
-    if (!FontFactory.IsRegistered(filename))
-      FontFactory.Register(Path.Combine(folderPath, filename));
-    return FontFactory.GetFont(fontName, "Identity-H", true, size);
+    try
+    {
+      string fontPath = FontsHelper.ResolveFontPath(filename);
+      if (string.IsNullOrWhiteSpace(fontPath))
+        return (Font) null;
+      if (!FontFactory.IsRegistered(fontPath))
+        FontFactory.Register(fontPath);
+      Font font = FontFactory.GetFont(fontName, "Identity-H", true, size);
+      return font?.BaseFont != null ? font : (Font) null;
+    }
+    catch
+    {
+      return (Font) null;
+    }
+  }
+
+  private static string ResolveFontPath(string filename)
+  {
+    foreach (string path in FontsHelper.GetCandidateDirectories().Select(dir => Path.Combine(dir, filename)))
+    {
+      if (File.Exists(path))
+        return path;
+    }
+    return (string) null;
+  }
+
+  private static IEnumerable<string> GetCandidateDirectories()
+  {
+    string windowsFonts = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+    if (!string.IsNullOrWhiteSpace(windowsFonts))
+      yield return windowsFonts;
+    string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    if (!string.IsNullOrWhiteSpace(userProfile))
+    {
+      yield return Path.Combine(userProfile, "Library", "Fonts");
+      yield return Path.Combine(userProfile, ".fonts");
+      yield return Path.Combine(userProfile, ".local", "share", "fonts");
+    }
+    yield return "/System/Library/Fonts";
+    yield return "/Library/Fonts";
+    yield return "/usr/share/fonts";
+    yield return "/usr/local/share/fonts";
   }
 }

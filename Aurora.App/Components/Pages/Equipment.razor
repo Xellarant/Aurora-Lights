@@ -48,43 +48,47 @@
     private string? _mainHandName;
     private string? _offHandName;
 
-    private EquipmentOverviewModel EquipmentModel =>
-        _snap is null
-            ? new EquipmentOverviewModel()
-            : new()
-            {
-                Attacks = _snap.Attacks.Select(atk => new EquipmentAttackModel(atk.Name, atk.Attack, atk.Damage, atk.Range)).ToList(),
-                GearSlots =
-                [
-                    new("armor", "Armor", _armorName),
-                    new("main-hand", "Main Hand", _mainHandName),
-                    new("off-hand", "Off Hand", _offHandName)
-                ],
-                InventoryItems = _snap.InventoryItems
-                    .Select(item => new EquipmentInventoryItemModel(
-                        item.Identifier,
-                        item.Name,
-                        item.Amount,
-                        item.IsStackable,
-                        item.IsEquipped,
-                        item.EquippedLocation,
-                        item.IsAttunable,
-                        item.IsAttuned,
-                        item.DisplayWeight,
-                        item.DisplayPrice,
-                        item.IsEquippable))
-                    .ToList(),
-                Copper = _snap.CoinCopper,
-                Silver = _snap.CoinSilver,
-                Electrum = _snap.CoinElectrum,
-                Gold = _snap.CoinGold,
-                Platinum = _snap.CoinPlatinum,
-                AttunedCount = _snap.AttunedCount,
-                AttunedMax = _snap.AttunedMax,
-                EquipmentNotes = _snap.InventoryEquipmentText,
-                TreasureNotes = _snap.InventoryTreasureText,
-                QuestNotes = _snap.InventoryQuestText
-            };
+    private EquipmentOverviewModel _equipmentModel = new();
+    private EquipmentOverviewModel EquipmentModel => _equipmentModel;
+
+    private void BuildEquipmentModel()
+    {
+        if (_snap is null) { _equipmentModel = new EquipmentOverviewModel(); return; }
+        _equipmentModel = new()
+        {
+            Attacks = _snap.Attacks.Select(atk => new EquipmentAttackModel(atk.Name, atk.Attack, atk.Damage, atk.Range)).ToList(),
+            GearSlots =
+            [
+                new("armor",     "Armor",     _armorName),
+                new("main-hand", "Main Hand", _mainHandName),
+                new("off-hand",  "Off Hand",  _offHandName)
+            ],
+            InventoryItems = _snap.InventoryItems
+                .Select(item => new EquipmentInventoryItemModel(
+                    item.Identifier,
+                    item.Name,
+                    item.Amount,
+                    item.IsStackable,
+                    item.IsEquipped,
+                    item.EquippedLocation,
+                    item.IsAttunable,
+                    item.IsAttuned,
+                    item.DisplayWeight,
+                    item.DisplayPrice,
+                    item.IsEquippable))
+                .ToList(),
+            Copper   = _snap.CoinCopper,
+            Silver   = _snap.CoinSilver,
+            Electrum = _snap.CoinElectrum,
+            Gold     = _snap.CoinGold,
+            Platinum = _snap.CoinPlatinum,
+            AttunedCount    = _snap.AttunedCount,
+            AttunedMax      = _snap.AttunedMax,
+            EquipmentNotes  = _snap.InventoryEquipmentText,
+            TreasureNotes   = _snap.InventoryTreasureText,
+            QuestNotes      = _snap.InventoryQuestText
+        };
+    }
 
     protected override void OnInitialized()
     {
@@ -104,6 +108,7 @@
     {
         _snap = Tabs.ActiveTab?.Snapshot;
         RefreshGearNames();
+        BuildEquipmentModel();
     }
 
     private void RefreshGearNames()
@@ -111,9 +116,9 @@
         try
         {
             var inv = Tabs.ActiveTab?.Character?.Inventory;
-            _armorName = inv?.EquippedArmor?.DisplayName ?? inv?.EquippedArmor?.Name;
-            _mainHandName = inv?.EquippedPrimary?.DisplayName ?? inv?.EquippedPrimary?.Name;
-            _offHandName = inv?.EquippedSecondary?.DisplayName ?? inv?.EquippedSecondary?.Name;
+            _armorName    = inv?.EquippedArmor?.DisplayName    ?? inv?.EquippedArmor?.Name;
+            _mainHandName = inv?.EquippedPrimary?.DisplayName  ?? inv?.EquippedPrimary?.Name;
+            _offHandName  = inv?.EquippedSecondary?.DisplayName ?? inv?.EquippedSecondary?.Name;
         }
         catch (Exception ex)
         {
@@ -121,13 +126,24 @@
         }
     }
 
-    private void OnTabsChanged() => InvokeAsync(() =>
-    {
-        LoadFromActiveTab();
-        StateHasChanged();
-    });
+    private bool _disposed;
 
-    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+    private void OnTabsChanged()
+    {
+        if (_disposed) return;
+        _ = InvokeAsync(() =>
+        {
+            if (_disposed) return;
+            LoadFromActiveTab();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Tabs.TabsChanged -= OnTabsChanged;
+    }
 
     private void MarkDirty()
     {
@@ -150,10 +166,9 @@
         await OpenGearSlotDialog(ParseSlot(slotId));
     }
 
-    private Task UnequipGearAsync(string slotId)
+    private async Task UnequipGearAsync(string slotId)
     {
-        UnequipGear(ParseSlot(slotId));
-        return Task.CompletedTask;
+        await UnequipGear(ParseSlot(slotId));
     }
 
     private async Task OpenGearSlotDialog(GearSlot slot)
@@ -172,6 +187,10 @@
 
         if (result is { Canceled: false, Data: GearPickerResult pick })
         {
+            var tab = Tabs.ActiveTab;
+            if (tab is null) return;
+            using var scope = await CharacterContext.EnterAsync(tab);
+
             bool ok = pick.IsNew
                 ? EquipmentService.AddAndEquipToSlot(character, slot, pick.ElementId!)
                 : EquipmentService.EquipToSlot(character, slot, pick.Identifier!);
@@ -182,23 +201,21 @@
                 return;
             }
 
-            snap.RefreshEquipmentFromCharacter(character);
-            _snap = snap;
-            RefreshGearNames();
+            RefreshEquipment();
             file.SaveInventoryItems(character);
             MarkDirty();
             StateHasChanged();
         }
     }
 
-    private void UnequipGear(GearSlot slot)
+    private async Task UnequipGear(GearSlot slot)
     {
-        if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap }) return;
+        var tab = Tabs.ActiveTab;
+        if (tab is not { Character: { } character, File: { } file, Snapshot: { } snap }) return;
+        using var scope = await CharacterContext.EnterAsync(tab);
 
         EquipmentService.UnequipSlot(character, slot);
-        snap.RefreshEquipmentFromCharacter(character);
-        _snap = snap;
-        RefreshGearNames();
+        RefreshEquipment();
         file.SaveInventoryItems(character);
         MarkDirty();
         StateHasChanged();
@@ -211,8 +228,10 @@
 
         if (result is { Canceled: false, Data: ItemPickerResult pick })
         {
-            if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap })
+            var tab = Tabs.ActiveTab;
+            if (tab is not { Character: { } character, File: { } file, Snapshot: { } snap })
                 return;
+            using var scope = await CharacterContext.EnterAsync(tab);
 
             var added = EquipmentService.AddItem(character, pick.ElementId, pick.Amount);
             if (!added)
@@ -221,49 +240,58 @@
                 return;
             }
 
-            snap.RefreshEquipmentFromCharacter(character);
-            _snap = snap;
-            RefreshGearNames();
-
+            RefreshEquipment();
             file.SaveInventoryItems(character);
             MarkDirty();
             StateHasChanged();
         }
     }
 
-    private Task RemoveItemAsync(string identifier)
+    private async Task RemoveItemAsync(string identifier)
     {
-        if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap })
-            return Task.CompletedTask;
+        var tab = Tabs.ActiveTab;
+        if (tab is not { Character: { } character, File: { } file, Snapshot: { } snap })
+            return;
 
+        var itemName = snap.InventoryItems
+            .FirstOrDefault(i => i.Identifier == identifier)?.Name ?? "this item";
+
+        bool? confirmed = await DialogService.ShowMessageBox(
+            "Remove Item",
+            $"Remove \"{itemName}\" from inventory? This cannot be undone.",
+            yesText: "Remove", cancelText: "Cancel");
+
+        if (confirmed != true) return;
+
+        using var scope = await CharacterContext.EnterAsync(tab);
         EquipmentService.RemoveItem(character, identifier);
-        snap.RefreshEquipmentFromCharacter(character);
-        _snap = snap;
-        RefreshGearNames();
-
+        RefreshEquipment();
         file.SaveInventoryItems(character);
         MarkDirty();
-        return Task.CompletedTask;
+        StateHasChanged();
     }
 
-    private Task ChangeAmountAsync(EquipmentAmountChangeModel change)
+    private async Task ChangeAmountAsync(EquipmentAmountChangeModel change)
     {
-        if (Tabs.ActiveTab is not { Character: { } character, File: { } file, Snapshot: { } snap })
-            return Task.CompletedTask;
+        var tab = Tabs.ActiveTab;
+        if (tab is not { Character: { } character, File: { } file, Snapshot: { } snap })
+            return;
+        using var scope = await CharacterContext.EnterAsync(tab);
 
         EquipmentService.SetAmount(character, change.Identifier, change.Amount);
-        snap.RefreshEquipmentFromCharacter(character);
-        _snap = snap;
-
+        RefreshEquipment();
         file.SaveInventoryItems(character);
         MarkDirty();
-        return Task.CompletedTask;
     }
 
-    private Task ToggleEquippedAsync(string identifier)
+    private async Task ToggleEquippedAsync(string identifier)
     {
+        var tab = Tabs.ActiveTab;
+        if (tab is null) return;
+        using var scope = await CharacterContext.EnterAsync(tab);
+
         var item = FindLiveItem(identifier);
-        if (item is null) return Task.CompletedTask;
+        if (item is null) return;
 
         if (item.IsEquipped)
             item.Deactivate();
@@ -272,13 +300,16 @@
 
         RefreshEquipment();
         MarkDirty();
-        return Task.CompletedTask;
     }
 
-    private Task ToggleAttunedAsync(string identifier)
+    private async Task ToggleAttunedAsync(string identifier)
     {
+        var tab = Tabs.ActiveTab;
+        if (tab is null) return;
+        using var scope = await CharacterContext.EnterAsync(tab);
+
         var item = FindLiveItem(identifier);
-        if (item is null) return Task.CompletedTask;
+        if (item is null) return;
 
         if (item.IsAttuned)
             item.DeactivateAttunement();
@@ -287,7 +318,6 @@
 
         RefreshEquipment();
         MarkDirty();
-        return Task.CompletedTask;
     }
 
     private RefactoredEquipmentItem? FindLiveItem(string identifier) =>
@@ -300,6 +330,7 @@
         snap.RefreshEquipmentFromCharacter(character);
         _snap = snap;
         RefreshGearNames();
+        BuildEquipmentModel();
     }
 
     private Task ChangeCoinAsync(EquipmentCoinChangeModel change)

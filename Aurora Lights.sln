@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurora Lights", "Aurora Lights.csproj", "{1452F300-6B85-46E2-9262-AC19BA5BBF9F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurora.Lights", "Aurora.Lights\Aurora.Lights.csproj", "{1452F300-6B85-46E2-9262-AC19BA5BBF9F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurora.Logic", "Aurora.Logic\Aurora.Logic.csproj", "{57719405-4860-4995-B845-1DE22BD8F675}"
 EndProject
@@ -12,6 +12,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurora.Web", "Aurora.Web\Aurora.Web.csproj", "{AB49B9EC-C464-4C16-ABE6-B1C36B836272}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurora.Components", "Aurora.Components\Aurora.Components.csproj", "{5DF7504A-FD66-49A7-B71A-E4408DB65C6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurora.Importer", "Aurora.Importer\Aurora.Importer.csproj", "{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aurora.Tests", "Aurora.Tests\Aurora.Tests.csproj", "{3B904FD2-5A05-4983-A26A-F981301C03A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,6 +87,30 @@ Global
 		{5DF7504A-FD66-49A7-B71A-E4408DB65C6D}.Release|x64.Build.0 = Release|Any CPU
 		{5DF7504A-FD66-49A7-B71A-E4408DB65C6D}.Release|x86.ActiveCfg = Release|Any CPU
 		{5DF7504A-FD66-49A7-B71A-E4408DB65C6D}.Release|x86.Build.0 = Release|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Debug|x64.Build.0 = Debug|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Debug|x86.Build.0 = Debug|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Release|x64.ActiveCfg = Release|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Release|x64.Build.0 = Release|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Release|x86.ActiveCfg = Release|Any CPU
+		{A28AEE08-F0A2-4DF1-A391-7FA5AC6147CF}.Release|x86.Build.0 = Release|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Debug|x64.Build.0 = Debug|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Debug|x86.Build.0 = Debug|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Release|x64.ActiveCfg = Release|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Release|x64.Build.0 = Release|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Release|x86.ActiveCfg = Release|Any CPU
+		{3B904FD2-5A05-4983-A26A-F981301C03A0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

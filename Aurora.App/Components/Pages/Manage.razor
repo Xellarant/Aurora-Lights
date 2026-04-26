@@ -28,7 +28,7 @@
                                   OnToggleGroup="ToggleGroupAsync"
                                   OnToggleItem="ToggleSourceAsync"
                                   OnLoadDefaults="LoadDefaultAsync"
-                                  OnSaveDefaults="SaveAsDefaultAsync" />
+                                  OnSaveDefaults="SaveAsDefault" />
     </MudTabPanel>
 
 </MudTabs>
@@ -53,13 +53,24 @@
         _infoModel = _snap is null ? null : ToInfoModel(_snap);
     }
 
-    private void OnTabsChanged() => InvokeAsync(() =>
-    {
-        LoadFromActiveTab();
-        StateHasChanged();
-    });
+    private bool _disposed;
 
-    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+    private void OnTabsChanged()
+    {
+        if (_disposed) return;
+        _ = InvokeAsync(() =>
+        {
+            if (_disposed) return;
+            LoadFromActiveTab();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Tabs.TabsChanged -= OnTabsChanged;
+    }
 
     private Task MarkDirty()
     {
@@ -72,36 +83,62 @@
         return Task.CompletedTask;
     }
 
-    private void ToggleGroup(SourcesGroup group)
+    private async Task ToggleGroupInternal(SourcesGroup group)
     {
-        if (!group.AllowUnchecking)
-        {
-            return;
-        }
-
+        if (!group.AllowUnchecking) return;
         group.SetIsChecked(group.IsChecked == true ? false : (bool?)true, updateChildren: true);
-        ApplyAndPersistRestrictions();
+        await ApplyAndPersistRestrictions();
     }
 
-    private void ToggleSource(SourceItem item)
+    private async Task ToggleSourceInternal(SourceItem item)
     {
-        if (!item.AllowUnchecking)
-        {
-            return;
-        }
-
+        if (!item.AllowUnchecking) return;
         item.SetIsChecked(item.IsChecked != true, updateChildren: true, updateParent: true);
-        ApplyAndPersistRestrictions();
+        await ApplyAndPersistRestrictions();
     }
 
-    private void ApplyAndPersistRestrictions()
+    private async Task ApplyAndPersistRestrictions()
     {
+        if (_tab is not { } tab) return;
+        using var scope = await CharacterContext.EnterAsync(tab);
+
         CharacterManager.Current.SourcesManager.ApplyRestrictions(reprocess: true);
         _ = MarkDirty();
-        if (_tab is { } tab)
+        tab.File.SaveSourceRestrictions();
+
+        StateHasChanged();
+    }
+
+
+    private async Task ToggleGroupAsync(string groupId)
+    {
+        SourcesGroup? group = CharacterManager.Current.SourcesManager.SourceGroups
+            .FirstOrDefault(candidate => string.Equals(candidate.Name, groupId, StringComparison.Ordinal));
+        if (group is not null)
         {
-            tab.File.SaveSourceRestrictions();
+            await ToggleGroupInternal(group);
         }
+    }
+
+    private async Task ToggleSourceAsync(string sourceId)
+    {
+        SourceItem? item = CharacterManager.Current.SourcesManager.SourceGroups
+            .SelectMany(group => group.Sources)
+            .FirstOrDefault(candidate => string.Equals(candidate.Source.Id, sourceId, StringComparison.Ordinal));
+        if (item is not null)
+        {
+            await ToggleSourceInternal(item);
+        }
+    }
+
+    private async Task LoadDefaultAsync()
+    {
+        if (_tab is not { } tab) return;
+        using var scope = await CharacterContext.EnterAsync(tab);
+
+        CharacterManager.Current.SourcesManager.LoadDefaults();
+        _ = MarkDirty();
+        tab.File.SaveSourceRestrictions();
 
         StateHasChanged();
     }
@@ -109,55 +146,6 @@
     private void SaveAsDefault()
     {
         CharacterManager.Current.SourcesManager.StoreDefaults();
-    }
-
-    private void LoadDefault()
-    {
-        CharacterManager.Current.SourcesManager.LoadDefaults();
-        _ = MarkDirty();
-        if (_tab is { } tab)
-        {
-            tab.File.SaveSourceRestrictions();
-        }
-
-        StateHasChanged();
-    }
-
-    private Task ToggleGroupAsync(string groupId)
-    {
-        SourcesGroup? group = CharacterManager.Current.SourcesManager.SourceGroups
-            .FirstOrDefault(candidate => string.Equals(candidate.Name, groupId, StringComparison.Ordinal));
-        if (group is not null)
-        {
-            ToggleGroup(group);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    private Task ToggleSourceAsync(string sourceId)
-    {
-        SourceItem? item = CharacterManager.Current.SourcesManager.SourceGroups
-            .SelectMany(group => group.Sources)
-            .FirstOrDefault(candidate => string.Equals(candidate.Source.Id, sourceId, StringComparison.Ordinal));
-        if (item is not null)
-        {
-            ToggleSource(item);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    private Task LoadDefaultAsync()
-    {
-        LoadDefault();
-        return Task.CompletedTask;
-    }
-
-    private Task SaveAsDefaultAsync()
-    {
-        SaveAsDefault();
-        return Task.CompletedTask;
     }
 
     private static EditableCharacterInfoModel ToInfoModel(CharacterSnapshot snap) =>

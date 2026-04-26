@@ -26,7 +26,6 @@ public static class BuildService
     public static IReadOnlyList<SelectionRuleGroup> GetRuleGroups()
     {
         var cm       = CharacterManager.Current;
-        var handler  = SelectionRuleExpanderContext.Current;
         var classMgrs = cm.ClassProgressionManagers;
 
         var mainEntries  = new List<SelectionRuleEntry>();
@@ -42,15 +41,7 @@ public static class BuildService
 
             for (int n = 1; n <= rule.Attributes.Number; n++)
             {
-                string? currentName = null;
-                try
-                {
-                    var current = handler?.GetRegisteredElement(rule, n);
-                    if (current != null)
-                        currentName = (string?)((dynamic)current).Name;
-                }
-                catch { }
-
+                string? currentName = ResolveCurrentSelectionName(rule, n);
                 string label = rule.Attributes.Number > 1
                     ? $"{rule.Attributes.Name ?? rule.Attributes.Type} ({n})"
                     : (rule.Attributes.Name ?? rule.Attributes.Type);
@@ -101,7 +92,6 @@ public static class BuildService
     public static IReadOnlyList<SelectionRuleGroup> GetSpellRuleGroups()
     {
         var cm      = CharacterManager.Current;
-        var handler = SelectionRuleExpanderContext.Current;
 
         var byClass = new Dictionary<string, List<SelectionRuleEntry>>(StringComparer.Ordinal);
 
@@ -115,15 +105,7 @@ public static class BuildService
 
             for (int n = 1; n <= rule.Attributes.Number; n++)
             {
-                string? currentName = null;
-                try
-                {
-                    var current = handler?.GetRegisteredElement(rule, n);
-                    if (current != null)
-                        currentName = (string?)((dynamic)current).Name;
-                }
-                catch { }
-
+                string? currentName = ResolveCurrentSelectionName(rule, n);
                 string label = rule.Attributes.Number > 1
                     ? $"{rule.Attributes.Name ?? rule.Attributes.Type} ({n})"
                     : (rule.Attributes.Name ?? rule.Attributes.Type);
@@ -350,6 +332,8 @@ public static class BuildService
         Builder.Presentation.Models.CharacterFile file,
         bool saveToFile = true)
     {
+        using var scope = await CharacterContext.EnterAsync(tab);
+
         var invalidated = new List<string>();
 
         string? taskError = null;
@@ -460,6 +444,7 @@ public static class BuildService
     public static async Task<string?> SaveTabAsync(CharacterTab tab)
     {
         if (tab.File == null) return "No file associated with this tab.";
+        using var scope = await CharacterContext.EnterAsync(tab);
         string? error = null;
         await Task.Run(() =>
         {
@@ -599,27 +584,78 @@ public static class BuildService
     }
 
     /// <summary>
-    /// Extracts a plain-text description from an element.
-    /// Prefers SheetDescription[0].Description; falls back to Description via generator.
-    /// Uses dynamic dispatch to avoid Builder.Data.Elements import constraints.
+    /// Extracts a plain-text description from an element via GeneratePlainDescription,
+    /// which properly inserts paragraph breaks between &lt;p&gt; elements.
+    /// SheetDescription is skipped — it's a flat PDF-oriented text blob without structure.
     /// </summary>
     public static string GetFeatureDescription(object e)
     {
         try
         {
             dynamic el = e;
-            var sheetDesc = el.SheetDescription as System.Collections.IList;
-            if (sheetDesc != null && sheetDesc.Count > 0)
-            {
-                dynamic first = sheetDesc[0]!;
-                return (string)(first.Description ?? "");
-            }
             string raw = (string)(el.Description ?? "");
             if (!string.IsNullOrWhiteSpace(raw))
                 return ElementDescriptionGenerator.GeneratePlainDescription(raw).Trim();
         }
         catch { }
         return "";
+    }
+
+    // ── Advancement timeline ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Returns a per-level breakdown of features for each class in the current character,
+    /// grouped by class-level. Only features that unlock at each specific level are included
+    /// (not cumulative); feature level is read via dynamic dispatch on e.Attributes.Level.
+    /// </summary>
+    public static IReadOnlyList<AdvancementClassTimeline> GetAdvancementTimeline()
+    {
+        var cm = CharacterManager.Current;
+        var result = new List<AdvancementClassTimeline>();
+
+        foreach (var m in cm.ClassProgressionManagers)
+        {
+            var byLevel = new Dictionary<int, List<FeatureEntry>>();
+            for (int lvl = 1; lvl <= m.ProgressionLevel; lvl++)
+                byLevel[lvl] = [];
+
+            foreach (var e in m.GetElements())
+            {
+                if (e.Type != "Class Feature" && e.Type != "Archetype Feature") continue;
+                if (string.IsNullOrWhiteSpace(e.Name)) continue;
+                if (e.Name.StartsWith("Ability Score Increase") ||
+                    e.Name.StartsWith("Ability Score Improvement") ||
+                    e.Name.Equals("Feat", StringComparison.OrdinalIgnoreCase)) continue;
+
+                int atLevel = 1;
+                try { dynamic d = e; atLevel = (int)d.Attributes.Level; } catch { }
+                if (atLevel < 1 || atLevel > m.ProgressionLevel) continue;
+                if (!byLevel.TryGetValue(atLevel, out var list)) continue;
+                if (list.Any(f => f.Name == e.Name)) continue;
+                list.Add(new FeatureEntry(e.Name!, GetFeatureDescription(e)));
+            }
+
+            var hitDieVal = 0;
+            try { hitDieVal = m.GetHitDieValue(); } catch { }
+
+            var levels = Enumerable.Range(1, m.ProgressionLevel)
+                .Select(lvl =>
+                {
+                    int avgHp = lvl == 1 && m.IsMainClass
+                        ? hitDieVal
+                        : (hitDieVal / 2) + 1;
+                    return new AdvancementLevelEntry(lvl, avgHp, byLevel[lvl]);
+                })
+                .ToList();
+
+            result.Add(new AdvancementClassTimeline(
+                m.ClassElement?.Name ?? "Unknown",
+                m.HD ?? "—",
+                m.IsMainClass,
+                levels));
+        }
+
+        return result;
     }
 
     // ── Spell detail lookup ──────────────────────────────────────────────────────
@@ -732,6 +768,7 @@ public static class BuildService
     /// </summary>
     public static async Task<string?> SetHpMethodAsync(CharacterTab tab, HpMethod method)
     {
+        using var scope = await CharacterContext.EnterAsync(tab);
         return await Task.Run(() =>
         {
             try
@@ -771,6 +808,7 @@ public static class BuildService
     /// </summary>
     public static async Task<(string? Error, int HpGained, bool IsAverage)> LevelUpMainAsync(CharacterTab tab)
     {
+        using var scope = await CharacterContext.EnterAsync(tab);
         return await Task.Run(() =>
         {
             try
@@ -806,6 +844,7 @@ public static class BuildService
     /// </summary>
     public static async Task<string?> LevelDownAsync(CharacterTab tab)
     {
+        using var scope = await CharacterContext.EnterAsync(tab);
         return await Task.Run(() =>
         {
             try
@@ -844,6 +883,7 @@ public static class BuildService
     /// </summary>
     public static async Task<string?> AddMulticlassLevelAsync(CharacterTab tab, string multiclassElementId)
     {
+        using var scope = await CharacterContext.EnterAsync(tab);
         return await Task.Run(() =>
         {
             try
@@ -930,10 +970,42 @@ public static class BuildService
     /// Always returns Race, Class, and Background tabs (may be empty of rules if none
     /// apply yet). Additional overflow tabs are added for any other rule types.
     /// </summary>
+    /// <summary>
+    /// Returns build tabs, ASI entries, and the next required step in a single scan of
+    /// <see cref="CharacterManager.SelectionRules"/>. Prefer this over calling
+    /// <see cref="GetBuildTabs"/>, <see cref="GetAsiEntries"/>, and
+    /// <see cref="GetNextRequiredStep"/> separately.
+    /// </summary>
+    public static (IReadOnlyList<BuildTabGroup> Tabs,
+                   IReadOnlyList<SelectionRuleEntry> AsiEntries,
+                   (string TabLabel, string StepLabel)? NextStep)
+        GetBuildData()
+    {
+        var tabs = GetBuildTabs();
+        var asi  = GetAsiEntries();
+
+        (string, string)? next = null;
+        foreach (var tab in tabs)
+        {
+            foreach (var group in tab.RuleGroups)
+            {
+                foreach (var rule in group.Rules)
+                {
+                    if (rule.CurrentName == null) { next = (tab.Label, rule.Label); goto done; }
+                }
+            }
+        }
+        foreach (var entry in asi)
+        {
+            if (entry.CurrentName == null) { next = ("Ability Scores", entry.Label); break; }
+        }
+        done:
+        return (tabs, asi, next);
+    }
+
     public static IReadOnlyList<BuildTabGroup> GetBuildTabs()
     {
         var cm       = CharacterManager.Current;
-        var handler  = SelectionRuleExpanderContext.Current;
         var classMgrs = cm.ClassProgressionManagers;
 
         var raceEntries        = new List<SelectionRuleEntry>();
@@ -953,15 +1025,7 @@ public static class BuildService
 
             for (int n = 1; n <= rule.Attributes.Number; n++)
             {
-                string? currentName = null;
-                try
-                {
-                    var current = handler?.GetRegisteredElement(rule, n);
-                    if (current != null)
-                        currentName = (string?)((dynamic)current).Name;
-                }
-                catch { }
-
+                string? currentName = ResolveCurrentSelectionName(rule, n);
                 string ruleType  = rule.Attributes.Type  ?? "Other";
                 string ruleName  = rule.Attributes.Name  ?? ruleType;
                 string label = rule.Attributes.Number > 1
@@ -1002,13 +1066,8 @@ public static class BuildService
 
         var tabs = new List<BuildTabGroup>();
 
-        // Race tab — always present
-        var raceGroups = raceEntries.Count > 0
-            ? new List<SelectionRuleGroup> { new("", Sort(raceEntries)) }
-            : new List<SelectionRuleGroup>();
-        tabs.Add(new BuildTabGroup("Race", raceGroups));
-
-        // Class tab — always present; initial Class rule first, then per-PM groups
+        // Class tab — always present; initial Class rule first, then per-PM groups (first tab because
+        // the level-up and HP controls sit outside the tabs and relate most directly to class choices)
         var classGroups = new List<SelectionRuleGroup>();
         if (classMainEntries.Count > 0)
             classGroups.Add(new SelectionRuleGroup("", Sort(classMainEntries)));
@@ -1020,6 +1079,12 @@ public static class BuildService
                 Sort(entries)));
         }
         tabs.Add(new BuildTabGroup("Class", classGroups));
+
+        // Race tab
+        var raceGroups = raceEntries.Count > 0
+            ? new List<SelectionRuleGroup> { new("", Sort(raceEntries)) }
+            : new List<SelectionRuleGroup>();
+        tabs.Add(new BuildTabGroup("Race", raceGroups));
 
         // Background tab — always present
         var bgGroups = bgEntries.Count > 0
@@ -1054,7 +1119,6 @@ public static class BuildService
     public static IReadOnlyList<SelectionRuleEntry> GetAsiEntries()
     {
         var cm      = CharacterManager.Current;
-        var handler = SelectionRuleExpanderContext.Current;
         var classMgrs = cm.ClassProgressionManagers;
         var result  = new List<SelectionRuleEntry>();
 
@@ -1069,15 +1133,7 @@ public static class BuildService
 
             for (int n = 1; n <= rule.Attributes.Number; n++)
             {
-                string? currentName = null;
-                try
-                {
-                    var current = handler?.GetRegisteredElement(rule, n);
-                    if (current != null)
-                        currentName = (string?)((dynamic)current).Name;
-                }
-                catch { }
-
+                string? currentName = ResolveCurrentSelectionName(rule, n);
                 string ruleName = rule.Attributes.Name ?? ruleType;
                 string label    = rule.Attributes.Number > 1 ? $"{ruleName} ({n})" : ruleName;
                 result.Add(new SelectionRuleEntry(rule, n, label, currentName, rule.Attributes.RequiredLevel));
@@ -1112,6 +1168,20 @@ public static class BuildService
         }
         return null;
     }
+
+    /// <summary>
+    /// Returns the Name of the element currently registered for <paramref name="rule"/> slot
+    /// <paramref name="n"/>, or null if the slot is empty or the lookup fails.
+    /// </summary>
+    private static string? ResolveCurrentSelectionName(SelectRule rule, int n)
+    {
+        try
+        {
+            var current = SelectionRuleExpanderContext.Current?.GetRegisteredElement(rule, n);
+            return current is null ? null : (string?)((dynamic)current).Name;
+        }
+        catch { return null; }
+    }
 }
 
 // ── Build tab group ───────────────────────────────────────────────────────────
@@ -1142,3 +1212,16 @@ public sealed record SpellDetail(
     string Components,
     string Duration,
     string Description);
+
+// ── Advancement timeline ──────────────────────────────────────────────────────
+
+public sealed record AdvancementLevelEntry(
+    int                       Level,
+    int                       AverageHp,
+    IReadOnlyList<FeatureEntry> Features);
+
+public sealed record AdvancementClassTimeline(
+    string                             ClassName,
+    string                             HitDie,
+    bool                               IsMainClass,
+    IReadOnlyList<AdvancementLevelEntry> Levels);

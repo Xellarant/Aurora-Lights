@@ -7,6 +7,9 @@ obj/
 # Visual Studio IDE files
 .vs/
 
+# Claude Code local settings
+.claude/settings.local.json
+
 # User-specific files
 *.user
 *.suo
@@ -36,6 +39,9 @@ packages/
 
 # Publish output
 **/publish/
+
+# Aurora.Web runtime data
+Aurora.Web/App_Data/
 
 # Crash dumps
 *.dmp

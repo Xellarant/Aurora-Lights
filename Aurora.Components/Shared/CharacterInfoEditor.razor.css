@@ -12,7 +12,7 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 700;
-    color: #16202c;
+    color: #cdd6f4;
 }
 
 .character-info-grid {
@@ -33,30 +33,30 @@
 .character-info-field span {
     font-size: 0.88rem;
     font-weight: 600;
-    color: #4b5563;
+    color: #a6adc8;
 }
 
 .character-info-field input,
 .character-info-field textarea {
     width: 100%;
-    border: 1px solid rgba(15, 23, 42, 0.14);
+    border: 1px solid #45475a;
     border-radius: 0.85rem;
     padding: 0.8rem 0.95rem;
-    background: #fff;
-    color: #142030;
+    background: #1e1e2e;
+    color: #cdd6f4;
     font: inherit;
     resize: vertical;
 }
 
 .character-info-field input[readonly],
 .character-info-field textarea[readonly] {
-    background: rgba(15, 23, 42, 0.04);
-    color: #5f6b7a;
+    background: #313244;
+    color: #6c7086;
 }
 
 .character-info-field input:focus,
 .character-info-field textarea:focus {
     outline: none;
-    border-color: rgba(31, 111, 235, 0.5);
-    box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.14);
+    border-color: #89b4fa;
+    box-shadow: 0 0 0 3px rgba(137, 180, 250, 0.15);
 }

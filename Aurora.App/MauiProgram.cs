@@ -39,9 +39,11 @@ public static class MauiProgram
         builder.Services.AddSingleton<CharacterTabService>();
         builder.Services.AddSingleton<UserPreferencesService>();
         builder.Services.AddSingleton<ContentService>();
+        builder.Services.AddSingleton<ContentDatabaseService>();
         var debugLog = new DebugLogService();
         DebugLogService.Instance = debugLog;
         builder.Services.AddSingleton(debugLog);
+        CharacterContext.ExceptionLogged += (ex, ctx) => debugLog.LogException(ex, ctx);
 
         // Capture truly unhandled exceptions (background threads, etc.) into the log.
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>

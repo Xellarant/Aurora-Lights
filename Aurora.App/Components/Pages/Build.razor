@@ -5,16 +5,27 @@
 @inject CharacterService Characters
 @inject ISnackbar Snackbar
 @inject UserPreferencesService Prefs
+@inject NavigationManager Nav
 @using Builder.Presentation
 @using Builder.Presentation.Models
 @using Builder.Presentation.Models.Collections
 
 @if (Tabs.ActiveTab?.IsLoading == true)
 {
+    bool _isApplying = Characters.LoadingStatus?.Contains("applying", StringComparison.OrdinalIgnoreCase) == true;
     <div class="char-loading-state">
         <div class="char-loading-name">@(Tabs.ActiveTab.File.DisplayName ?? "Loading…")</div>
         <MudProgressLinear Value="@Characters.LoadingPercent" Color="Color.Primary" Class="char-loading-bar" />
-        <div class="char-loading-status">@(string.IsNullOrEmpty(Characters.LoadingStatus) ? "Starting…" : Characters.LoadingStatus)</div>
+        <div class="char-loading-status">
+            @if (_isApplying)
+            {
+                @CurrentSubStep
+            }
+            else
+            {
+                @(string.IsNullOrEmpty(Characters.LoadingStatus) ? "Starting…" : Characters.LoadingStatus)
+            }
+        </div>
     </div>
     return;
 }
@@ -149,9 +160,14 @@
         <MudTabPanel Text="@tab.Label">
             @if (tab.RuleGroups.Count == 0)
             {
-                <MudText Color="Color.Secondary" Typo="Typo.body2" Class="mt-4">
-                    No selections available yet for @tab.Label.
-                </MudText>
+                <div style="margin-top: 16px; padding: 12px; background: #181825; border-radius: 6px; border: 1px solid #313244;">
+                    <MudText Color="Color.Secondary" Typo="Typo.body2">
+                        No selections are available for <b>@tab.Label</b> at your current level.
+                    </MudText>
+                    <MudText Color="Color.Secondary" Typo="Typo.caption" Style="margin-top: 4px; display: block;">
+                        Complete selections on other tabs or level up to unlock choices here.
+                    </MudText>
+                </div>
             }
             else
             {
@@ -204,7 +220,17 @@
                             <div class="build-feature-list">
                                 @foreach (var f in cls.Features)
                                 {
-                                    <div class="build-feature-item">@f.Name</div>
+                                    @if (!string.IsNullOrWhiteSpace(f.Description))
+                                    {
+                                        <details class="build-feature-item build-feature-expandable">
+                                            <summary>@f.Name</summary>
+                                            <div class="build-feature-desc">@f.Description</div>
+                                        </details>
+                                    }
+                                    else
+                                    {
+                                        <div class="build-feature-item">@f.Name</div>
+                                    }
                                 }
                             </div>
                         }
@@ -307,6 +333,7 @@
                 }
 
                 @* ── Ability score table ── *@
+                <div class="ability-stats-table-wrapper">
                 <div class="ability-stats-table">
 
                     @* Row 1: abbreviation + name *@
@@ -410,6 +437,7 @@
                     </div>
 
                 </div>@* end ability-stats-table *@
+                </div>@* end ability-stats-table-wrapper *@
             </div>
 
             @* ASI / Feat selections — below the score table *@
@@ -436,6 +464,65 @@
 </MudTabs>
 
 @code {
+    // ── Loading sub-step cycling ─────────────────────────────────────────────────
+
+    private static readonly string[] _applyingSubSteps =
+    [
+        "Parsing class features",
+        "Applying racial traits",
+        "Calculating ability scores",
+        "Resolving feat prerequisites",
+        "Processing equipment",
+        "Loading spellcasting",
+        "Computing proficiencies",
+        "Building skill list",
+        "Applying source restrictions",
+        "Finalizing character data",
+        "Reading level progressions",
+        "Applying background benefits",
+        "Resolving language proficiencies",
+        "Building attack list",
+        "Computing saving throws",
+        "Applying armor class calculations",
+        "Loading known spells",
+        "Resolving multiclass rules",
+        "Computing speed and senses",
+        "Applying condition immunities",
+    ];
+
+    private int _subStepIndex;
+    private string[] _shuffledSteps = [];
+    private CancellationTokenSource? _subStepCts;
+
+    private string CurrentSubStep => _shuffledSteps.Length > 0
+        ? _shuffledSteps[_subStepIndex]
+        : _applyingSubSteps[0];
+
+    private void StartSubStepCycling()
+    {
+        _shuffledSteps = _applyingSubSteps.OrderBy(_ => Random.Shared.Next()).ToArray();
+        _subStepIndex = 0;
+        _subStepCts = new CancellationTokenSource();
+        var token = _subStepCts.Token;
+        _ = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try { await Task.Delay(1500, token); }
+                catch (OperationCanceledException) { break; }
+                if (token.IsCancellationRequested || _disposed) break;
+                _subStepIndex = (_subStepIndex + 1) % _shuffledSteps.Length;
+                _ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
+            }
+        }, CancellationToken.None);
+    }
+
+    private void StopSubStepCycling()
+    {
+        _subStepCts?.Cancel();
+        _subStepCts = null;
+    }
+
     // ── Shared state ─────────────────────────────────────────────────────────────
     private CharacterSnapshot?                               _snap;
     private IReadOnlyList<ClassProgressionSnapshot>?         _progressions;
@@ -474,23 +561,46 @@
 
     // ── Lifecycle ────────────────────────────────────────────────────────────────
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        _wasLoading = Tabs.ActiveTab?.IsLoading == true;
         Tabs.TabsChanged += OnTabsChanged;
         Characters.LoadingProgressChanged += OnLoadingProgress;
-        LoadFromActiveTab();
+        await LoadFromActiveTabAsync();
     }
 
-    private void OnLoadingProgress() => InvokeAsync(StateHasChanged);
-
-    private void LoadFromActiveTab()
+    private void OnLoadingProgress()
     {
-        _snap         = Tabs.ActiveTab?.Snapshot;
-        _progressions = Tabs.ActiveTab?.ProgressionSnapshots;
-        _buildTabs    = _snap != null ? BuildService.GetBuildTabs() : [];
-        _asiEntries   = _snap != null ? BuildService.GetAsiEntries() : [];
-        _nextStep     = _snap != null ? BuildService.GetNextRequiredStep() : null;
-        LoadAbilityRows();
+        if (_disposed) return;
+        bool isApplying = Characters.LoadingStatus?.Contains("applying", StringComparison.OrdinalIgnoreCase) == true;
+        if (isApplying && _subStepCts == null)
+            StartSubStepCycling();
+        else if (!isApplying)
+            StopSubStepCycling();
+        _ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
+    }
+
+    private async Task LoadFromActiveTabAsync()
+    {
+        var tab       = Tabs.ActiveTab;
+        _snap         = tab?.Snapshot;
+        _progressions = tab?.ProgressionSnapshots;
+
+        if (tab != null && _snap != null)
+        {
+            using (await CharacterContext.EnterAsync(tab))
+            {
+                (_buildTabs, _asiEntries, _nextStep) = BuildService.GetBuildData();
+                LoadAbilityRows();
+            }
+        }
+        else
+        {
+            _buildTabs  = [];
+            _asiEntries = [];
+            _nextStep   = null;
+            LoadAbilityRows();
+        }
     }
 
     private void LoadAbilityRows()
@@ -519,14 +629,28 @@
         }
     }
 
-    private void OnTabsChanged() => InvokeAsync(() =>
+    private bool _disposed;
+    private bool _wasLoading;
+
+    private void OnTabsChanged()
     {
-        LoadFromActiveTab();
-        StateHasChanged();
-    });
+        if (_disposed) return;
+        _ = InvokeAsync(async () =>
+        {
+            if (_disposed) return;
+            bool isLoading = Tabs.ActiveTab?.IsLoading == true;
+            if (_wasLoading && !isLoading && Tabs.ActiveTab?.Snapshot != null)
+                Nav.NavigateTo("/character");
+            _wasLoading = isLoading;
+            await LoadFromActiveTabAsync();
+            StateHasChanged();
+        });
+    }
 
     public void Dispose()
     {
+        _disposed = true;
+        StopSubStepCycling();
         Tabs.TabsChanged -= OnTabsChanged;
         Characters.LoadingProgressChanged -= OnLoadingProgress;
         if (_abilities != null)
@@ -573,7 +697,11 @@
         var file = Characters.CurrentCharacterFile;
         if (tab == null || file == null) return;
 
+        _saving = true;
+        StateHasChanged();
         var options = await Task.Run(() => BuildService.GetOptions(entry.Rule));
+        _saving = false;
+        StateHasChanged();
 
         var parameters = new DialogParameters
         {
@@ -626,7 +754,7 @@
                 }
             }
 
-            LoadFromActiveTab();
+            await LoadFromActiveTabAsync();
             StateHasChanged();
         }
     }
@@ -679,7 +807,7 @@
         {
             _saveError = error;
         }
-        LoadFromActiveTab();
+        await LoadFromActiveTabAsync();
         StateHasChanged();
     }
 
@@ -703,7 +831,7 @@
         {
             _saveError = error;
         }
-        LoadFromActiveTab();
+        await LoadFromActiveTabAsync();
         StateHasChanged();
     }
 
@@ -726,7 +854,7 @@
         {
             _saveError = error;
         }
-        LoadFromActiveTab();
+        await LoadFromActiveTabAsync();
         StateHasChanged();
     }
 
@@ -737,7 +865,11 @@
         var tab = Tabs.ActiveTab;
         if (tab == null) return;
 
+        _saving = true;
+        StateHasChanged();
         var options = await Task.Run(() => BuildService.GetMulticlassOptions());
+        _saving = false;
+        StateHasChanged();
         if (options.Count == 0)
         {
             Snackbar.Add("No multiclass options available in loaded content.", Severity.Warning);
@@ -782,7 +914,7 @@
             {
                 _saveError = error;
             }
-            LoadFromActiveTab();
+            await LoadFromActiveTabAsync();
             StateHasChanged();
         }
     }

@@ -4,8 +4,10 @@
 @inject NavigationManager Nav
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject UserPreferencesService Prefs
+@inject IJSRuntime JS
 
-<MudThemeProvider Theme="_theme" IsDarkMode="true" />
+<MudThemeProvider Theme="_theme" IsDarkMode="@(!Prefs.LightMode)" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -25,6 +27,10 @@
                            title="Save (Ctrl+S)"
                            OnClick="@(() => SaveActive())" />
         }
+        <MudIconButton Icon="@Icons.Material.Filled.Help"
+                       Color="Color.Inherit"
+                       title="Keyboard shortcuts"
+                       OnClick="ShowShortcutsDialog" />
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen"
@@ -52,7 +58,7 @@
                         <button class="char-tab-close"
                                 @onclick:stopPropagation="true"
                                 @onclick="() => CloseTabAsync(tab)"
-                                title="Close">×</button>
+                                title="@(tab.IsDirty ? "Close (will prompt to save unsaved changes)" : "Close")">×</button>
                     </div>
                 }
             </div>
@@ -63,23 +69,95 @@
     </MudMainContent>
 </MudLayout>
 
-<div style="position: fixed; bottom: 0; left: 0; right: 0; height: 28px; background: #181825; border-top: 1px solid #313244; display: flex; align-items: center; padding: 0 12px; z-index: 1000;">
-    <MudText Typo="Typo.caption" Style="color: #6c7086;">Aurora: Reflections</MudText>
+<div style="position: fixed; bottom: 0; left: 0; right: 0; height: 28px; background: var(--mud-palette-background-grey, #181825); border-top: 1px solid var(--mud-palette-lines-default, #313244); display: flex; align-items: center; padding: 0 12px; z-index: 1000;">
+    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-disabled, #6c7086);">Aurora: Reflections</MudText>
 </div>
 
 @code {
     private bool _drawerOpen = true;
     private AppErrorBoundary? _errorBoundary;
+    private DotNetObjectReference<MainLayout>? _selfRef;
 
     private string ContentStyle => Tabs.Tabs.Count > 0
         ? "height: calc(100vh - 64px - 34px - 28px); overflow-y: auto;"
         : "height: calc(100vh - 64px - 28px); overflow-y: auto;";
 
-    protected override void OnInitialized() => Tabs.TabsChanged += OnTabsChanged;
+    protected override void OnInitialized()
+    {
+        Tabs.TabsChanged              += OnTabsChanged;
+        CharacterContext.CaptureError += OnCaptureError;
+        Prefs.ThemeChanged            += OnThemeChanged;
+    }
 
-    private void OnTabsChanged() => InvokeAsync(StateHasChanged);
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _selfRef = DotNetObjectReference.Create(this);
+            try { await JS.InvokeVoidAsync("AuroraShortcuts.register", _selfRef); } catch { }
+        }
+    }
 
-    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+    [JSInvokable]
+    public Task OnCtrlS()
+    {
+        if (!_disposed) _ = InvokeAsync(SaveActive);
+        return Task.CompletedTask;
+    }
+
+    private async Task ShowShortcutsDialog()
+    {
+        await DialogService.ShowMessageBox(
+            "Keyboard Shortcuts",
+            (MarkupString)"""
+            <table style="border-collapse:collapse; width:100%; font-size:13px;">
+              <tbody>
+                <tr>
+                  <td style="padding:6px 16px 6px 0; color:#89b4fa; font-family:monospace; white-space:nowrap;">Ctrl + S</td>
+                  <td style="padding:6px 0;">Save the active character</td>
+                </tr>
+              </tbody>
+            </table>
+            <p style="font-size:12px; color:#6c7086; margin-top:12px;">
+              More shortcuts can be added in future updates.
+            </p>
+            """,
+            yesText: "Close");
+    }
+
+    private void OnThemeChanged()
+    {
+        if (_disposed) return;
+        _ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
+    }
+
+    private bool _disposed;
+
+    private void OnTabsChanged()
+    {
+        if (_disposed) return;
+        _ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
+    }
+
+    private void OnCaptureError(string message)
+    {
+        if (_disposed) return;
+        _ = InvokeAsync(() =>
+        {
+            if (!_disposed)
+                Snackbar.Add(message, Severity.Error, cfg => cfg.VisibleStateDuration = 8000);
+        });
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Tabs.TabsChanged              -= OnTabsChanged;
+        CharacterContext.CaptureError -= OnCaptureError;
+        Prefs.ThemeChanged            -= OnThemeChanged;
+        try { _ = JS.InvokeVoidAsync("AuroraShortcuts.unregister"); } catch { }
+        _selfRef?.Dispose();
+    }
 
     private void ActivateTab(CharacterTab tab)
     {
@@ -111,6 +189,7 @@
 
         var wasActive = tab == Tabs.ActiveTab;
         Tabs.CloseTab(tab);
+        await CharacterContext.ReleaseAsync(tab);
 
         if (wasActive)
         {
@@ -142,18 +221,37 @@
     {
         PaletteDark = new PaletteDark
         {
-            Primary = "#89b4fa",
-            Secondary = "#cba6f7",
-            Background = "#1e1e2e",
-            BackgroundGray = "#181825",
-            Surface = "#313244",
+            Primary          = "#89b4fa",
+            Secondary        = "#cba6f7",
+            Background       = "#1e1e2e",
+            BackgroundGray   = "#181825",
+            Surface          = "#313244",
             DrawerBackground = "#181825",
             AppbarBackground = "#181825",
-            ActionDefault = "#cdd6f4",
-            TextPrimary = "#cdd6f4",
-            TextSecondary = "#a6adc8",
-            TextDisabled = "#6c7086",
-            Divider = "#313244",
+            ActionDefault    = "#cdd6f4",
+            TextPrimary      = "#cdd6f4",
+            TextSecondary    = "#a6adc8",
+            TextDisabled     = "#6c7086",
+            Divider          = "#313244",
+            LinesDefault     = "#313244",
+            LinesInputs      = "#45475a",
+        },
+        PaletteLight = new PaletteLight
+        {
+            Primary          = "#1e66f5",
+            Secondary        = "#8839ef",
+            Background       = "#eff1f5",
+            BackgroundGray   = "#e6e9ef",
+            Surface          = "#ccd0da",
+            DrawerBackground = "#dce0e8",
+            AppbarBackground = "#e6e9ef",
+            ActionDefault    = "#4c4f69",
+            TextPrimary      = "#4c4f69",
+            TextSecondary    = "#5c5f77",
+            TextDisabled     = "#9ca0b0",
+            Divider          = "#ccd0da",
+            LinesDefault     = "#ccd0da",
+            LinesInputs      = "#bcc0cc",
         }
     };
 

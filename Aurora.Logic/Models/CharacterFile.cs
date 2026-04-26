@@ -318,19 +318,45 @@ public class CharacterFile : ObservableObject
 
     public bool Save(Character character)
     {
+        BuildDocument(character);
+        using (XmlTextWriter w = new XmlTextWriter(this._filepath, Encoding.UTF8))
+        {
+            w.Formatting = Formatting.Indented;
+            w.IndentChar = '\t';
+            w.Indentation = 1;
+            this._document.Save((XmlWriter)w);
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Serializes <paramref name="character"/> into the same XML form that <see cref="Save(Character)"/>
+    /// writes to disk, and returns the bytes. Used by CharacterContext to capture in-memory tab state
+    /// before swapping the CharacterManager singleton to a different tab's character.
+    /// </summary>
+    public byte[] SerializeCharacter(Character character)
+    {
+        BuildDocument(character);
+        using var ms = new MemoryStream();
+        using (XmlTextWriter w = new XmlTextWriter(ms, Encoding.UTF8))
+        {
+            w.Formatting = Formatting.Indented;
+            w.IndentChar = '\t';
+            w.Indentation = 1;
+            this._document.Save((XmlWriter)w);
+        }
+        return ms.ToArray();
+    }
+
+    private void BuildDocument(Character character)
+    {
         this._document = new XmlDocument();
         XmlNode parentNode = this._document.AppendChild(this._document.CreateNode(XmlNodeType.Element, nameof(character), (string)null));
         Dictionary<string, string> attributesDictionary = new Dictionary<string, string>()
-    {
-      {
-        "version",
-        "1.0.166.7407"
-      },
-      {
-        "preview",
-        "false"
-      }
-    };
+        {
+            { "version", "1.0.166.7407" },
+            { "preview", "false" },
+        };
         parentNode.AppendAttributes(attributesDictionary);
         parentNode.AppendChild((XmlNode)this._document.CreateComment(" Aurora - https://www.aurorabuilder.com "));
         parentNode.AppendChild((XmlNode)this._document.CreateComment(" information "));
@@ -341,15 +367,6 @@ public class CharacterFile : ObservableObject
         parentNode.AppendChild(this.CreateBuildNode(character));
         parentNode.AppendChild((XmlNode)this._document.CreateComment(" restricted sources "));
         parentNode.AppendChild(this.CreateRestrictedSourcesNode());
-        string.IsNullOrWhiteSpace(this._filepath);
-        using (XmlTextWriter w = new XmlTextWriter(this._filepath, Encoding.UTF8))
-        {
-            w.Formatting = Formatting.Indented;
-            w.IndentChar = '\t';
-            w.Indentation = 1;
-            this._document.Save((XmlWriter)w);
-            return true;
-        }
     }
 
     public async Task<CharacterFile.LoadResult> Load() => await this.Load(this._filepath);
@@ -482,14 +499,6 @@ public class CharacterFile : ObservableObject
                     }
                     else
                         CharacterManager.Current.LevelUpMain();
-                }
-                foreach (XmlNode childNode2 in elementsNode.ChildNodes)
-                {
-                    if (childNode2.GetAttributeValue("type") == "Level" || type == "Option")
-                    {
-                        ElementBase element1 = DataManager.Current.ElementsCollection.GetElement(childNode2.GetAttributeValue("id"));
-                        await this.ReadChildElements(childNode2, element1);
-                    }
                 }
                 ++currentProgress;
                 await this.SendCharacterLoadingScreenProgressUpdate(currentProgress.IsPercetageOf(progressMax));
@@ -1409,14 +1418,36 @@ public class CharacterFile : ObservableObject
         IReadOnlyCollection<string> preparedIds = handler?.GetPreparedIds(info.Name)
             ?? Array.Empty<string>();
 
+        // Warn about registered spells whose acquisition type is neither granted nor selected —
+        // these are silently skipped and would be invisible in any serialize/deserialize cycle.
+        foreach (var s in spells.Where(s => !s.Aquisition.WasGranted && !s.Aquisition.WasSelected))
+            Logger.Warning("BuildMauiKnownSpells: spell '{0}' has unknown acquisition type for class '{1}' — skipped", s.Id, info.Name);
+
+        var emittedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var s in granted.Concat(selected).GroupBy(x => x.Id).Select(g => g.First()))
         {
+            emittedIds.Add(s.Id);
             bool isChosen = s.Aquisition.WasGranted
                 ? s.Aquisition.GrantRule.IsAlwaysPrepared()
                 : s.Aquisition.SelectRule.IsAlwaysPrepared();
             if (!isChosen && info.Prepare)
                 isChosen = preparedIds.Contains(s.Id);
             yield return new SelectionElement((ElementBase)s) { IsChosen = isChosen };
+        }
+
+        // For prepared casters (Artificer, Cleric, Druid, …) the user prepares spells from
+        // the full class list — those spells are NOT registered on the character via grant/select
+        // rules, so they are absent from the granted/selected lists above. Emit them here so
+        // the serialised XML records <spell prepared="true"/> entries that survive a round-trip.
+        if (info.Prepare)
+        {
+            foreach (var id in preparedIds)
+            {
+                if (emittedIds.Contains(id)) continue;
+                var element = DataManager.Current.ElementsCollection.GetElement(id);
+                if (element is Spell preparedSpell)
+                    yield return new SelectionElement((ElementBase)preparedSpell) { IsChosen = true };
+            }
         }
     }
 

@@ -23,11 +23,18 @@ public sealed class CharacterService :
     private bool _directoriesInitialized;
     private bool _elementsInitialized;
     private readonly SemaphoreSlim _elementLock  = new(1, 1);
-    // Prevents concurrent character loads from corrupting the CharacterManager singleton.
-    private readonly SemaphoreSlim _characterLock = new(1, 1);
+    // Serialized access to CharacterManager.Current is owned by CharacterContext; callers that
+    // perform full-file loads acquire it via CharacterContext.EnterForLoadAsync().
+    private volatile bool _isCharacterLoading;
 
     public Character? CurrentCharacter { get; private set; }
     public CharacterFile? CurrentCharacterFile { get; private set; }
+    public string ElementLoadSource { get; private set; } = "Not loaded";
+    public string ElementLoadSummary { get; private set; } = "Elements have not been initialized yet.";
+    public string? ElementLoadDatabasePath { get; private set; }
+    public int? ElementLoadSchemaVersion { get; private set; }
+    public string? ElementLoadFailureReason { get; private set; }
+    public int ElementLoadSkippedElements { get; private set; }
 
     // ── Loading progress ────────────────────────────────────────────────────
     public int    LoadingPercent { get; private set; }
@@ -75,15 +82,38 @@ public sealed class CharacterService :
             if (_elementsInitialized) return;
             EnsureDirectoriesInitialized();
             DataManager.Current.InitializeFileLogger();
-            await DataManager.Current.InitializeElementDataAsync();
+
+            DbLoadResult dbResult = await DbElementLoader.TryLoadAsync(DataManager.Current.ElementsCollection);
+            if (!dbResult.Success)
+            {
+                await DataManager.Current.InitializeElementDataAsync();
+                ElementLoadSource = "XML fallback";
+                ElementLoadSummary = $"Loaded baseline content from XML. SQLite reason: {dbResult.FailureReason ?? "unknown"}";
+            }
+            else
+            {
+                ElementLoadSource = dbResult.SourceLabel;
+                ElementLoadSummary = dbResult.Summary;
+            }
+
+            ElementLoadDatabasePath = dbResult.DatabasePath;
+            ElementLoadSchemaVersion = dbResult.SchemaVersion;
+            ElementLoadFailureReason = dbResult.FailureReason;
+            ElementLoadSkippedElements = dbResult.SkippedElementCount;
+
             _elementsInitialized = true;
 
             var testId = "ID_WOTC_MOTM_RACE_GOBLIN";
             var testElement = DataManager.Current.ElementsCollection.GetElement(testId);
-            _initDiagnostic = testElement != null
+            string customDiagnostic = testElement != null
                 ? $"Custom elements OK (e.g. {testId} found)"
                 : $"⚠ Custom elements MISSING — {testId} not in collection. " +
                   $"Custom dir: {DataManager.Current.UserDocumentsCustomElementsDirectory}";
+            string schemaDiagnostic = ElementLoadSchemaVersion.HasValue
+                ? $"Schema version: {ElementLoadSchemaVersion.Value}"
+                : "Schema version: unknown";
+            _initDiagnostic = $"{ElementLoadSummary}\n{schemaDiagnostic}\n{customDiagnostic}";
+            LoadingProgressChanged?.Invoke();
         }
         finally
         {
@@ -111,6 +141,12 @@ public sealed class CharacterService :
         {
             _elementsInitialized = false;
             _initDiagnostic = null;
+            ElementLoadSource = "Not loaded";
+            ElementLoadSummary = "Elements have not been initialized yet.";
+            ElementLoadDatabasePath = null;
+            ElementLoadSchemaVersion = null;
+            ElementLoadFailureReason = null;
+            ElementLoadSkippedElements = 0;
         }
         finally
         {
@@ -132,8 +168,8 @@ public sealed class CharacterService :
             .ToList();
     }
 
-    /// <summary>True while a character is being loaded (lock is held).</summary>
-    public bool IsCharacterLoading => _characterLock.CurrentCount == 0;
+    /// <summary>True while a character is being loaded.</summary>
+    public bool IsCharacterLoading => _isCharacterLoading;
 
     /// <summary>
     /// Returns true if <paramref name="file"/> is already loaded into
@@ -153,9 +189,11 @@ public sealed class CharacterService :
 
     public async Task<(bool Success, string Message)> LoadCharacterAsync(CharacterFile file)
     {
-        // Serialize all character loads — CharacterManager.Current is a singleton and
-        // cannot handle concurrent LoadCharacterAsync calls safely.
-        await _characterLock.WaitAsync();
+        // Acquire the CharacterContext lock for the whole load — this captures the active tab's
+        // state, drops the active-tab reference, and serializes against any mutation sites that
+        // might otherwise call EnterAsync mid-load.
+        using var scope = await CharacterContext.EnterForLoadAsync();
+        _isCharacterLoading = true;
         try
         {
             await EnsureElementsLoadedAsync();
@@ -191,13 +229,33 @@ public sealed class CharacterService :
             catch (Exception ex)
             {
                 DebugLogService.Instance.LogException(ex, "CharacterService.LoadCharacterAsync");
-                return (false, $"{ex.GetType().Name}: {ex.Message}\n\n{ex.StackTrace}");
+                return (false, BuildErrorMessage(ex));
             }
         }
         finally
         {
-            _characterLock.Release();
+            _isCharacterLoading = false;
         }
+    }
+
+    private static string BuildErrorMessage(Exception ex)
+    {
+        // Walk the InnerException chain to surface the root cause (e.g. inside a TypeInitializationException).
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"{ex.GetType().Name}: {ex.Message}");
+        var inner = ex.InnerException;
+        int depth = 0;
+        while (inner != null && depth < 5)
+        {
+            sb.AppendLine($"  ↳ {inner.GetType().Name}: {inner.Message}");
+            inner = inner.InnerException;
+            depth++;
+        }
+        sb.AppendLine();
+        sb.AppendLine("(See Console page for full stack trace)");
+        sb.AppendLine();
+        sb.Append(ex.StackTrace);
+        return sb.ToString();
     }
 
     public string CharactersDirectory => DataManager.Current.UserDocumentsRootDirectory;
@@ -210,6 +268,9 @@ public sealed class CharacterService :
     public async Task<(CharacterFile? File, string? Error)> CreateNewCharacterAsync(
         string name, string playerName, HpMethod hpMethod)
     {
+        // Capture the active tab's state and hold the context lock while we stomp
+        // the singleton with New() + Save.
+        using var scope = await CharacterContext.EnterForLoadAsync();
         await EnsureElementsLoadedAsync();
         try
         {

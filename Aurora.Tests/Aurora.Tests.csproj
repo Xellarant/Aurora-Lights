@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageReference Include="FluentAssertions" Version="6.12.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Aurora.Logic\Aurora.Logic.csproj" />
+    <ProjectReference Include="..\Aurora.Components\Aurora.Components.csproj" />
+    <Reference Include="Builder.Core">
+      <HintPath>..\lib\Builder.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Builder.Data">
+      <HintPath>..\lib\Builder.Data.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="FluentAssertions" />
+  </ItemGroup>
+
+  <!-- Embed minimal test character XML as a resource -->
+  <ItemGroup>
+    <EmbeddedResource Include="Fixtures\*.dnd5e" />
+  </ItemGroup>
+
+</Project>

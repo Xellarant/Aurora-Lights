@@ -13,14 +13,25 @@
     return;
 }
 
-<div class="page-header-row" style="margin-bottom: 16px;">
-    <MudText Typo="Typo.h6" Style="margin: 0;">@_snap.Name</MudText>
-    <MudText Typo="Typo.body2" Color="Color.Secondary" Style="margin: 0;">
-        Level @_snap.Level @_snap.Race @_snap.Class
-    </MudText>
+<div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px;">
+    <div class="page-header-row">
+        <MudText Typo="Typo.h6" Style="margin: 0;">@_snap.Name</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Style="margin: 0;">
+            Level @_snap.Level @_snap.Race @_snap.Class
+        </MudText>
+    </div>
+    <MudTooltip Text="Save session">
+        <MudIconButton Icon="@Icons.Material.Filled.Save"
+                       Size="Size.Small"
+                       OnClick="SaveSession"
+                       Style="color: #6c7086; margin-top: 2px;" />
+    </MudTooltip>
 </div>
 
-@* ── HP Row ── *@
+@* ── HP + Status side by side ── *@
+<div class="session-pair-row">
+
+@* HP Row *@
 <div class="session-card">
     <div class="session-card-title">Hit Points</div>
     <div class="session-hp-row">
@@ -54,37 +65,9 @@
         </div>
     </div>
 
-    @* Death saves — only shown when HP is 0 *@
-    @if (_s.CurrentHp == 0)
-    {
-        <div class="session-death-row">
-            <div class="session-death-block">
-                <div class="session-death-label" style="color: #a6e3a1;">Successes</div>
-                <div class="session-pips">
-                    @for (int i = 1; i <= 3; i++)
-                    {
-                        var idx = i;
-                        <button class="session-pip @(idx <= _s.DeathSaveSuccesses ? "pip-success" : "pip-empty")"
-                                @onclick="() => ToggleDeathSuccess(idx)"></button>
-                    }
-                </div>
-            </div>
-            <div class="session-death-block">
-                <div class="session-death-label" style="color: #f38ba8;">Failures</div>
-                <div class="session-pips">
-                    @for (int i = 1; i <= 3; i++)
-                    {
-                        var idx = i;
-                        <button class="session-pip @(idx <= _s.DeathSaveFailures ? "pip-failure" : "pip-empty")"
-                                @onclick="() => ToggleDeathFailure(idx)"></button>
-                    }
-                </div>
-            </div>
-        </div>
-    }
 </div>
 
-@* ── Status Row ── *@
+@* Status *@
 <div class="session-card">
     <div class="session-card-title">Status</div>
     <div class="session-status-row">
@@ -104,6 +87,7 @@
                 {
                     var lvl = i;
                     <button class="session-pip @(lvl <= _s.Exhaustion ? "pip-exhaustion" : "pip-empty")"
+                            title="@ExhaustionTooltip(lvl)"
                             @onclick="() => SetExhaustion(lvl)"></button>
                 }
             </div>
@@ -111,6 +95,34 @@
             {
                 <div class="session-exhaustion-label">Level @_s.Exhaustion</div>
             }
+        </div>
+
+        @* Death saves *@
+        <div class="session-death-row">
+            <div class="session-death-block">
+                <div class="session-death-label" style="color: #a6e3a1;">Saves</div>
+                <div class="session-pips">
+                    @for (int i = 1; i <= 3; i++)
+                    {
+                        var idx = i;
+                        <button class="session-pip @(idx <= _s.DeathSaveSuccesses ? "pip-success" : "pip-empty")"
+                                title="Death save success @idx of 3 (3 successes = stabilize)"
+                                @onclick="() => ToggleDeathSuccess(idx)"></button>
+                    }
+                </div>
+            </div>
+            <div class="session-death-block">
+                <div class="session-death-label" style="color: #f38ba8;">Fails</div>
+                <div class="session-pips">
+                    @for (int i = 1; i <= 3; i++)
+                    {
+                        var idx = i;
+                        <button class="session-pip @(idx <= _s.DeathSaveFailures ? "pip-failure" : "pip-empty")"
+                                title="Death save failure @idx of 3 (3 failures = death)"
+                                @onclick="() => ToggleDeathFailure(idx)"></button>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 
@@ -139,6 +151,45 @@
                 }
             </MudMenu>
         </div>
+    </div>
+</div>
+
+</div>@* end session-pair-row *@
+
+@* ── Currency ── *@
+<div class="session-card">
+    <div class="session-card-title">Currency</div>
+    <div class="session-currency-strip">
+        <label class="session-coin-cell">
+            <input class="session-coin-input" type="number" min="0"
+                   value="@_snap.CoinCopper"
+                   @onchange='e => OnCoinChanged("cp", e)' />
+            <span class="session-coin-label">CP</span>
+        </label>
+        <label class="session-coin-cell">
+            <input class="session-coin-input" type="number" min="0"
+                   value="@_snap.CoinSilver"
+                   @onchange='e => OnCoinChanged("sp", e)' />
+            <span class="session-coin-label">SP</span>
+        </label>
+        <label class="session-coin-cell">
+            <input class="session-coin-input" type="number" min="0"
+                   value="@_snap.CoinElectrum"
+                   @onchange='e => OnCoinChanged("ep", e)' />
+            <span class="session-coin-label">EP</span>
+        </label>
+        <label class="session-coin-cell">
+            <input class="session-coin-input" type="number" min="0"
+                   value="@_snap.CoinGold"
+                   @onchange='e => OnCoinChanged("gp", e)' />
+            <span class="session-coin-label">GP</span>
+        </label>
+        <label class="session-coin-cell">
+            <input class="session-coin-input" type="number" min="0"
+                   value="@_snap.CoinPlatinum"
+                   @onchange='e => OnCoinChanged("pp", e)' />
+            <span class="session-coin-label">PP</span>
+        </label>
     </div>
 </div>
 
@@ -247,11 +298,6 @@
                Style="margin-left: 10px;">
         Long Rest
     </MudButton>
-    <MudIconButton Icon="@Icons.Material.Filled.Save"
-                   Size="Size.Small"
-                   OnClick="SaveSession"
-                   Style="margin-left: auto; color: #6c7086;"
-                   title="Save session" />
 </div>
 
 @code {
@@ -262,7 +308,7 @@
 
     private static readonly string[] _allConditions =
     [
-        "Blinded", "Charmed", "Deafened", "Exhaustion", "Frightened",
+        "Blinded", "Charmed", "Deafened", "Frightened",
         "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified",
         "Poisoned", "Prone", "Restrained", "Stunned", "Unconscious"
     ];
@@ -273,8 +319,24 @@
         Refresh();
     }
 
-    private void OnTabsChanged() => InvokeAsync(() => { Refresh(); StateHasChanged(); });
-    public void Dispose() => Tabs.TabsChanged -= OnTabsChanged;
+    private bool _disposed;
+
+    private void OnTabsChanged()
+    {
+        if (_disposed) return;
+        _ = InvokeAsync(() =>
+        {
+            if (_disposed) return;
+            Refresh();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Tabs.TabsChanged -= OnTabsChanged;
+    }
 
     private void Refresh()
     {
@@ -435,6 +497,24 @@
         Snackbar.Add("Long rest taken — HP, slots, and resources restored.", Severity.Success);
     }
 
+    // ── Currency ─────────────────────────────────────────────────────────────
+
+    private void OnCoinChanged(string coinId, ChangeEventArgs e)
+    {
+        if (_snap is null) return;
+        if (!long.TryParse(e.Value?.ToString(), out long val)) return;
+        val = Math.Max(0, val);
+        switch (coinId)
+        {
+            case "cp": _snap.CoinCopper   = val; break;
+            case "sp": _snap.CoinSilver   = val; break;
+            case "ep": _snap.CoinElectrum = val; break;
+            case "gp": _snap.CoinGold     = val; break;
+            case "pp": _snap.CoinPlatinum = val; break;
+        }
+        if (_tab is { } tab) Tabs.MarkDirty(tab);
+    }
+
     // ── Persistence ───────────────────────────────────────────────────────────
 
     private void AutoSave()
@@ -453,6 +533,17 @@
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static string ExhaustionTooltip(int level) => level switch
+    {
+        1 => "Level 1: Disadvantage on ability checks",
+        2 => "Level 2: Speed halved",
+        3 => "Level 3: Disadvantage on attack rolls and saving throws",
+        4 => "Level 4: Hit point maximum halved",
+        5 => "Level 5: Speed reduced to 0",
+        6 => "Level 6: Death",
+        _ => $"Exhaustion level {level}"
+    };
 
     private static string OrdinalLevel(int level) => level switch
     {

@@ -84,7 +84,7 @@
             @foreach (MagicSpellLevelModel level in Model.SpellLevels)
             {
                 <div class="magic-level-header">
-                    <span class="magic-section-label">@Ordinal(level.Level) Level</span>
+                    <span class="magic-section-label">@Ordinal(level.Level) Level Spells</span>
                     @if (level.TotalSlots > 0)
                     {
                         <div class="magic-slot-track">
@@ -107,13 +107,16 @@
                 @foreach (MagicSpellListEntryModel spell in level.Spells)
                 {
                     <div class="magic-spell-row @(SelectedSpellId == spell.Id ? "selected" : string.Empty)">
+                        <input type="checkbox"
+                               class="magic-spell-prep-check"
+                               checked="@spell.IsPrepared"
+                               disabled="@IsPreparationDisabled(spell)"
+                               @onchange="args => ChangePreparedAsync(spell.Id, args)"
+                               @onclick:stopPropagation="true" />
                         <button type="button"
                                 class="magic-spell-select"
                                 @onclick="() => OnSelectSpell.InvokeAsync(spell.Id)">
-                            <input type="checkbox"
-                                   checked="@spell.IsPrepared"
-                                   disabled="@IsPreparationDisabled(spell)"
-                                   @onchange="args => ChangePreparedAsync(spell.Id, args)" />
+                            <span class="magic-spell-dot @(spell.IsPrepared ? "prepared" : string.Empty)"></span>
                             <span class="magic-spell-name @(spell.IsPrepared ? "prepared" : string.Empty)">@spell.Name</span>
                         </button>
                     </div>
@@ -204,17 +207,9 @@
 
     private Task ChangePreparedAsync(string spellId, ChangeEventArgs args)
     {
-        if (!OnPreparedChanged.HasDelegate)
-        {
-            return Task.CompletedTask;
-        }
-
-        bool value = args.Value is bool boolValue
-            ? boolValue
-            : string.Equals(args.Value?.ToString(), "true", StringComparison.OrdinalIgnoreCase)
-              || string.Equals(args.Value?.ToString(), "on", StringComparison.OrdinalIgnoreCase);
-
-        return OnPreparedChanged.InvokeAsync(new MagicPreparedChangeModel(spellId, value));
+        if (!OnPreparedChanged.HasDelegate) return Task.CompletedTask;
+        bool value = args.Value is bool b ? b : false;
+        return OnPreparedChanged.InvokeAsync(new MagicPreparedChangeModel(spellId, value, Model.SpellcastingClass));
     }
 
     private RenderFragment SpellPropRow(string label, string value) => builder =>

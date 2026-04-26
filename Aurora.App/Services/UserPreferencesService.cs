@@ -12,12 +12,27 @@ public sealed class UserPreferencesService
     private const string KeyHpMethod      = "build.hp_method";
     private const string KeyDevMode       = "dev.mode";
     private const string KeyMruCharacter  = "app.mru_character";
+    private const string KeyLightMode     = "app.light_mode";
 
-    // Character sheet card options — read directly by MauiCharacterSheetGenerator as well.
-    public const string KeySpellCards   = "sheet.spellcards";
-    public const string KeyItemCards    = "sheet.itemcards";
-    public const string KeyAttackCards  = "sheet.attackcards";
-    public const string KeyFeatureCards = "sheet.featurecards";
+    public event Action? ThemeChanged;
+
+    /// <summary>
+    /// When true, the app uses a light colour palette instead of the default dark theme.
+    /// Default: false.
+    /// </summary>
+    public bool LightMode
+    {
+        get => Preferences.Default.Get(KeyLightMode, defaultValue: false);
+        set { Preferences.Default.Set(KeyLightMode, value); ThemeChanged?.Invoke(); }
+    }
+
+    // Character sheet page/card options — read directly by MauiCharacterSheetGenerator as well.
+    public const string KeySpellCards      = "sheet.spellcards";
+    public const string KeyItemCards       = "sheet.itemcards";
+    public const string KeyAttackCards     = "sheet.attackcards";
+    public const string KeyFeatureCards    = "sheet.featurecards";
+    public const string KeyBackgroundPage  = "sheet.backgroundpage";
+    public const string KeyEquipmentPage   = "sheet.equipmentpage";
 
     /// <summary>
     /// When true, selecting a new option on the Build or Magic page immediately writes
@@ -92,5 +107,21 @@ public sealed class UserPreferencesService
     {
         get => Preferences.Default.Get(KeyFeatureCards, defaultValue: false);
         set => Preferences.Default.Set(KeyFeatureCards, value);
+    }
+
+    // ── Character sheet page toggles ──────────────────────────────────────────
+
+    /// <summary>Include the background/biography page in the generated PDF. Default: true.</summary>
+    public bool IncludeBackgroundPage
+    {
+        get => Preferences.Default.Get(KeyBackgroundPage, defaultValue: true);
+        set => Preferences.Default.Set(KeyBackgroundPage, value);
+    }
+
+    /// <summary>Include the equipment/inventory page in the generated PDF. Default: true.</summary>
+    public bool IncludeEquipmentPage
+    {
+        get => Preferences.Default.Get(KeyEquipmentPage, defaultValue: true);
+        set => Preferences.Default.Set(KeyEquipmentPage, value);
     }
 }

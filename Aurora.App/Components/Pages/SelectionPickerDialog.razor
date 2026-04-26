@@ -83,19 +83,29 @@
     [Parameter] public SelectionRuleEntry Entry    { get; set; } = null!;
     [Parameter] public IReadOnlyList<ElementOption> Options { get; set; } = [];
 
-    private string       _search     = "";
-    private string?      _selectedId;
+    private string _search
+    {
+        get => _searchValue;
+        set { _searchValue = value; RebuildFilter(); }
+    }
+    private string         _searchValue = "";
+    private string?        _selectedId;
     private ElementOption? _selectedOpt;
+    private List<ElementOption> _filtered = [];
 
-    private List<ElementOption> _filtered => string.IsNullOrWhiteSpace(_search)
-        ? Options.ToList()
-        : Options.Where(o =>
-            o.Name.Contains(_search, StringComparison.OrdinalIgnoreCase) ||
-            o.Description.Contains(_search, StringComparison.OrdinalIgnoreCase))
-          .ToList();
+    private void RebuildFilter()
+    {
+        _filtered = string.IsNullOrWhiteSpace(_searchValue)
+            ? Options.ToList()
+            : Options.Where(o =>
+                o.Name.Contains(_searchValue, StringComparison.OrdinalIgnoreCase) ||
+                o.Description.Contains(_searchValue, StringComparison.OrdinalIgnoreCase))
+              .ToList();
+    }
 
     protected override void OnParametersSet()
     {
+        RebuildFilter();
         if (Entry.CurrentName != null)
         {
             var current = Options.FirstOrDefault(o =>

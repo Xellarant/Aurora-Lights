@@ -71,6 +71,6 @@ public sealed record MagicSpellDetailModel(
     string Duration,
     string Description);
 
-public sealed record MagicPreparedChangeModel(string SpellId, bool Value);
+public sealed record MagicPreparedChangeModel(string SpellId, bool Value, string SpellcastingClass);
 
 public sealed record MagicSlotToggleModel(int Level, int SlotIndex);
