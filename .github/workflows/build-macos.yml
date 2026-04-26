@@ -4,18 +4,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-mac:
+  # ── x64 build (Intel) ────────────────────────────────────────────────────────
+  build-x64:
+    runs-on: macos-26-intel
     env:
-      PROJECT: Aurora.App/Aurora.App.csproj   # <-- update if different
-    strategy:
-      matrix:
-        include:
-          - runtime: maccatalyst-arm64
-            runner: macos-26
-          - runtime: maccatalyst-x64
-            runner: macos-26-intel
-    runs-on: ${{ matrix.runner }}
-
+      PROJECT: Aurora.App/Aurora.App.csproj
     steps:
       - uses: actions/checkout@v4
 
@@ -35,57 +28,87 @@ jobs:
       - name: Restore
         run: dotnet restore "$PROJECT"
 
-      - name: Publish (${{ matrix.runtime }})
+      - name: Publish (maccatalyst-x64)
         run: |
           dotnet publish "$PROJECT" \
             -f net10.0-maccatalyst \
-            -r ${{ matrix.runtime }} \
+            -r maccatalyst-x64 \
             -c Release \
             -p:CreatePackage=false \
-            -o publish/${{ matrix.runtime }}
+            -o publish/maccatalyst-x64
 
       - name: List publish output
-        run: ls -la publish/${{ matrix.runtime }}
+        run: find publish/maccatalyst-x64 | head -40
 
-      - name: Upload artifact
+      - name: Upload x64 artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mac-publish-${{ matrix.runtime }}
-          path: publish/${{ matrix.runtime }}
+          name: mac-publish-maccatalyst-x64
+          path: publish/maccatalyst-x64
+          if-no-files-found: error
 
-  create-universal:
+  # ── arm64 build (Apple Silicon) + universal merge ────────────────────────────
+  # Runs after x64 so its artifact is guaranteed available for the lipo step.
+  build-arm64-and-merge:
     runs-on: macos-26
-    needs: build-mac
+    needs: build-x64
     env:
-      PROJECT: Aurora.App/Aurora.App.csproj   # <-- update if different
+      PROJECT: Aurora.App/Aurora.App.csproj
     steps:
-      - name: Download arm64 artifact
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.0.101'
+
+      - name: Install MAUI workloads
+        run: dotnet workload install maui --version 10.0.101.1
+
+      - name: Show SDK toolchain
+        run: |
+          dotnet --info
+          xcodebuild -version
+
+      - name: Restore
+        run: dotnet restore "$PROJECT"
+
+      - name: Publish (maccatalyst-arm64)
+        run: |
+          dotnet publish "$PROJECT" \
+            -f net10.0-maccatalyst \
+            -r maccatalyst-arm64 \
+            -c Release \
+            -p:CreatePackage=false \
+            -o publish/maccatalyst-arm64
+
+      - name: List arm64 publish output
+        run: find publish/maccatalyst-arm64 | head -40
+
+      - name: Upload arm64 artifact
+        uses: actions/upload-artifact@v4
         with:
           name: mac-publish-maccatalyst-arm64
-          path: arm
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.run_id }}
+          path: publish/maccatalyst-arm64
+          if-no-files-found: error
 
       - name: Download x64 artifact
         uses: actions/download-artifact@v4
         with:
           name: mac-publish-maccatalyst-x64
           path: x64
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.run_id }}
 
       - name: Find app bundles
         run: |
           set -euo pipefail
-          ARM_APP=$(find arm -name "*.app" -print -quit || true)
+          ARM_APP=$(find publish/maccatalyst-arm64 -name "*.app" -print -quit || true)
           X64_APP=$(find x64 -name "*.app" -print -quit || true)
           if [ -z "$ARM_APP" ] || [ -z "$X64_APP" ]; then
-            echo "App bundles not found in downloaded artifacts"
-            echo "Contents of arm:"
-            ls -R arm || true
-            echo "Contents of x64:"
-            ls -R x64 || true
+            echo "App bundles not found — dumping directory listings for diagnosis:"
+            echo "=== arm64 publish ==="
+            find publish/maccatalyst-arm64 | head -30 || true
+            echo "=== x64 download ==="
+            find x64 | head -30 || true
             exit 1
           fi
           echo "ARM_APP=$ARM_APP" >> $GITHUB_ENV
@@ -98,11 +121,9 @@ jobs:
           echo "Using x64 app: $X64_APP"
           mkdir -p universal
           APP_BASENAME=$(basename "$ARM_APP")
-          # Copy ARM app as the base for the universal app
           cp -R "$ARM_APP" "universal/"
           UNIVERSAL_APP_PATH="universal/$APP_BASENAME"
 
-          # Find main executables inside the app bundles
           ARM_EXE=$(find "$ARM_APP/Contents/MacOS" -type f -maxdepth 1 -print -quit || true)
           X64_EXE=$(find "$X64_APP/Contents/MacOS" -type f -maxdepth 1 -print -quit || true)
           if [ -z "$ARM_EXE" ] || [ -z "$X64_EXE" ]; then
@@ -116,11 +137,9 @@ jobs:
           echo "X64_EXE=$X64_EXE"
           echo "UNIVERSAL_EXE=$UNIVERSAL_EXE"
 
-          # Create universal (fat) binary using lipo
           lipo -create "$X64_EXE" "$ARM_EXE" -output "$UNIVERSAL_EXE"
           chmod +x "$UNIVERSAL_EXE"
 
-          # Zip the universal .app for upload
           cd universal
           zip -r "../${APP_BASENAME}-universal.zip" "$APP_BASENAME"
           cd ..
@@ -129,5 +148,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mac-publish-universal
-          path: |
-            *.zip
+          path: "*.zip"
