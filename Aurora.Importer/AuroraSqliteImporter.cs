@@ -44,7 +44,7 @@ internal static class AuroraSqliteImporter
         EnsureSchema(connection);
         // When the importer logic changes in a way that affects stored data (e.g. adding a new
         // column to element_supports), bump this constant so existing DBs get a full rebuild.
-        const int ExpectedDataVersion = 2;
+        const int ExpectedDataVersion = 3;
         int dbVersion = GetUserVersion(connection);
         if (dbVersion != ExpectedDataVersion)
         {
@@ -253,6 +253,10 @@ internal static class AuroraSqliteImporter
 
     private static void EnsureSchema(SqliteConnection connection)
     {
+        // Migrations must run before the schema SQL so that indexes on newly-added
+        // columns (e.g. ix_source_files_package) succeed on existing databases.
+        ApplyMigrations(connection);
+
         string rawSql = LoadSchemaSql();
         string schemaSql = System.Text.RegularExpressions.Regex.Replace(
             rawSql,
@@ -264,8 +268,6 @@ internal static class AuroraSqliteImporter
         using var schema = connection.CreateCommand();
         schema.CommandText = schemaSql;
         schema.ExecuteNonQuery();
-
-        ApplyMigrations(connection);
     }
 
     private static int GetUserVersion(SqliteConnection connection)
@@ -284,15 +286,42 @@ internal static class AuroraSqliteImporter
 
     private static void ApplyMigrations(SqliteConnection connection)
     {
+        // v1→v2
+        AddColumnIfMissing(connection, "source_files", "file_hash", "TEXT");
+
+        // v2→v3: full 5eApiTranslator schema (content_packages FK, semantic grant
+        //        columns, raw_xml preservation, select_items option_kind)
+        AddColumnIfMissing(connection, "source_files",  "content_package_id",   "INTEGER");
+        AddColumnIfMissing(connection, "grants",        "target_semantic_key",  "TEXT");
+        AddColumnIfMissing(connection, "grants",        "target_semantic_kind", "TEXT");
+        AddColumnIfMissing(connection, "grants",        "target_semantic_name", "TEXT");
+        AddColumnIfMissing(connection, "grants",        "raw_xml",              "TEXT");
+        AddColumnIfMissing(connection, "selects",       "raw_xml",              "TEXT");
+        AddColumnIfMissing(connection, "select_items",  "option_kind",
+            "TEXT NOT NULL DEFAULT 'name-reference-candidate'");
+        AddColumnIfMissing(connection, "stats",         "raw_xml",              "TEXT");
+    }
+
+    private static void AddColumnIfMissing(SqliteConnection connection,
+        string table, string column, string columnDef)
+    {
+        // Skip if the table doesn't exist yet — CREATE TABLE in the schema SQL will
+        // define the column correctly on a fresh database.
+        using var tableCheck = connection.CreateCommand();
+        tableCheck.CommandText =
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=$t;";
+        tableCheck.Parameters.AddWithValue("$t", table);
+        if ((long)tableCheck.ExecuteScalar()! == 0) return;
+
         using var colCheck = connection.CreateCommand();
         colCheck.CommandText =
-            "SELECT COUNT(*) FROM pragma_table_info('source_files') WHERE name = 'file_hash';";
-        if ((long)colCheck.ExecuteScalar()! == 0)
-        {
-            using var alter = connection.CreateCommand();
-            alter.CommandText = "ALTER TABLE source_files ADD COLUMN file_hash TEXT;";
-            alter.ExecuteNonQuery();
-        }
+            $"SELECT COUNT(*) FROM pragma_table_info('{table}') WHERE name=$col;";
+        colCheck.Parameters.AddWithValue("$col", column);
+        if ((long)colCheck.ExecuteScalar()! != 0) return;
+
+        using var alter = connection.CreateCommand();
+        alter.CommandText = $"ALTER TABLE \"{table}\" ADD COLUMN {column} {columnDef};";
+        alter.ExecuteNonQuery();
     }
 
     // ── Source book helpers ──────────────────────────────────────────────────
