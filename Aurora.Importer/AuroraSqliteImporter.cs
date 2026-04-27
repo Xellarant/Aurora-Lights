@@ -198,6 +198,10 @@ internal static class AuroraSqliteImporter
             ResolveDeferredRelationships(connection, transaction);
         }
 
+        // Always run — refines package_kind from authoritative source element flags
+        // even on incremental imports where no files changed.
+        RefreshPackageKinds(connection, transaction);
+
         transaction.Commit();
 
         progress?.Report(new AuroraImportProgress(
@@ -1168,6 +1172,33 @@ SELECT ss.select_id, ss.ordinal, st.support_tag_id,
         ELSE 'support-category'
     END
 FROM select_supports AS ss JOIN support_tags AS st ON st.support_text = ss.support_text;");
+    }
+
+    // ── Package kind refinement ──────────────────────────────────────────────
+
+    private static void RefreshPackageKinds(SqliteConnection connection, SqliteTransaction transaction)
+    {
+        // Reclassify packages that defaulted to 'third-party' but whose Source
+        // element carries no affirmative is_third_party flag as 'homebrew'.
+        // Packages with explicit is_third_party=1 (e.g. Ryoko's Guide) are untouched.
+        // This runs unconditionally so incremental imports stay accurate too.
+        ExecuteSql(connection, transaction, @"
+UPDATE content_packages
+SET package_kind = 'homebrew'
+WHERE package_kind = 'third-party'
+  AND NOT EXISTS (
+      SELECT 1 FROM source_elements se
+      JOIN elements e  ON e.element_id  = se.element_id
+      JOIN source_files sf ON sf.source_file_id = e.source_file_id
+      WHERE sf.content_package_id = content_packages.content_package_id
+        AND se.is_third_party = 1
+  )
+  AND EXISTS (
+      SELECT 1 FROM source_elements se
+      JOIN elements e  ON e.element_id  = se.element_id
+      JOIN source_files sf ON sf.source_file_id = e.source_file_id
+      WHERE sf.content_package_id = content_packages.content_package_id
+  );");
     }
 
     // ── Scope helpers ────────────────────────────────────────────────────────
