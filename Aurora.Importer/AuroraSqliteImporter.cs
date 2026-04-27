@@ -44,7 +44,7 @@ internal static class AuroraSqliteImporter
         EnsureSchema(connection);
         // When the importer logic changes in a way that affects stored data (e.g. adding a new
         // column to element_supports), bump this constant so existing DBs get a full rebuild.
-        const int ExpectedDataVersion = 3;
+        const int ExpectedDataVersion = 4;
         int dbVersion = GetUserVersion(connection);
         if (dbVersion != ExpectedDataVersion)
         {
@@ -72,6 +72,18 @@ internal static class AuroraSqliteImporter
         var changedPaths  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var seenPaths     = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        // Build content_packages from the top-level directory of each source file path.
+        // ON CONFLICT DO NOTHING preserves any user-configured kind/rank from prior runs.
+        var contentPackageIds = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        foreach (var file in catalog.Files)
+        {
+            string pkgKey = GetPackageKey(file.RelativePath);
+            if (!contentPackageIds.ContainsKey(pkgKey))
+                contentPackageIds[pkgKey] = EnsureContentPackage(
+                    connection, transaction, pkgKey,
+                    file.Name, DeterminePackageKind(pkgKey));
+        }
+
         progress?.Report(new AuroraImportProgress(
             AuroraImportPhase.Scanning, 0, catalog.Files.Count, 0, 0, null));
 
@@ -83,6 +95,9 @@ internal static class AuroraSqliteImporter
             string hash = ComputeFileHash(file.FullPath);
             scanned++;
 
+            long? pkgId = contentPackageIds.TryGetValue(GetPackageKey(file.RelativePath), out var pid)
+                ? pid : null;
+
             if (existingFiles.TryGetValue(file.RelativePath, out var existing))
             {
                 if (existing.Hash == hash)
@@ -93,7 +108,7 @@ internal static class AuroraSqliteImporter
                 DeleteSourceFile(connection, transaction, existing.Id);
             }
 
-            long newId = InsertSourceFile(connection, transaction, file, hash);
+            long newId = InsertSourceFile(connection, transaction, file, hash, pkgId);
             sourceFileIds[file.RelativePath] = newId;
             changedPaths.Add(file.RelativePath);
 
@@ -341,6 +356,56 @@ internal static class AuroraSqliteImporter
         return (long)select.ExecuteScalar()!;
     }
 
+    // ── Content package helpers ──────────────────────────────────────────────
+
+    private static long EnsureContentPackage(SqliteConnection connection, SqliteTransaction transaction,
+        string packageKey, string? packageName, string packageKind)
+    {
+        using var insert = connection.CreateCommand();
+        insert.Transaction = transaction;
+        insert.CommandText = @"
+INSERT INTO content_packages (package_key, package_name, package_kind, precedence_rank)
+VALUES ($package_key, $package_name, $package_kind, $precedence_rank)
+ON CONFLICT(package_key) DO NOTHING;";
+        insert.Parameters.AddWithValue("$package_key",      packageKey);
+        insert.Parameters.AddWithValue("$package_name",     packageName ?? packageKey);
+        insert.Parameters.AddWithValue("$package_kind",     packageKind);
+        insert.Parameters.AddWithValue("$precedence_rank",  DefaultPrecedenceRank(packageKind));
+        insert.ExecuteNonQuery();
+
+        using var select = connection.CreateCommand();
+        select.Transaction = transaction;
+        select.CommandText = "SELECT content_package_id FROM content_packages WHERE package_key = $package_key;";
+        select.Parameters.AddWithValue("$package_key", packageKey);
+        return (long)select.ExecuteScalar()!;
+    }
+
+    private static string GetPackageKey(string relativePath)
+    {
+        int sep = relativePath.IndexOfAny(['/', '\\']);
+        return sep > 0 ? relativePath[..sep] : relativePath;
+    }
+
+    private static string DeterminePackageKind(string packageKey) =>
+        packageKey.ToLowerInvariant() switch
+        {
+            "core"                 => "core",
+            "supplements"
+            or "unearthed-arcana" => "official",
+            "user"                 => "homebrew",
+            _                      => "third-party"
+        };
+
+    private static int DefaultPrecedenceRank(string packageKind) =>
+        packageKind switch
+        {
+            "core"        => 100,
+            "official"    => 200,
+            "third-party" => 300,
+            "homebrew"    => 400,
+            _             => 500
+        };
+
     // ── Source file helpers ──────────────────────────────────────────────────
 
     private static Dictionary<string, (long Id, string Hash)> LoadExistingSourceFileHashes(
@@ -387,16 +452,17 @@ internal static class AuroraSqliteImporter
 
     private static long InsertSourceFile(
         SqliteConnection connection, SqliteTransaction transaction,
-        AuroraFileInfo file, string? hash = null)
+        AuroraFileInfo file, string? hash = null, long? contentPackageId = null)
     {
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = @"
 INSERT INTO source_files
-(relative_path, package_name, package_description, version_text, update_file_name, update_url, author_name, author_url, file_hash)
+(relative_path, content_package_id, package_name, package_description, version_text, update_file_name, update_url, author_name, author_url, file_hash)
 VALUES
-($relative_path, $package_name, $package_description, $version_text, $update_file_name, $update_url, $author_name, $author_url, $file_hash);";
+($relative_path, $content_package_id, $package_name, $package_description, $version_text, $update_file_name, $update_url, $author_name, $author_url, $file_hash);";
         command.Parameters.AddWithValue("$relative_path",       file.RelativePath);
+        command.Parameters.AddWithValue("$content_package_id",  contentPackageId.HasValue ? contentPackageId.Value : DBNull.Value);
         command.Parameters.AddWithValue("$package_name",        (object?)file.Name ?? DBNull.Value);
         command.Parameters.AddWithValue("$package_description", (object?)file.Description ?? DBNull.Value);
         command.Parameters.AddWithValue("$version_text",        (object?)file.FileVersion?.versionString ?? DBNull.Value);
@@ -855,33 +921,42 @@ VALUES
 
         foreach (var grant in rules.grants ?? Enumerable.Empty<Grant>())
         {
+            // target_aurora_id is set only for direct ID_* references; the raw id
+            // attribute is always preserved in target_semantic_key for diagnostics.
+            string? targetAuroraId = grant.id?.StartsWith("ID_", StringComparison.OrdinalIgnoreCase) == true
+                ? grant.id : null;
             ExecuteInsert(connection, transaction,
-                "INSERT INTO grants (rule_scope_id, ordinal, grant_type, target_aurora_id, name_text, grant_level, spellcasting_name, is_prepared, requirements_text) VALUES ($rule_scope_id, $ordinal, $grant_type, $target_aurora_id, $name_text, $grant_level, $spellcasting_name, $is_prepared, $requirements_text);",
-                ("$rule_scope_id",    ruleScopeId), ("$ordinal", ordinal++),
-                ("$grant_type",       grant.type ?? string.Empty),
-                ("$target_aurora_id", (object?)grant.id ?? DBNull.Value),
-                ("$name_text",        (object?)grant.name ?? DBNull.Value),
-                ("$grant_level",      grant.level.HasValue ? grant.level.Value : DBNull.Value),
-                ("$spellcasting_name",(object?)grant.spellcasting ?? DBNull.Value),
-                ("$is_prepared",      grant.prepared.HasValue ? (grant.prepared.Value ? 1 : 0) : DBNull.Value),
-                ("$requirements_text",(object?)grant.requirements?.raw ?? DBNull.Value));
+                "INSERT INTO grants (rule_scope_id, ordinal, grant_type, target_aurora_id, target_semantic_key, target_semantic_kind, target_semantic_name, raw_xml, name_text, grant_level, spellcasting_name, is_prepared, requirements_text) VALUES ($rule_scope_id, $ordinal, $grant_type, $target_aurora_id, $target_semantic_key, $target_semantic_kind, $target_semantic_name, $raw_xml, $name_text, $grant_level, $spellcasting_name, $is_prepared, $requirements_text);",
+                ("$rule_scope_id",         ruleScopeId), ("$ordinal", ordinal++),
+                ("$grant_type",            grant.type ?? string.Empty),
+                ("$target_aurora_id",      (object?)targetAuroraId ?? DBNull.Value),
+                ("$target_semantic_key",   (object?)grant.id ?? DBNull.Value),
+                ("$target_semantic_kind",  (object?)grant.type ?? DBNull.Value),
+                ("$target_semantic_name",  (object?)grant.name ?? DBNull.Value),
+                ("$raw_xml",               (object?)grant.rawXml ?? DBNull.Value),
+                ("$name_text",             (object?)grant.name ?? DBNull.Value),
+                ("$grant_level",           grant.level.HasValue ? grant.level.Value : DBNull.Value),
+                ("$spellcasting_name",     (object?)grant.spellcasting ?? DBNull.Value),
+                ("$is_prepared",           grant.prepared.HasValue ? (grant.prepared.Value ? 1 : 0) : DBNull.Value),
+                ("$requirements_text",     (object?)grant.requirements?.raw ?? DBNull.Value));
         }
 
         ordinal = 1;
         foreach (var select in rules.selects ?? Enumerable.Empty<Select>())
         {
             ExecuteInsert(connection, transaction,
-                "INSERT INTO selects (rule_scope_id, ordinal, select_type, name_text, supports_text, select_level, number_to_choose, default_choice_text, is_optional, spellcasting_profile_id, requirements_text) VALUES ($rule_scope_id, $ordinal, $select_type, $name_text, $supports_text, $select_level, $number_to_choose, $default_choice_text, $is_optional, $spellcasting_profile_id, $requirements_text);",
-                ("$rule_scope_id",         ruleScopeId), ("$ordinal", ordinal++),
-                ("$select_type",           select.type ?? string.Empty),
-                ("$name_text",             select.name ?? string.Empty),
-                ("$supports_text",         (object?)select.supports?.raw ?? DBNull.Value),
-                ("$select_level",          select.level.HasValue ? select.level.Value : DBNull.Value),
-                ("$number_to_choose",      select.number),
-                ("$default_choice_text",   (object?)select.defaultChoice ?? DBNull.Value),
-                ("$is_optional",           select.optional ? 1 : 0),
+                "INSERT INTO selects (rule_scope_id, ordinal, select_type, name_text, supports_text, select_level, number_to_choose, default_choice_text, is_optional, spellcasting_profile_id, raw_xml, requirements_text) VALUES ($rule_scope_id, $ordinal, $select_type, $name_text, $supports_text, $select_level, $number_to_choose, $default_choice_text, $is_optional, $spellcasting_profile_id, $raw_xml, $requirements_text);",
+                ("$rule_scope_id",           ruleScopeId), ("$ordinal", ordinal++),
+                ("$select_type",             select.type ?? string.Empty),
+                ("$name_text",               select.name ?? string.Empty),
+                ("$supports_text",           (object?)select.supports?.raw ?? DBNull.Value),
+                ("$select_level",            select.level.HasValue ? select.level.Value : DBNull.Value),
+                ("$number_to_choose",        select.number),
+                ("$default_choice_text",     (object?)select.defaultChoice ?? DBNull.Value),
+                ("$is_optional",             select.optional ? 1 : 0),
                 ("$spellcasting_profile_id", ResolveSpellcastingProfileId(connection, transaction, elementId, select.spellcasting)),
-                ("$requirements_text",     (object?)select.requirements?.raw ?? DBNull.Value));
+                ("$raw_xml",                 (object?)select.rawXml ?? DBNull.Value),
+                ("$requirements_text",       (object?)select.requirements?.raw ?? DBNull.Value));
 
             long selectId = GetLastInsertRowId(connection, transaction);
             int suppOrdinal = 1;
@@ -897,16 +972,17 @@ VALUES
         foreach (var stat in rules.stats ?? Enumerable.Empty<Stat>())
         {
             ExecuteInsert(connection, transaction,
-                "INSERT INTO stats (rule_scope_id, ordinal, stat_name, value_expression_text, bonus_expression_text, equipped_expression_text, stat_level, inline_display, alt_text, requirements_text) VALUES ($rule_scope_id, $ordinal, $stat_name, $value_expression_text, $bonus_expression_text, $equipped_expression_text, $stat_level, $inline_display, $alt_text, $requirements_text);",
-                ("$rule_scope_id",          ruleScopeId), ("$ordinal", ordinal++),
-                ("$stat_name",              stat.name ?? string.Empty),
-                ("$value_expression_text",  (object?)stat.value ?? DBNull.Value),
-                ("$bonus_expression_text",  (object?)stat.bonus ?? DBNull.Value),
+                "INSERT INTO stats (rule_scope_id, ordinal, stat_name, value_expression_text, bonus_expression_text, equipped_expression_text, stat_level, inline_display, alt_text, raw_xml, requirements_text) VALUES ($rule_scope_id, $ordinal, $stat_name, $value_expression_text, $bonus_expression_text, $equipped_expression_text, $stat_level, $inline_display, $alt_text, $raw_xml, $requirements_text);",
+                ("$rule_scope_id",           ruleScopeId), ("$ordinal", ordinal++),
+                ("$stat_name",               stat.name ?? string.Empty),
+                ("$value_expression_text",   (object?)stat.value ?? DBNull.Value),
+                ("$bonus_expression_text",   (object?)stat.bonus ?? DBNull.Value),
                 ("$equipped_expression_text",(object?)stat.equipped?.raw ?? DBNull.Value),
-                ("$stat_level",             stat.level.HasValue ? stat.level.Value : DBNull.Value),
-                ("$inline_display",         stat.inline ? 1 : 0),
-                ("$alt_text",               (object?)stat.alt ?? DBNull.Value),
-                ("$requirements_text",      (object?)stat.requirements?.raw ?? DBNull.Value));
+                ("$stat_level",              stat.level.HasValue ? stat.level.Value : DBNull.Value),
+                ("$inline_display",          stat.inline ? 1 : 0),
+                ("$alt_text",                (object?)stat.alt ?? DBNull.Value),
+                ("$raw_xml",                 (object?)stat.rawXml ?? DBNull.Value),
+                ("$requirements_text",       (object?)stat.requirements?.raw ?? DBNull.Value));
         }
     }
 
@@ -916,11 +992,13 @@ VALUES
         int ordinal = 1;
         foreach (var item in items)
         {
+            string? targetAuroraId = GetItemTargetAuroraId(item);
             ExecuteInsert(connection, transaction,
-                "INSERT INTO select_items (select_id, ordinal, item_text, target_aurora_id) VALUES ($select_id, $ordinal, $item_text, $target_aurora_id);",
+                "INSERT INTO select_items (select_id, ordinal, item_text, target_aurora_id, option_kind) VALUES ($select_id, $ordinal, $item_text, $target_aurora_id, $option_kind);",
                 ("$select_id", selectId), ("$ordinal", ordinal++),
                 ("$item_text",       (object?)item.value ?? DBNull.Value),
-                ("$target_aurora_id",(object?)GetItemTargetAuroraId(item) ?? DBNull.Value));
+                ("$target_aurora_id",(object?)targetAuroraId ?? DBNull.Value),
+                ("$option_kind",     targetAuroraId != null ? "aurora-reference" : "name-reference-candidate"));
 
             long selectItemId = GetLastInsertRowId(connection, transaction);
             int attrOrdinal = 1;
