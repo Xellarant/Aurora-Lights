@@ -6,9 +6,9 @@
 <div class="content-card">
     <h1>Compendium</h1>
     <p class="page-intro">
-        This Phase 0 compendium proves the web host can merge embedded baseline
-        content with the current session overlay. Session uploads override
-        baseline entries when they share the same element id.
+        Browse bundled SRD content alongside any XML or character content imported
+        into the current workspace. Session uploads override bundled entries when
+        they share the same element id.
     </p>
 
     @if (_loading)
@@ -94,7 +94,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (ContentCatalogEntry entry in _filteredElements.Take(250))
+                    @foreach (ContentCatalogEntry entry in VisibleEntries)
                     {
                         <tr>
                             <td>@entry.Name</td>
@@ -113,9 +113,9 @@
             </table>
         </div>
 
-        @if (_filteredElements.Count > 250)
+        @if (_filteredElements.Count > VisibleEntryLimit)
         {
-            <p class="empty-state">Showing the first 250 filtered entries. Narrow the filters to inspect more precisely.</p>
+            <p class="empty-state">Showing the first @VisibleEntryLimit filtered entries. Narrow the filters to inspect more precisely.</p>
         }
     </div>
 }
@@ -130,12 +130,16 @@
     private string _searchText = string.Empty;
     private string _selectedType = string.Empty;
     private string _selectedOrigin = string.Empty;
+    private const int VisibleEntryLimit = 80;
 
     private IReadOnlyList<ContentCatalogEntry> _filteredElements =>
         _catalog?.Elements
                 .Where(MatchesFilters)
                 .ToList()
         ?? [];
+
+    private IEnumerable<ContentCatalogEntry> VisibleEntries =>
+        _filteredElements.Take(VisibleEntryLimit);
 
     protected override void OnParametersSet()
     {

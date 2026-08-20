@@ -8,9 +8,9 @@
 <div class="content-card">
     <h1>Workspace</h1>
     <p class="page-intro">
-        This page is the browser session hub for imported content, the active
-        character, and export actions. Changes remain session-scoped until you
-        download the updated character file.
+        This is the hub for imported content, the active character, and export
+        actions. Changes stay in the temporary web workspace until you download
+        the updated character file.
     </p>
 
     @if (!string.IsNullOrWhiteSpace(_statusMessage))
@@ -49,6 +49,7 @@
             </div>
 
             <div class="action-row">
+                <a class="action-link primary" href="/character">Character Overview</a>
                 <a class="action-link primary" href="/build">Build Character</a>
                 <a class="action-link" href="/manage">Manage Character</a>
                 <a class="action-link" href="/equipment">Equipment</a>
@@ -83,12 +84,11 @@
     </div>
 
     <div class="content-card">
-        <h2>Next Integration Targets</h2>
+        <h2>Workspace Notes</h2>
         <ul class="feature-list">
-            <li>Bind the session overlay into full character editing flows.</li>
-            <li>Expose type-indexed collections for compendium, equipment, and spell views.</li>
-            <li>Reuse the Aurora build UI through a shared component assembly.</li>
-            <li>Add PDF export and richer `.dnd5e` round-trip editing with no long-term server storage.</li>
+            <li>Use Characters to choose which `.dnd5e` file is active.</li>
+            <li>Use Build, Manage, Equipment, and Magic to edit the active character.</li>
+            <li>Download the `.dnd5e` file before ending the web session if you want to keep changes.</li>
         </ul>
     </div>
 }

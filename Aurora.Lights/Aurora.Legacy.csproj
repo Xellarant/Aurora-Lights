@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Aurora Lights - Phase 1 project file
+    Aurora Legacy - WPF client project file
 
     Target:   net8.0-windows  (temporary, keeps WPF alive while
               the logic layer is cleaned up; drop "-windows" and
@@ -13,6 +13,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <OutputType>WinExe</OutputType>
+    <!-- Preserve the historical executable and assembly identity for compatibility. -->
     <AssemblyName>Aurora Lights</AssemblyName>
     <RootNamespace>Builder.Presentation</RootNamespace>
     <ApplicationVersion>1.0.166.7407</ApplicationVersion>

@@ -1,0 +1,244 @@
+@page "/character"
+@inject WebCharacterSessionService CharacterSession
+
+<PageTitle>Character</PageTitle>
+
+<CharacterLibraryShell Title="Character Overview"
+                       IntroText="Review the active character's build, core stats, equipment summary, and spellcasting profile for this browser session."
+                       StatusMessage="@_statusMessage"
+                       StatusIsError="@_failed">
+    <BrowserContent>
+        @if (_loading)
+        {
+            <p class="empty-state">Loading active character...</p>
+        }
+        else if (_runtimeState is null)
+        {
+            <p class="empty-state">No character is currently active. Create or open one from the <a href="/">Characters</a> page first.</p>
+        }
+        else
+        {
+            <section class="character-overview-header">
+                <div class="character-overview-mark">@Initials(_runtimeState.Summary.DisplayName)</div>
+                <div>
+                    <h1>@_runtimeState.Summary.DisplayName</h1>
+                    <div class="character-overview-build">@_runtimeState.Summary.DisplayBuild</div>
+                    <div class="character-overview-meta">
+                        @ValueOrDash(_runtimeState.Summary.PlayerName) · @_runtimeState.Summary.GroupName
+                    </div>
+                </div>
+            </section>
+
+            <div class="character-overview-stat-strip">
+                <div>
+                    <span>Level</span>
+                    <strong>@(_abilityState?.Level.ToString() ?? "-")</strong>
+                </div>
+                <div>
+                    <span>Max HP</span>
+                    <strong>@(_abilityState?.MaxHp.ToString() ?? "-")</strong>
+                </div>
+                <div>
+                    <span>Open Choices</span>
+                    <strong>@(_buildState?.OpenSelectionCount.ToString() ?? "-")</strong>
+                </div>
+                <div>
+                    <span>Inventory</span>
+                    <strong>@(_equipmentState?.Equipment.InventoryItems.Count.ToString() ?? "-")</strong>
+                </div>
+                <div>
+                    <span>Spellcasting</span>
+                    <strong>@FormatSpellcastingSummary()</strong>
+                </div>
+            </div>
+
+            @if (_abilityState is not null)
+            {
+                <section class="content-card flush-card">
+                    <div class="section-heading-row">
+                        <h2>Ability Scores</h2>
+                        <a class="action-link" href="/build">Edit Build</a>
+                    </div>
+                    <div class="character-ability-grid">
+                        @foreach (WebAbilityScoreEntry score in _abilityState.Scores)
+                        {
+                            <div class="character-ability-card">
+                                <span>@score.Abbrev</span>
+                                <strong>@score.FinalScore</strong>
+                                <em>@score.ModifierString</em>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+
+            <div class="character-overview-columns">
+                <section class="content-card flush-card">
+                    <div class="section-heading-row">
+                        <h2>Build</h2>
+                        <a class="action-link" href="/build">Build</a>
+                    </div>
+                    @if (_buildState is null)
+                    {
+                        <p class="empty-state">Build details are unavailable.</p>
+                    }
+                    else if (_buildState.Groups.Count == 0)
+                    {
+                        <p class="empty-state">No open build selections at the current level.</p>
+                    }
+                    else
+                    {
+                        <div class="compact-list">
+                            @foreach (WebBuildSelectionGroup group in _buildState.Groups.Take(4))
+                            {
+                                <div class="compact-list-row">
+                                    <span>@group.Label</span>
+                                    <strong>@group.Entries.Count(e => e.CurrentName is null) open</strong>
+                                </div>
+                            }
+                        </div>
+                    }
+                </section>
+
+                <section class="content-card flush-card">
+                    <div class="section-heading-row">
+                        <h2>Equipment</h2>
+                        <a class="action-link" href="/equipment">Equipment</a>
+                    </div>
+                    @if (_equipmentState is null)
+                    {
+                        <p class="empty-state">Equipment details are unavailable.</p>
+                    }
+                    else
+                    {
+                        <div class="compact-list">
+                            <div class="compact-list-row">
+                                <span>Attunement</span>
+                                <strong>@_equipmentState.Equipment.AttunedCount / @_equipmentState.Equipment.AttunedMax</strong>
+                            </div>
+                            <div class="compact-list-row">
+                                <span>Attacks</span>
+                                <strong>@_equipmentState.Equipment.Attacks.Count</strong>
+                            </div>
+                            <div class="compact-list-row">
+                                <span>Coins</span>
+                                <strong>@FormatCoins()</strong>
+                            </div>
+                        </div>
+                    }
+                </section>
+            </div>
+
+            <div class="action-row">
+                <a class="action-link primary" href="/workspace">Workspace</a>
+                <a class="action-link" href="/manage">Manage</a>
+                <a class="action-link" href="/magic">Magic</a>
+                <a class="action-link" href="/">Switch Character</a>
+            </div>
+        }
+    </BrowserContent>
+
+    <DetailContent>
+        <CharacterDetailPanel Title="Current Character"
+                              EmptyMessage="No active character is available."
+                              Fields="@DetailFields">
+            <Actions>
+                @if (_runtimeState is not null)
+                {
+                    <a class="action-link" href="/workspace">Workspace</a>
+                    <a class="action-link" href="/manage">Manage</a>
+                    <a class="action-link" href="/build">Build</a>
+                }
+            </Actions>
+        </CharacterDetailPanel>
+    </DetailContent>
+</CharacterLibraryShell>
+
+@code {
+    private WebCharacterRuntimeState? _runtimeState;
+    private WebCharacterBuildState? _buildState;
+    private WebAbilityScoreState? _abilityState;
+    private WebCharacterEquipmentState? _equipmentState;
+    private WebCharacterMagicState? _magicState;
+    private bool _loading = true;
+    private bool _failed;
+    private string? _statusMessage;
+
+    private IReadOnlyList<CharacterDetailField> DetailFields =>
+        _runtimeState is null
+            ? []
+            : [
+                new("Name", _runtimeState.Summary.DisplayName),
+                new("Build", _runtimeState.Summary.DisplayBuild),
+                new("Player", ValueOrDash(_runtimeState.Summary.PlayerName)),
+                new("Group", _runtimeState.Summary.GroupName),
+                new("File", _runtimeState.Summary.FileName)
+            ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        _failed = false;
+
+        try
+        {
+            _runtimeState = await CharacterSession.GetCurrentRuntimeStateAsync();
+            if (_runtimeState is not null)
+            {
+                _statusMessage = _runtimeState.StatusMessage;
+                _buildState = await CharacterSession.GetCurrentBuildStateAsync();
+                _abilityState = await CharacterSession.GetCurrentAbilityScoreStateAsync();
+                _equipmentState = await CharacterSession.GetCurrentEquipmentStateAsync();
+                _magicState = await CharacterSession.GetCurrentMagicStateAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _failed = true;
+            _statusMessage = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string FormatSpellcastingSummary()
+    {
+        if (_magicState?.Magic.HasSpellcasting != true)
+        {
+            return "None";
+        }
+
+        int sections = _magicState.Magic.Sections.Count;
+        return sections <= 1 ? _magicState.Magic.SpellcastingClass : $"{sections} sections";
+    }
+
+    private string FormatCoins()
+    {
+        if (_equipmentState is null)
+        {
+            return "-";
+        }
+
+        EquipmentOverviewModel equipment = _equipmentState.Equipment;
+        long total = equipment.Copper + equipment.Silver + equipment.Electrum + equipment.Gold + equipment.Platinum;
+        return total == 0
+            ? "None"
+            : $"{equipment.Platinum} pp, {equipment.Gold} gp, {equipment.Silver} sp";
+    }
+
+    private static string ValueOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string Initials(string value)
+    {
+        string[] parts = value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return parts.Length switch
+        {
+            0 => "A",
+            1 => parts[0][..Math.Min(parts[0].Length, 2)].ToUpperInvariant(),
+            _ => $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant()
+        };
+    }
+}

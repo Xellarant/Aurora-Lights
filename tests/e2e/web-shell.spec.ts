@@ -8,7 +8,10 @@ const legacyMonkFixture = path.resolve(
 
 const routes = [
   { path: '/', heading: 'Characters' },
+  { path: '/overview', heading: 'Web workspace' },
   { path: '/compendium', heading: 'Compendium' },
+  { path: '/workspace', heading: 'Workspace' },
+  { path: '/character', heading: 'Character Overview' },
   { path: '/equipment', heading: 'Equipment' },
   { path: '/magic', heading: 'Magic' }
 ];
@@ -26,7 +29,7 @@ for (const route of routes) {
     const response = await page.goto(route.path, { waitUntil: 'domcontentloaded' });
 
     expect(response?.ok(), `${route.path} should load successfully`).toBeTruthy();
-    await expect(page.getByRole('heading', { name: route.heading })).toBeVisible();
+    await expect(page.getByRole('heading', { name: route.heading, exact: true })).toBeVisible();
     await expect(page.locator('#blazor-error-ui')).toBeHidden();
 
     const overflow = await page.evaluate(() => {
@@ -74,6 +77,10 @@ test('Build picker distinguishes the current choice from unavailable owned choic
 
   await page.getByRole('button', { name: 'Use in Workspace' }).click();
   await expect(page).toHaveURL(/\/workspace$/, { timeout: 60_000 });
+
+  await page.locator('.web-nav-drawer a[href="/character"]').click();
+  await expect(page.getByRole('heading', { name: 'Character Overview' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Fixture Legacy Edited Arilith' })).toBeVisible();
 
   await page.locator('.web-nav-drawer a[href="/build"]').click();
   await expect(page.getByRole('heading', { name: 'Build Character' })).toBeVisible();

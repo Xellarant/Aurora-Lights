@@ -103,7 +103,7 @@ Items that don't exist on any client yet, or exist only in a very early/partial 
   the existing Import workflow — no server-side storage required.
   **Planned development path**: prototype the form-based authoring inside
   AuroraXMLHelper first, where the schema knowledge already lives. Once proven,
-  bring it into Aurora.Web and/or Aurora.Lights — either as an embedded feature
+  bring it into Aurora.Web and/or Aurora.Legacy — either as an embedded feature
   or by linking out to a rebranded standalone Studio. The delivery mechanism is
   TBD once the tool is working end-to-end.
   Suggested element types for a first pass: Races, Classes, Subclasses,

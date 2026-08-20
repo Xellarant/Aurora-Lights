@@ -64,9 +64,9 @@ keeping Aurora useful today while exploring ways to carry it forward.
 - **Aurora.Web** is an early step toward a fully online character builder. It
   currently explores browser-hosted Aurora workflows while sharing compatible
   logic and UI where practical.
-- **Aurora.Lights** is the legacy-facing desktop client. It aims to keep the
-  familiar Aurora program alive and fully functional while moving it onto
-  updated frameworks.
+- **Aurora Legacy** (`Aurora.Legacy`) is the legacy-facing desktop client. It
+  aims to keep the familiar Aurora program alive and fully functional while
+  moving it onto updated frameworks.
 
 Contributors do not need to work on Reflections or the web client to make a
 useful contribution. Small features, bug fixes, and troubleshooting work based
@@ -160,9 +160,10 @@ include:
   Early browser-hosted Aurora experiment and first step toward a fully online
   builder.
 
-- `Aurora.Lights`
+- `Aurora.Legacy` (`Aurora.Lights/Aurora.Legacy.csproj`)
   Legacy-facing WPF desktop client retained as a familiar, fully functional
-  Aurora experience on updated frameworks.
+  Aurora experience on updated frameworks. Its source directory keeps the
+  historical `Aurora.Lights` name to avoid unnecessary path churn.
 
 ## Development
 
@@ -173,7 +174,7 @@ dotnet build .\Builder.Core\Builder.Core.csproj -v minimal
 dotnet build .\Aurora.Logic\Aurora.Logic.csproj -v minimal
 dotnet build .\Aurora.App\Aurora.App.csproj -v minimal -f net10.0-windows10.0.19041.0
 dotnet build .\Aurora.Web\Aurora.Web.csproj -v minimal
-dotnet build .\Aurora.Lights\Aurora.Lights.csproj -v minimal
+dotnet build .\Aurora.Lights\Aurora.Legacy.csproj -v minimal
 ```
 
 On Windows, use the explicit Reflections framework shown above. A solution-wide

@@ -11,19 +11,19 @@
     <MudNavLink Href="/compendium" Icon="@Icons.Material.Filled.MenuBook">
         Compendium
     </MudNavLink>
-    <MudNavLink Href="/overview" Icon="@Icons.Material.Filled.Home">
-        Overview
-    </MudNavLink>
 
     @if (_hasCurrentCharacter)
     {
         <MudDivider Class="my-2" />
 
-        <MudNavLink Href="/workspace" Icon="@Icons.Material.Filled.Dashboard">
-            Workspace
+        <MudNavLink Href="/character" Icon="@Icons.Material.Filled.Person">
+            Overview
         </MudNavLink>
         <MudNavLink Href="/build" Icon="@Icons.Material.Filled.Construction">
             Build
+        </MudNavLink>
+        <MudNavLink Href="/workspace" Icon="@Icons.Material.Filled.Dashboard">
+            Workspace
         </MudNavLink>
         <MudNavLink Href="/manage" Icon="@Icons.Material.Filled.ManageAccounts">
             Manage

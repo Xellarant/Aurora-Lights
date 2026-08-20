@@ -1,16 +1,16 @@
 @page "/overview"
 @inject PhaseZeroSessionWorkspaceService SessionWorkspace
 
-<PageTitle>Aurora.Web</PageTitle>
+<PageTitle>Web Workspace</PageTitle>
 
 <div class="hero-card">
     <div class="hero-copy">
-        <div class="hero-kicker">Aurora.Web</div>
-        <h1>Phase 0 browser host</h1>
+        <div class="hero-kicker">Aurora: Reflections</div>
+        <h1>Web workspace</h1>
         <p>
-            This host starts with embedded core + SRD data and lets a user bring
-            private XML and character files into the current session without any
-            long-term server-side persistence.
+            Bring in Aurora XML packs and `.dnd5e` character files, browse the
+            merged compendium, and work with a temporary web copy before exporting
+            the updated character file.
         </p>
         <div class="hero-actions">
             <a class="action-link primary" href="/import">Import Session Content</a>
@@ -50,22 +50,21 @@
 </div>
 
 <section class="content-card">
-    <h2>What this first slice does</h2>
+    <h2>Available Here</h2>
     <ul class="feature-list">
-        <li>Creates a temporary server-side workspace for the current browser session.</li>
         <li>Accepts `.xml`, `.zip`, and `.dnd5e` uploads.</li>
-        <li>Extracts XML element headers into an in-memory session index for future compendium and search flows.</li>
-        <li>Merges embedded baseline content with the session overlay in a browser compendium view.</li>
-        <li>Automatically expires stale workspaces without keeping a durable user library.</li>
+        <li>Merges bundled SRD content with imported XML content.</li>
+        <li>Creates and edits characters inside a temporary web workspace.</li>
+        <li>Exports updated `.dnd5e` files and generated PDFs.</li>
     </ul>
 </section>
 
 <section class="content-card">
-    <h2>What comes next</h2>
+    <h2>Workspace Notes</h2>
     <ul class="feature-list">
-        <li>Wire the session overlay into character creation and load flows.</li>
-        <li>Reuse the existing Aurora build UI through a shared component layer.</li>
-        <li>Add download/export paths for `.dnd5e` files and generated PDFs.</li>
+        <li>Imported files are temporary and are cleaned up automatically.</li>
+        <li>Download edited characters before closing or refreshing the web session.</li>
+        <li>Use the desktop app when you need a durable local character library.</li>
     </ul>
 </section>
 

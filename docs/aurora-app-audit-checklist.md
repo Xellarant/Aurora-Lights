@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-09
 
-This is a running parity and improvement checklist for `Aurora.App`, with a focus on replacing legacy `Aurora.Lights` functionality cleanly.
+This is a running parity and improvement checklist for `Aurora.App`, with a focus on replacing legacy `Aurora.Legacy` functionality cleanly.
 
 Related reference:
 - [SQLite Content Correctness Checklist](C:/Users/Ralla/source/repos/Aurora-Lights/docs/sqlite-content-correctness-checklist.md)

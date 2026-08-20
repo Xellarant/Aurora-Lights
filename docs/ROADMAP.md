@@ -131,7 +131,7 @@ file, store it locally, re-upload via the existing import workflow.
 
 **Development path**: prototype the form-based authoring inside AuroraXMLHelper
 first, where the schema knowledge already lives and iteration is fast. Once
-proven, bring it into Aurora.Web and/or Aurora.Lights — either as an embedded
+proven, bring it into Aurora.Web and/or Aurora.Legacy — either as an embedded
 feature or by linking out to a rebranded standalone tool. The delivery mechanism
 (integrate vs. link, rebrand or not) is TBD once the authoring workflow is
 working end-to-end.

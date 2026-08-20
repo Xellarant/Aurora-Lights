@@ -7,7 +7,7 @@ small improvements to the familiar desktop application.
 
 ## Choose A Project
 
-- `Aurora.Lights`
+- `Aurora.Legacy`
   The legacy-facing WPF desktop client. This is the best starting point for
   improving the familiar Aurora interface, fixing legacy UI bugs, or restoring
   desktop behavior.
@@ -41,7 +41,7 @@ For a workflow-by-workflow view of the clients, see the
 
 ## How Editable Is The Legacy Client?
 
-`Aurora.Lights` is a real, buildable WPF application on .NET 10. Its views,
+`Aurora.Legacy` is a real, buildable WPF application on .NET 10. Its views,
 XAML, controls, dialogs, commands, and many view models are available as source.
 It consumes the editable `Aurora.Logic` project for a substantial portion of
 its shared behavior.
@@ -89,7 +89,7 @@ legacy compatibility matters.
 
 | Change | Likely Project |
 | --- | --- |
-| Familiar WPF interface, dialog, or desktop command | `Aurora.Lights` |
+| Familiar WPF interface, dialog, or desktop command | `Aurora.Legacy` |
 | Shared character loading, rules orchestration, inventory, or compatibility behavior | `Aurora.Logic` |
 | Reflections interface or MAUI platform integration | `Aurora.App` |
 | Reusable Razor UI for modern clients | `Aurora.Components` |
@@ -105,14 +105,15 @@ The repository uses .NET 10. On Windows, useful project-level build commands
 include:
 
 ```powershell
-dotnet build .\Aurora.Lights\Aurora.Lights.csproj -v minimal
+dotnet build .\Aurora.Lights\Aurora.Legacy.csproj -v minimal
 dotnet build .\Aurora.Logic\Aurora.Logic.csproj -v minimal
 dotnet build .\Aurora.App\Aurora.App.csproj -v minimal -f net10.0-windows10.0.19041.0
 dotnet build .\Aurora.Web\Aurora.Web.csproj -v minimal
 dotnet test .\Aurora.Tests\Aurora.Tests.csproj -v minimal
 ```
 
-`Aurora.Lights` is a Windows WPF application. `Aurora.Logic`, the importer, and
+`Aurora.Legacy` is a Windows WPF application. Its source remains in the
+`Aurora.Lights` directory. `Aurora.Logic`, the importer, and
 the modern-client projects are intended to support broader reuse. A
 solution-wide build also attempts Reflections' Android and Mac Catalyst targets,
 so use the explicit Windows framework above unless the additional platform
