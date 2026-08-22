@@ -93,8 +93,9 @@ public static class BuildSelectionOptionResolver
             {
                 try
                 {
+                    string supportsExpression = ExpandDynamicSpellcastingSupports(rule);
                     elements = interpreter.EvaluateSupportsExpression<ElementBase>(
-                        rule.Attributes.Supports,
+                        supportsExpression,
                         baseCollection,
                         rule.Attributes.SupportsElementIdRange());
                 }
@@ -398,6 +399,134 @@ public static class BuildSelectionOptionResolver
         return string.IsNullOrWhiteSpace(firstWord) || int.TryParse(firstWord, out _)
             ? null
             : firstWord;
+    }
+
+    private static string ExpandDynamicSpellcastingSupports(SelectRule rule)
+    {
+        string expression = rule.Attributes.Supports ?? string.Empty;
+        if (!expression.Contains("$(spellcasting:list)", StringComparison.OrdinalIgnoreCase)
+            && !expression.Contains("$(spellcasting:slots)", StringComparison.OrdinalIgnoreCase))
+        {
+            return expression;
+        }
+
+        SpellcastingInformation? information = ResolveSpellcastingInformation(rule);
+        if (information is null)
+            return expression;
+
+        if (expression.Contains("$(spellcasting:list)", StringComparison.OrdinalIgnoreCase))
+        {
+            List<string> listExpressions = [];
+            if (!string.IsNullOrWhiteSpace(information.InitialSupportedSpellsExpression?.Supports))
+                listExpressions.Add(information.InitialSupportedSpellsExpression.Supports);
+
+            try
+            {
+                IEnumerable<SpellcastingInformation> extensions = CharacterManager.Current
+                    .GetSpellcastingInformations()
+                    .Where(candidate =>
+                        candidate.IsExtension &&
+                        (candidate.AssignToAllSpellcastingClasses ||
+                         candidate.Name.Equals(information.Name, StringComparison.OrdinalIgnoreCase)));
+
+                listExpressions.AddRange(extensions
+                    .SelectMany(extension => extension.ExtendedSupportedSpellsExpressions)
+                    .Where(extension => !extension.IsId && !string.IsNullOrWhiteSpace(extension.Supports))
+                    .Select(extension => extension.Supports));
+            }
+            catch
+            {
+                // The owner's initial list is still authoritative when extension state is unavailable.
+            }
+
+            if (listExpressions.Count > 0)
+            {
+                string expandedList = string.Join(
+                    "||",
+                    listExpressions.Select(item => $"({item})"));
+                expression = expression.Replace(
+                    "$(spellcasting:list)",
+                    $"({expandedList})",
+                    StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        if (expression.Contains("$(spellcasting:slots)", StringComparison.OrdinalIgnoreCase))
+        {
+            IReadOnlyList<int> slotLevels = ResolveSpellSlotLevels(information, rule.Attributes.RequiredLevel);
+            expression = expression.Replace(
+                "$(spellcasting:slots)",
+                $"({string.Join("||", slotLevels)})",
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        return expression;
+    }
+
+    private static SpellcastingInformation? ResolveSpellcastingInformation(SelectRule rule)
+    {
+        string? profileName = rule.Attributes.ContainsSpellcastingName()
+            ? rule.Attributes.SpellcastingName
+            : null;
+
+        try
+        {
+            SpellcastingInformation? active = CharacterManager.Current
+                .GetSpellcastingInformations()
+                .FirstOrDefault(candidate =>
+                    !candidate.IsExtension &&
+                    (string.IsNullOrWhiteSpace(profileName) ||
+                     candidate.Name.Equals(profileName, StringComparison.OrdinalIgnoreCase)));
+            if (active is not null)
+                return active;
+        }
+        catch
+        {
+        }
+
+        string? ownerId = rule.ElementHeader?.Id;
+        if (string.IsNullOrWhiteSpace(ownerId))
+            return null;
+
+        ElementBase? owner = DataManager.Current.ElementsCollection
+            .FirstOrDefault(element => element.Id.Equals(ownerId, StringComparison.OrdinalIgnoreCase));
+        if (owner?.HasSpellcastingInformation != true)
+            return null;
+
+        return string.IsNullOrWhiteSpace(profileName) ||
+               owner.SpellcastingInformation.Name.Equals(profileName, StringComparison.OrdinalIgnoreCase)
+            ? owner.SpellcastingInformation
+            : null;
+    }
+
+    private static IReadOnlyList<int> ResolveSpellSlotLevels(
+        SpellcastingInformation information,
+        int acquisitionLevel)
+    {
+        try
+        {
+            CharacterManager manager = CharacterManager.Current;
+            int level = acquisitionLevel > 0
+                ? acquisitionLevel
+                : manager.Character?.Level ?? 1;
+            var values = manager.StatisticsCalculator.CalculateValuesAtLevel(level, manager.GetElements());
+            List<int> levels = [];
+            for (int slotLevel = 1; slotLevel <= 9; slotLevel++)
+            {
+                string statisticName = information.GetSlotStatisticName(slotLevel);
+                if (values.ContainsGroup(statisticName) && values.GetValue(statisticName) > 0)
+                    levels.Add(slotLevel);
+            }
+
+            if (levels.Count > 0)
+                return levels;
+        }
+        catch
+        {
+        }
+
+        // Match legacy Aurora's no-slot sentinel: no real spell has level 99.
+        return [99];
     }
 
     private static string? ResolveOwnerSpellcastingName(SelectRule rule)

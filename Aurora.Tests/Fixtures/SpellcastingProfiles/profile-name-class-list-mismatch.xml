@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<elements>
+  <element name="Fixture Sacred Profile" type="Archetype Feature" source="Resolver Fixture" id="ID_TEST_PROFILE_ALIAS_OWNER">
+    <spellcasting name="Path of Fixture Kin" ability="Constitution">
+      <list>Fixture Sorcerer,(Conjuration||Divination)</list>
+    </spellcasting>
+    <rules>
+      <stat name="path of fixture kin:spellcasting:slots:1" value="2" level="1" />
+      <select type="Spell" name="Fixture Unrestricted Spell" supports="($(spellcasting:list)||Fixture Sorcerer), 1" level="1" spellcasting="Path of Fixture Kin" />
+      <select type="Spell" name="Fixture Restricted Spell" supports="$(spellcasting:list), 1" level="1" spellcasting="Path of Fixture Kin" />
+      <select type="Spell" name="Fixture Slot Spell" supports="$(spellcasting:list), $(spellcasting:slots)" level="1" spellcasting="Path of Fixture Kin" />
+    </rules>
+  </element>
+
+  <element name="Fixture Conjuration" type="Spell" source="Resolver Fixture" id="ID_TEST_PROFILE_ALIAS_CONJURATION">
+    <supports>Fixture Sorcerer</supports>
+    <description><p>A matching first-level conjuration spell.</p></description>
+    <setters>
+      <set name="level">1</set>
+      <set name="school">Conjuration</set>
+      <set name="time">1 action</set>
+      <set name="duration">Instantaneous</set>
+      <set name="range">30 feet</set>
+    </setters>
+  </element>
+
+  <element name="Fixture Abjuration" type="Spell" source="Resolver Fixture" id="ID_TEST_PROFILE_ALIAS_ABJURATION">
+    <supports>Fixture Sorcerer</supports>
+    <description><p>A matching first-level spell outside the restricted schools.</p></description>
+    <setters>
+      <set name="level">1</set>
+      <set name="school">Abjuration</set>
+      <set name="time">1 reaction</set>
+      <set name="duration">1 round</set>
+      <set name="range">Self</set>
+    </setters>
+  </element>
+
+  <element name="Fixture Other List" type="Spell" source="Resolver Fixture" id="ID_TEST_PROFILE_ALIAS_OTHER_LIST">
+    <supports>Fixture Wizard</supports>
+    <description><p>A first-level spell from a different spell list.</p></description>
+    <setters>
+      <set name="level">1</set>
+      <set name="school">Conjuration</set>
+      <set name="time">1 action</set>
+      <set name="duration">Instantaneous</set>
+      <set name="range">60 feet</set>
+    </setters>
+  </element>
+
+  <element name="Fixture Cantrip" type="Spell" source="Resolver Fixture" id="ID_TEST_PROFILE_ALIAS_CANTRIP">
+    <supports>Fixture Sorcerer</supports>
+    <description><p>A matching cantrip that must not appear in a first-level choice.</p></description>
+    <setters>
+      <set name="level">0</set>
+      <set name="school">Conjuration</set>
+      <set name="time">1 action</set>
+      <set name="duration">Instantaneous</set>
+      <set name="range">30 feet</set>
+    </setters>
+  </element>
+</elements>

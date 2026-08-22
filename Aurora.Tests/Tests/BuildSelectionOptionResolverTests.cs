@@ -4,6 +4,7 @@ using Builder.Data.Rules;
 using Builder.Presentation;
 using Builder.Presentation.Services;
 using Builder.Presentation.Services.Data;
+using System.Xml;
 using Xunit.Abstractions;
 
 namespace Aurora.Tests.Tests;
@@ -155,6 +156,58 @@ public sealed class BuildSelectionOptionResolverTests : IAsyncLifetime
             .Select(option => DataManager.Current.ElementsCollection.GetElement(option.Id)?.Type ?? string.Empty)
             .ToList();
         optionTypes.Should().OnlyContain(type => type == "Spell");
+    }
+
+    [Fact]
+    public async Task ResolveOptions_ExpandsSpellListWhenProfileNameDiffersFromClassList()
+    {
+        if (!ContentFixture.SkipIfUnavailable(_output)) return;
+
+        await CreateEmptyCharacterAsync();
+        IReadOnlyList<ElementBase> fixtureElements = LoadSpellcastingProfileFixture();
+        string[] fixtureIds = fixtureElements.Select(element => element.Id).ToArray();
+        ResetSyntheticElements(fixtureIds);
+        foreach (ElementBase element in fixtureElements)
+            DataManager.Current.ElementsCollection.Add(element);
+
+        ElementBase owner = fixtureElements.Should()
+            .ContainSingle(element => element.Id == "ID_TEST_PROFILE_ALIAS_OWNER")
+            .Subject;
+        CharacterManager.Current.RegisterElement(owner);
+        CharacterManager.Current.ReprocessCharacter();
+
+        SelectRule unrestrictedRule = CharacterManager.Current.SelectionRules.Should()
+            .ContainSingle(rule =>
+                rule.ElementHeader.Id == owner.Id &&
+                rule.Attributes.Name == "Fixture Unrestricted Spell")
+            .Subject;
+        SelectRule restrictedRule = CharacterManager.Current.SelectionRules.Should()
+            .ContainSingle(rule =>
+                rule.ElementHeader.Id == owner.Id &&
+                rule.Attributes.Name == "Fixture Restricted Spell")
+            .Subject;
+        SelectRule slotRule = CharacterManager.Current.SelectionRules.Should()
+            .ContainSingle(rule =>
+                rule.ElementHeader.Id == owner.Id &&
+                rule.Attributes.Name == "Fixture Slot Spell")
+            .Subject;
+
+        IReadOnlyList<BuildSelectionOption> unrestricted =
+            BuildSelectionOptionResolver.ResolveOptions(unrestrictedRule);
+        IReadOnlyList<BuildSelectionOption> restricted =
+            BuildSelectionOptionResolver.ResolveOptions(restrictedRule);
+        IReadOnlyList<BuildSelectionOption> slotRestricted =
+            BuildSelectionOptionResolver.ResolveOptions(slotRule);
+
+        unrestricted.Select(option => option.Id).Should().BeEquivalentTo(
+            ["ID_TEST_PROFILE_ALIAS_CONJURATION", "ID_TEST_PROFILE_ALIAS_ABJURATION"],
+            "the profile name is a label; the expanded Fixture Sorcerer list controls spell access");
+        restricted.Select(option => option.Id).Should().Equal(
+            ["ID_TEST_PROFILE_ALIAS_CONJURATION"],
+            "the profile's Conjuration/Divination restriction must survive macro expansion");
+        slotRestricted.Select(option => option.Id).Should().Equal(
+            ["ID_TEST_PROFILE_ALIAS_CONJURATION"],
+            "slot expansion must use the aliased profile's active first-level slots");
     }
 
     [Fact]
@@ -460,6 +513,32 @@ public sealed class BuildSelectionOptionResolverTests : IAsyncLifetime
         rule.Attributes.Type = type;
         rule.Attributes.Name = name;
         return rule;
+    }
+
+    private static IReadOnlyList<ElementBase> LoadSpellcastingProfileFixture()
+    {
+        string path = Path.Combine(
+            AppContext.BaseDirectory,
+            "Fixtures",
+            "SpellcastingProfiles",
+            "profile-name-class-list-mismatch.xml");
+        var document = new XmlDocument();
+        document.Load(path);
+
+        var defaultParser = new ElementParser();
+        List<ElementParser> parsers = ElementParserFactory.GetParsers().ToList();
+        return document.DocumentElement!
+            .ChildNodes
+            .Cast<XmlNode>()
+            .Where(node => node.Name == "element")
+            .Select(node =>
+            {
+                ElementHeader header = defaultParser.ParseElementHeader(node);
+                ElementParser parser = parsers.FirstOrDefault(candidate => candidate.ParserType == header.Type)
+                    ?? defaultParser;
+                return parser.ParseElement(node);
+            })
+            .ToList();
     }
 
     private static ElementBase AddSyntheticElement(

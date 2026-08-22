@@ -44,6 +44,7 @@
     <Content Include="Fixtures\Characters\*.dnd5e" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Fixtures\ChoiceIdentity\*.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Fixtures\ParityScenarios\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Fixtures\SpellcastingProfiles\*.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- Update-service source files live in Aurora.App (MAUI target). Link the pure-.NET ones here
