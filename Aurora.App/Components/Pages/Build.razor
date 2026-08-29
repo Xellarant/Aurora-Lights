@@ -947,9 +947,8 @@ else if (_workflowSuggestion != null)
 
     private async Task OpenPickerAsync(SelectionRuleEntry entry)
     {
-        var tab  = Tabs.ActiveTab;
-        var file = Characters.CurrentCharacterFile;
-        if (tab == null || file == null)
+        var tab = Tabs.ActiveTab;
+        if (tab == null)
         {
             WarnUnavailable("That choice is not available right now. Try again once the character finishes loading.");
             return;
@@ -990,7 +989,7 @@ else if (_workflowSuggestion != null)
 
             bool autoSave = Prefs.AutoSaveBuildChanges;
             var removed = await BuildService.ApplySelectionAndSaveAsync(
-                entry.Rule, selectedId, entry.Number, tab, file, saveToFile: autoSave);
+                entry.Rule, selectedId, entry.Number, tab, tab.File, saveToFile: autoSave);
 
             _saving = false;
             _saveError = null;

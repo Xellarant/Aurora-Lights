@@ -103,14 +103,11 @@
                     <span>@row.Damage</span>
                     <span>@row.Range</span>
                     <span class="session-attack-actions">
-                        @if (row.IsCustom)
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Size="Size.Small"
-                                           Color="Color.Secondary"
-                                           title="Edit reminder"
-                                           OnClick="() => OpenEditCustomAttackReminderDialog(row)" />
-                        }
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       Color="Color.Secondary"
+                                       title="Edit reminder"
+                                       OnClick="() => OpenEditAttackReminderDialog(row)" />
                         <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
                                        Size="Size.Small"
                                        Color="Color.Secondary"
@@ -479,6 +476,7 @@
     private string _spellcastingSummary = string.Empty;
     private string? _saveError;
     private bool _advancementBusy;
+    private bool _attackEntryMigrationRunning;
 
     private static readonly string[] _allConditions =
     [
@@ -529,6 +527,7 @@
         var attackReminderSet = BuildAttackReminderSet();
         _attackReminders = attackReminderSet.Visible;
         _availableAttackReminders = attackReminderSet.AvailableWeapons;
+        QueueLegacyAttackReminderMigration();
         _spellcastingSummary = _snap?.SpellcastingSections.Count > 1
             ? string.Join(", ", _snap.SpellcastingSections.Select(section => section.Name).Distinct(StringComparer.OrdinalIgnoreCase))
             : string.Empty;
@@ -754,61 +753,254 @@
         return Math.Clamp(_s.SpellSlotsUsed.GetValueOrDefault(level, 0), 0, Math.Max(0, total));
     }
 
-    private void AddAttackReminder(SessionAttackReminder reminder)
+    private async Task AddAttackReminder(SessionAttackReminder reminder)
     {
         if (!reminder.IsWeapon || string.IsNullOrWhiteSpace(reminder.Key))
             return;
 
+        var tab = Tabs.ActiveTab;
+        if (tab?.Character is null || reminder.EquipmentIdentifier is not { } equipmentIdentifier)
+        {
+            Snackbar.Add("That weapon is no longer available on the active character.", Severity.Warning);
+            return;
+        }
+
+        int sourceIndex = reminder.SourceAttackIndex;
+        bool createdAttackEntry = sourceIndex < 0;
+        if (createdAttackEntry)
+        {
+            using (await CharacterContext.EnterAsync(tab))
+            {
+                sourceIndex = AttackReminderCharacterService.EnsureWeaponAttackEntry(
+                    tab.Character,
+                    equipmentIdentifier);
+                if (sourceIndex >= 0)
+                    BuildService.ResnapTab(tab);
+            }
+
+            if (sourceIndex < 0)
+            {
+                Snackbar.Add("Could not create a saved attack entry for that weapon.", Severity.Error);
+                return;
+            }
+
+            _snap = tab.Snapshot;
+            reminder = FindReminderBySourceIndex(sourceIndex) ?? reminder;
+        }
+
         if (!_s.AttackReminderWeaponIds.Contains(reminder.Key, StringComparer.OrdinalIgnoreCase))
             _s.AttackReminderWeaponIds.Add(reminder.Key);
 
-        AutoSave();
+        if (createdAttackEntry)
+            await SaveAttackEntryChangesAsync(tab, "Attack reminder added, but its saved attack entry could not be written yet.");
+        else
+            AutoSave();
+
         RefreshAttackReminders();
+    }
+
+    private void QueueLegacyAttackReminderMigration()
+    {
+        if (_attackEntryMigrationRunning ||
+            !_attackReminders.Any(reminder => reminder.IsWeapon && reminder.SourceAttackIndex < 0))
+        {
+            return;
+        }
+
+        _attackEntryMigrationRunning = true;
+        _ = InvokeAsync(MigrateLegacyAttackRemindersAsync);
+    }
+
+    private async Task MigrateLegacyAttackRemindersAsync()
+    {
+        try
+        {
+            var tab = Tabs.ActiveTab;
+            if (tab?.Character is null)
+                return;
+
+            var pending = _attackReminders
+                .Where(reminder => reminder.IsWeapon &&
+                                   reminder.SourceAttackIndex < 0 &&
+                                   reminder.EquipmentIdentifier is not null)
+                .ToList();
+            if (pending.Count == 0)
+                return;
+
+            var migrated = new List<(SessionAttackReminder Reminder, int SourceIndex)>();
+            using (await CharacterContext.EnterAsync(tab))
+            {
+                foreach (var reminder in pending)
+                {
+                    int sourceIndex = AttackReminderCharacterService.EnsureWeaponAttackEntry(
+                        tab.Character,
+                        reminder.EquipmentIdentifier!);
+                    if (sourceIndex >= 0)
+                        migrated.Add((reminder, sourceIndex));
+                }
+
+                if (migrated.Count > 0)
+                    BuildService.ResnapTab(tab);
+            }
+
+            if (migrated.Count == 0)
+                return;
+
+            _snap = tab.Snapshot;
+            foreach (var (oldReminder, sourceIndex) in migrated)
+            {
+                bool selectedByOldKey = _s.AttackReminderWeaponIds.RemoveAll(id =>
+                    string.Equals(id, oldReminder.Key, StringComparison.OrdinalIgnoreCase)) > 0;
+                var migratedReminder = FindReminderBySourceIndex(sourceIndex);
+                if (selectedByOldKey && migratedReminder is not null &&
+                    !_s.AttackReminderWeaponIds.Contains(migratedReminder.Key, StringComparer.OrdinalIgnoreCase))
+                {
+                    _s.AttackReminderWeaponIds.Add(migratedReminder.Key);
+                }
+            }
+
+            await SaveAttackEntryChangesAsync(
+                tab,
+                "An existing attack reminder was upgraded in memory, but its saved attack entry could not be written yet.");
+            RefreshAttackReminders();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            DebugLogService.Instance.LogException(ex, "Session.MigrateLegacyAttackRemindersAsync");
+            Snackbar.Add("Existing attack reminders could not be upgraded to saved attack entries.", Severity.Error);
+        }
+        finally
+        {
+            _attackEntryMigrationRunning = false;
+        }
     }
 
     private async Task OpenAddCustomAttackReminderDialog()
     {
-        var dialog = await DialogService.ShowAsync<CustomAttackReminderDialog>("Add Attack Reminder");
+        var parameters = new DialogParameters
+        {
+            [nameof(CustomAttackReminderDialog.SavesToCharacter)] = true,
+        };
+        var dialog = await DialogService.ShowAsync<CustomAttackReminderDialog>("Add Attack Reminder", parameters);
         var result = await dialog.Result;
 
         if (result is { Canceled: false, Data: CustomAttackReminder customReminder })
         {
-            _s.CustomAttackReminders.Add(customReminder);
-            AutoSave();
+            var tab = Tabs.ActiveTab;
+            if (tab?.Character is null)
+            {
+                Snackbar.Add("There is no active character to receive that attack.", Severity.Warning);
+                return;
+            }
+
+            using (await CharacterContext.EnterAsync(tab))
+            {
+                AttackReminderCharacterService.AddAttackEntry(tab.Character, customReminder);
+                BuildService.ResnapTab(tab);
+            }
+
+            _snap = tab.Snapshot;
+            await SaveAttackEntryChangesAsync(tab, "The attack was added in memory, but could not be written to the character file yet.");
             RefreshAttackReminders();
         }
     }
 
-    private async Task OpenEditCustomAttackReminderDialog(SessionAttackReminder reminder)
+    private async Task OpenEditAttackReminderDialog(SessionAttackReminder reminder)
     {
-        if (reminder.CustomIdentifier is not { } customIdentifier)
-            return;
-
-        var existing = _s.CustomAttackReminders.FirstOrDefault(custom =>
-            string.Equals(custom.Id, customIdentifier, StringComparison.OrdinalIgnoreCase));
-        if (existing is null)
-            return;
+        CustomAttackReminder existing;
+        if (reminder.CustomIdentifier is { } customIdentifier)
+        {
+            existing = _s.CustomAttackReminders.FirstOrDefault(custom =>
+                string.Equals(custom.Id, customIdentifier, StringComparison.OrdinalIgnoreCase))
+                ?? ToEditableReminder(reminder);
+        }
+        else
+        {
+            existing = ToEditableReminder(reminder);
+        }
 
         var parameters = new DialogParameters
         {
             [nameof(CustomAttackReminderDialog.Existing)] = existing,
             [nameof(CustomAttackReminderDialog.IsEdit)] = true,
+            [nameof(CustomAttackReminderDialog.SavesToCharacter)] = true,
         };
         var dialog = await DialogService.ShowAsync<CustomAttackReminderDialog>("Edit Attack Reminder", parameters);
         var result = await dialog.Result;
 
         if (result is { Canceled: false, Data: CustomAttackReminder updated })
         {
-            var index = _s.CustomAttackReminders.IndexOf(existing);
-            if (index >= 0)
-                _s.CustomAttackReminders[index] = updated;
-            else
-                _s.CustomAttackReminders.Add(updated);
-
-            AutoSave();
-            RefreshAttackReminders();
+            await ApplyAttackReminderEditAsync(reminder, updated);
         }
     }
+
+    private async Task ApplyAttackReminderEditAsync(
+        SessionAttackReminder reminder,
+        CustomAttackReminder updated)
+    {
+        var tab = Tabs.ActiveTab;
+        if (tab?.Character is null)
+        {
+            Snackbar.Add("There is no active character to update.", Severity.Warning);
+            return;
+        }
+
+        int sourceIndex = reminder.SourceAttackIndex;
+        using (await CharacterContext.EnterAsync(tab))
+        {
+            if (sourceIndex < 0 && reminder.EquipmentIdentifier is { } equipmentIdentifier)
+            {
+                sourceIndex = AttackReminderCharacterService.EnsureWeaponAttackEntry(
+                    tab.Character,
+                    equipmentIdentifier);
+            }
+            else if (sourceIndex < 0 && reminder.IsCustom)
+            {
+                sourceIndex = AttackReminderCharacterService.AddAttackEntry(tab.Character, updated);
+            }
+
+            if (sourceIndex < 0 ||
+                !AttackReminderCharacterService.ApplyEdits(tab.Character, sourceIndex, updated))
+            {
+                Snackbar.Add("The saved attack entry could not be found.", Severity.Error);
+                return;
+            }
+
+            BuildService.ResnapTab(tab);
+        }
+
+        if (reminder.CustomIdentifier is { } customIdentifier)
+        {
+            _s.CustomAttackReminders.RemoveAll(custom =>
+                string.Equals(custom.Id, customIdentifier, StringComparison.OrdinalIgnoreCase));
+        }
+
+        _snap = tab.Snapshot;
+        if (reminder.IsWeapon)
+        {
+            bool selectedByOldKey = _s.AttackReminderWeaponIds.RemoveAll(id =>
+                string.Equals(id, reminder.Key, StringComparison.OrdinalIgnoreCase)) > 0;
+            var updatedReminder = FindReminderBySourceIndex(sourceIndex);
+            if (selectedByOldKey && updatedReminder is not null &&
+                !_s.AttackReminderWeaponIds.Contains(updatedReminder.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                _s.AttackReminderWeaponIds.Add(updatedReminder.Key);
+            }
+        }
+
+        await SaveAttackEntryChangesAsync(tab, "The attack was updated in memory, but could not be written to the character file yet.");
+        RefreshAttackReminders();
+    }
+
+    private static CustomAttackReminder ToEditableReminder(SessionAttackReminder reminder) => new()
+    {
+        Id = reminder.CustomIdentifier ?? Guid.NewGuid().ToString("N")[..8],
+        Name = reminder.Name,
+        Attack = reminder.Attack,
+        Damage = reminder.Damage,
+        Range = reminder.Range,
+    };
 
     private void RemoveAttackReminder(SessionAttackReminder reminder)
     {
@@ -868,7 +1060,8 @@
                 attack.Attack,
                 attack.Damage,
                 attack.Range,
-                attack.EquipmentIdentifier))
+                attack.EquipmentIdentifier,
+                attack.SourceIndex))
             .ToList();
 
         var inventory = _snap.InventoryItems
@@ -879,7 +1072,10 @@
                 item.Name,
                 item.IsWeaponLike,
                 item.Damage,
-                item.Range))
+                item.Range,
+                item.CalculatedAttack,
+                item.CalculatedDamage,
+                item.CalculatedRange))
             .ToList();
 
         return SessionAttackReminderService.Build(
@@ -888,6 +1084,34 @@
             _s.AttackReminderWeaponIds,
             _s.HiddenDefaultAttackReminderKeys,
             _s.CustomAttackReminders);
+    }
+
+    private SessionAttackReminder? FindReminderBySourceIndex(int sourceIndex)
+    {
+        if (sourceIndex < 0)
+            return null;
+
+        var set = BuildAttackReminderSet();
+        return set.Visible
+            .Concat(set.AvailableWeapons)
+            .FirstOrDefault(reminder => reminder.SourceAttackIndex == sourceIndex);
+    }
+
+    private async Task<bool> SaveAttackEntryChangesAsync(CharacterTab tab, string failureMessage)
+    {
+        string? error = await BuildService.SaveTabAsync(tab);
+        if (error is not null)
+        {
+            Tabs.MarkDirty(tab);
+            _saveError = $"{failureMessage} {error}";
+            Snackbar.Add(_saveError, Severity.Error);
+            StateHasChanged();
+            return false;
+        }
+
+        _saveError = null;
+        Tabs.MarkClean(tab);
+        return true;
     }
 
     private static List<SpellLevelEntry> BuildAggregatedSpellLevels(CharacterSnapshot? snap)

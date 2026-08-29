@@ -48,6 +48,30 @@ public sealed record CharacterFileWriteResult(
 /// </summary>
 public static class CharacterFileWriteCoordinator
 {
+    /// <summary>
+    /// Writes only when <paramref name="targetFile"/> is the same physical file owned by the
+    /// active tab. This is the final guard against a stale service-level file reference sending
+    /// one tab's in-memory character to another tab's path.
+    /// </summary>
+    public static CharacterFileWriteResult WriteOwned(
+        SemaphoreSlim gate,
+        CharacterFile ownerFile,
+        CharacterFile targetFile,
+        string operation,
+        Func<bool> write)
+    {
+        try
+        {
+            CharacterFileIdentity.EnsureSameFile(ownerFile, targetFile);
+        }
+        catch (Exception ex)
+        {
+            return CharacterFileWriteResult.Failed(operation, ex);
+        }
+
+        return Write(gate, targetFile, operation, write);
+    }
+
     public static CharacterFileWriteResult Write(
         SemaphoreSlim gate,
         CharacterFile file,

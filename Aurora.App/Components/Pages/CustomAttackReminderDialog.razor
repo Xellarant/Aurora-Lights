@@ -25,7 +25,14 @@
                           Variant="Variant.Outlined"
                           Immediate="true" />
             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                These reminders are session-only. They do not alter the character's saved attack list.
+                @if (SavesToCharacter)
+                {
+                    <text>This reminder will be saved in the character's attack list.</text>
+                }
+                else
+                {
+                    <text>This legacy reminder is stored in session data.</text>
+                }
             </MudText>
         </MudStack>
     </DialogContent>
@@ -48,6 +55,9 @@
 
     [Parameter]
     public bool IsEdit { get; set; }
+
+    [Parameter]
+    public bool SavesToCharacter { get; set; }
 
     private string _name = "";
     private string _attack = "";

@@ -636,7 +636,12 @@ public static partial class BuildService
         if (targetFile is null)
             throw new InvalidOperationException("No file associated with this tab.");
 
-        CharacterFileWriteCoordinator.Write(tab.FileSaveSemaphore, targetFile, "Character", () =>
+        CharacterFileWriteCoordinator.WriteOwned(
+            tab.FileSaveSemaphore,
+            tab.File,
+            targetFile,
+            "Character",
+            () =>
         {
             if (tab.Snapshot != null && tab.Character != null)
                 FlushSnapshotToCharacter(tab.Snapshot, tab.Character);

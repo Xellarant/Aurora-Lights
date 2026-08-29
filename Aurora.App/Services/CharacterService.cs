@@ -339,7 +339,7 @@ public sealed class CharacterService :
     /// <see cref="CurrentCharacter"/> and no other load has since overwritten it.
     /// </summary>
     public bool IsPreloaded(CharacterFile file) =>
-        CurrentCharacterFile?.FilePath == file.FilePath && CurrentCharacter != null;
+        CharacterFileIdentity.RefersToSameFile(CurrentCharacterFile, file) && CurrentCharacter != null;
 
     /// <summary>
     /// Starts loading <paramref name="file"/> on a background thread without blocking
@@ -367,6 +367,11 @@ public sealed class CharacterService :
         // might otherwise call EnterAsync mid-load.
         using var scope = await CharacterContext.EnterForLoadAsync();
         _isCharacterLoading = true;
+        // A failed load must not inherit the previous character. OnCharacterSelected treats a
+        // non-null CurrentCharacter as a usable partial load, so stale state here could attach one
+        // character to another file tab and make a later save destructive.
+        CurrentCharacter = null;
+        CurrentCharacterFile = null;
         try
         {
             await EnsureElementsLoadedAsync();
@@ -405,7 +410,7 @@ public sealed class CharacterService :
                     if (!string.IsNullOrEmpty(file.FilePath))
                         Preferences.Default.Set("app.mru_character", file.FilePath);
                 }
-                return (result.Success || CurrentCharacter != null,
+                return (result.Success,
                         result.Success ? string.Empty
                             : $"⚠ Partial load: {result.Message}\n\nElements loaded: {ElementCount}\n{_initDiagnostic}\nCustom dir: {CustomElementsDirectory}");
             }
@@ -466,7 +471,7 @@ public sealed class CharacterService :
 
             // Clear preload state so IsPreloaded doesn't return a false positive if a new
             // character is later created at the same path.
-            if (string.Equals(CurrentCharacterFile?.FilePath, file.FilePath, StringComparison.Ordinal))
+            if (CharacterFileIdentity.RefersToSameFile(CurrentCharacterFile, file))
             {
                 CurrentCharacter     = null;
                 CurrentCharacterFile = null;

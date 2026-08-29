@@ -9,6 +9,7 @@
 @inject PdfImportService PdfImport
 @inject AppPageStateService PageState
 @using Builder.Presentation
+@using Builder.Presentation.Utilities
 @using Aurora.PdfImport
 
 @if (_loading)
@@ -287,7 +288,9 @@ else
         {
             (bool success, string message) = await CharSvc.LoadCharacterAsync(characterFile);
 
-            if (success && CharSvc.CurrentCharacter != null)
+            if (success
+                && CharSvc.CurrentCharacter != null
+                && CharacterFileIdentity.RefersToSameFile(CharSvc.CurrentCharacterFile, characterFile))
             {
                 loadingTab.Character = CharSvc.CurrentCharacter;
                 loadingTab.Snapshot = CharacterSnapshot.From(CharSvc.CurrentCharacter);
@@ -300,7 +303,8 @@ else
                 return;
             }
 
-            if (CharSvc.CurrentCharacter != null)
+            if (CharSvc.CurrentCharacter != null
+                && CharacterFileIdentity.RefersToSameFile(CharSvc.CurrentCharacterFile, characterFile))
             {
                 loadingTab.Character = CharSvc.CurrentCharacter;
                 loadingTab.Snapshot = CharacterSnapshot.From(CharSvc.CurrentCharacter);
@@ -440,14 +444,14 @@ else
         }
     }
 
-    private void OnBrowserSelected(CharacterBrowserEntry entry)
+    private async Task OnBrowserSelected(CharacterBrowserEntry entry)
     {
         Builder.Presentation.Models.CharacterFile? character = _characters.FirstOrDefault(candidate =>
             string.Equals(candidate.FilePath, entry.Id, StringComparison.Ordinal));
 
         if (character != null)
         {
-            _ = OnCharacterSelected(character);
+            await OnCharacterSelected(character);
         }
     }
 

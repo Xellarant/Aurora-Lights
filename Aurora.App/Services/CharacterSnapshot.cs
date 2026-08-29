@@ -236,13 +236,15 @@ public sealed class CharacterSnapshot
                 .ToList(),
 
             Attacks = c.AttacksSection.Items
-                .Where(a => a.IsDisplayed)
-                .Select(a => new AttackEntry(
-                    a.Name.Content ?? "",
-                    a.Attack.Content ?? a.DisplayCalculatedAttack ?? "",
-                    a.Damage.Content ?? a.DisplayCalculatedDamage ?? "",
-                    a.Range.Content ?? "",
-                    a.EquipmentItem?.Identifier ?? ""))
+                .Select((attack, index) => (Attack: attack, Index: index))
+                .Where(entry => entry.Attack.IsDisplayed)
+                .Select(entry => new AttackEntry(
+                    entry.Attack.Name.Content ?? "",
+                    entry.Attack.Attack.Content ?? entry.Attack.DisplayCalculatedAttack ?? "",
+                    entry.Attack.Damage.Content ?? entry.Attack.DisplayCalculatedDamage ?? "",
+                    entry.Attack.Range.Content ?? "",
+                    entry.Attack.EquipmentItem?.Identifier ?? "",
+                    entry.Index))
                 .ToList(),
 
             HasSpellcasting        = spellSections.Count > 0,
@@ -1116,13 +1118,15 @@ public sealed class CharacterSnapshot
         AttunedMax   = c.Inventory.MaxAttunedItemCount;
 
         Attacks = c.AttacksSection.Items
-            .Where(a => a.IsDisplayed)
-            .Select(a => new AttackEntry(
-                a.Name.Content ?? "",
-                a.Attack.Content ?? a.DisplayCalculatedAttack ?? "",
-                a.Damage.Content ?? a.DisplayCalculatedDamage ?? "",
-                a.Range.Content ?? "",
-                a.EquipmentItem?.Identifier ?? ""))
+            .Select((attack, index) => (Attack: attack, Index: index))
+            .Where(entry => entry.Attack.IsDisplayed)
+            .Select(entry => new AttackEntry(
+                entry.Attack.Name.Content ?? "",
+                entry.Attack.Attack.Content ?? entry.Attack.DisplayCalculatedAttack ?? "",
+                entry.Attack.Damage.Content ?? entry.Attack.DisplayCalculatedDamage ?? "",
+                entry.Attack.Range.Content ?? "",
+                entry.Attack.EquipmentItem?.Identifier ?? "",
+                entry.Index))
             .ToList();
 
         var cm = CharacterManager.Current;
@@ -1140,9 +1144,30 @@ public sealed class CharacterSnapshot
     {
         string damage = item.Item is null ? string.Empty : EquipmentService.FormatItemDamage(item.Item);
         string range = item.Item is null ? string.Empty : EquipmentService.GetItemRange(item.Item);
+        string calculatedAttack = string.Empty;
+        string calculatedDamage = string.Empty;
+        string calculatedRange = string.Empty;
         string properties = item.Item is null ? string.Empty : EquipmentService.GetItemProperties(item.Item);
         bool isWeaponLike = string.Equals(item.Item?.Type, "Weapon", StringComparison.OrdinalIgnoreCase) ||
                             !string.IsNullOrWhiteSpace(damage);
+
+        // Inventory-only reminders still need the same calculated values a saved attack row
+        // would expose. This also upgrades existing sidecars whose selected weapon predates
+        // automatic attack-entry creation.
+        if (isWeaponLike)
+        {
+            try
+            {
+                var calculated = new Builder.Presentation.Models.Helpers.AttackSectionItem(item);
+                calculatedAttack = calculated.Attack.Content ?? string.Empty;
+                calculatedDamage = calculated.Damage.Content ?? string.Empty;
+                calculatedRange = calculated.Range.Content ?? string.Empty;
+            }
+            catch
+            {
+                // Retain the raw inventory metadata if a third-party item cannot be calculated.
+            }
+        }
 
         return new EquipmentItemEntry(
             item.DisplayName ?? item.Name ?? "",
@@ -1160,7 +1185,10 @@ public sealed class CharacterSnapshot
             isWeaponLike,
             damage,
             range,
-            properties);
+            properties,
+            calculatedAttack,
+            calculatedDamage,
+            calculatedRange);
     }
 }
 
@@ -1206,14 +1234,18 @@ public sealed record EquipmentItemEntry(
     bool   IsWeaponLike = false,
     string Damage = "",
     string Range = "",
-    string Properties = "");
+    string Properties = "",
+    string CalculatedAttack = "",
+    string CalculatedDamage = "",
+    string CalculatedRange = "");
 
 public sealed record AttackEntry(
     string Name,
     string Attack,
     string Damage,
     string Range,
-    string EquipmentIdentifier = "");
+    string EquipmentIdentifier = "",
+    int SourceIndex = -1);
 
 /// <summary>
 /// Name and Id are set once at snapshot time (init); IsPrepared is editable by the user.

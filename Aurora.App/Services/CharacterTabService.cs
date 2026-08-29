@@ -1,5 +1,6 @@
 using Builder.Presentation;
 using Builder.Presentation.Models;
+using Builder.Presentation.Utilities;
 
 namespace Aurora.App.Services;
 
@@ -26,11 +27,11 @@ public sealed class CharacterTabService
     public event Action? TabsChanged;
 
     /// <summary>
-    /// Finds an existing tab for the given file by reference.
+    /// Finds an existing tab for the same physical character file.
     /// Returns null if the character is not currently open.
     /// </summary>
     public CharacterTab? FindTab(CharacterFile file) =>
-        _tabs.FirstOrDefault(t => ReferenceEquals(t.File, file));
+        _tabs.FirstOrDefault(t => CharacterFileIdentity.RefersToSameFile(t.File, file));
 
     /// <summary>
     /// Opens a new tab for the character, or activates the existing one if

@@ -54,7 +54,7 @@ public sealed class SessionAttackReminderServiceTests
     {
         SessionInventorySource[] inventory =
         [
-            new("blowgun", false, "Backpack", "Blowgun", true, "1 piercing", "25/100"),
+            new("blowgun", false, "Backpack", "Blowgun", true, "1 piercing", "25/100", "+5 vs AC"),
             new("backpack", false, "Backpack", "Backpack", false),
         ];
 
@@ -62,8 +62,55 @@ public sealed class SessionAttackReminderServiceTests
 
         result.AvailableWeapons.Should().ContainSingle();
         result.AvailableWeapons[0].Name.Should().Be("Blowgun");
+        result.AvailableWeapons[0].Attack.Should().Be("+5 vs AC");
         result.AvailableWeapons[0].Damage.Should().Be("1 piercing");
         result.AvailableWeapons[0].Range.Should().Be("25/100");
+    }
+
+    [Fact]
+    public void Build_PreservesSourceIndexNeededToEditSavedAttack()
+    {
+        SessionAttackSource[] attacks =
+        [
+            new("Greataxe", "+4 vs AC", "1d12+2 slashing", "5 ft", "greataxe", 3),
+        ];
+        SessionInventorySource[] inventory =
+        [
+            new("greataxe", true, "Two-Handed", "Greataxe", true),
+        ];
+
+        var result = SessionAttackReminderService.Build(attacks, inventory, ["greataxe"], []);
+
+        result.Visible.Should().ContainSingle();
+        result.Visible[0].SourceAttackIndex.Should().Be(3);
+    }
+
+    [Fact]
+    public void Build_UpgradesLegacyInventoryReminderDisplayWithoutChangingItsSelectionKey()
+    {
+        SessionInventorySource[] inventory =
+        [
+            new(
+                "greataxe",
+                true,
+                "Two-Handed",
+                "Greataxe",
+                true,
+                "1d12 slashing",
+                "",
+                "+4 vs AC",
+                "1d12+2 slashing",
+                "5 ft"),
+        ];
+        string legacyKey = "weapon:greataxe:greataxe::1d12slashing:";
+
+        var result = SessionAttackReminderService.Build([], inventory, [legacyKey], []);
+
+        result.Visible.Should().ContainSingle();
+        result.Visible[0].Key.Should().Be(legacyKey);
+        result.Visible[0].Attack.Should().Be("+4 vs AC");
+        result.Visible[0].Damage.Should().Be("1d12+2 slashing");
+        result.Visible[0].Range.Should().Be("5 ft");
     }
 
     [Fact]

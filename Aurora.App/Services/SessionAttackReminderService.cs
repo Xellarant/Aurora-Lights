@@ -5,7 +5,8 @@ public sealed record SessionAttackSource(
     string Attack,
     string Damage,
     string Range,
-    string EquipmentIdentifier = "");
+    string EquipmentIdentifier = "",
+    int SourceAttackIndex = -1);
 
 public sealed record SessionInventorySource(
     string Identifier,
@@ -14,7 +15,10 @@ public sealed record SessionInventorySource(
     string Name = "",
     bool IsWeaponLike = false,
     string Damage = "",
-    string Range = "");
+    string Range = "",
+    string CalculatedAttack = "",
+    string CalculatedDamage = "",
+    string CalculatedRange = "");
 
 public sealed record SessionAttackReminder(
     string Key,
@@ -24,7 +28,8 @@ public sealed record SessionAttackReminder(
     string Range,
     string? EquipmentIdentifier,
     bool IsWeapon,
-    string? CustomIdentifier = null)
+    string? CustomIdentifier = null,
+    int SourceAttackIndex = -1)
 {
     public bool IsCustom => CustomIdentifier is not null;
     public bool IsDefault => !IsWeapon && !IsCustom;
@@ -118,7 +123,8 @@ public static class SessionAttackReminderService
             attack.Damage,
             attack.Range,
             equipmentIdentifier,
-            isWeapon);
+            isWeapon,
+            SourceAttackIndex: attack.SourceAttackIndex);
     }
 
     private static SessionAttackReminder ToCustomReminder(CustomAttackReminder reminder)
@@ -141,12 +147,17 @@ public static class SessionAttackReminderService
     private static SessionAttackReminder ToInventoryWeaponReminder(SessionInventorySource item)
     {
         string name = string.IsNullOrWhiteSpace(item.Name) ? "Weapon" : item.Name;
+        string attack = item.CalculatedAttack;
+        string damage = string.IsNullOrWhiteSpace(item.CalculatedDamage) ? item.Damage : item.CalculatedDamage;
+        string range = string.IsNullOrWhiteSpace(item.CalculatedRange) ? item.Range : item.CalculatedRange;
         return new SessionAttackReminder(
+            // Keep the key based on raw inventory metadata so sidecars created before
+            // calculated fallbacks were introduced continue to select the same weapon.
             BuildWeaponKey(item.Identifier, name, string.Empty, item.Damage, item.Range),
             name,
-            string.Empty,
-            item.Damage,
-            item.Range,
+            attack,
+            damage,
+            range,
             item.Identifier,
             true);
     }

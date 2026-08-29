@@ -3,7 +3,6 @@
 @inject CharacterTabService Tabs
 @inject ISnackbar Snackbar
 @inject UserPreferencesService Prefs
-@inject CharacterService Characters
 @using Builder.Presentation
 @using Builder.Presentation.Services.Data
 
@@ -416,7 +415,7 @@
 
     private async Task ExportDnd5eAsync()
     {
-        var file = Characters.CurrentCharacterFile;
+        var file = Tabs.ActiveTab?.File;
         if (file == null || !File.Exists(file.FilePath))
         {
             WarnUnavailable("No character file is available to export.");

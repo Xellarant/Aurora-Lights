@@ -4,7 +4,6 @@
 @using Builder.Presentation
 @inject CharacterTabService Tabs
 @inject IDialogService DialogService
-@inject CharacterService Characters
 @inject ISnackbar Snackbar
 @inject UserPreferencesService Prefs
 
@@ -348,8 +347,7 @@
     private async Task OpenSpellPickerAsync(SelectionRuleEntry entry)
     {
         var tab = Tabs.ActiveTab;
-        var file = Characters.CurrentCharacterFile;
-        if (tab == null || file == null)
+        if (tab == null)
         {
             WarnUnavailable("That spell choice is not available right now. Try again once the character finishes loading.");
             return;
@@ -385,7 +383,7 @@
 
             bool autoSave = Prefs.AutoSaveBuildChanges;
             var removed = await BuildService.ApplySelectionAndSaveAsync(
-                entry.Rule, selectedId, entry.Number, tab, file, saveToFile: autoSave);
+                entry.Rule, selectedId, entry.Number, tab, tab.File, saveToFile: autoSave);
 
             _saving = false;
 
